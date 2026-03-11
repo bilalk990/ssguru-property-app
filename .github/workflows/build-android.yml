@@ -28,52 +28,35 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: 'platforms;android-36 build-tools;36.0.0 ndk;27.1.12297006'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: wrapper
-          # Disable automatic build scan to avoid potential failures there
-          build-scan-publish: false
-
-      - name: Debug - List Files Before Build
-        working-directory: android
-        run: ls -R app/src/main/ || true
-
       - name: Build Debug APK
         working-directory: android
         run: |
           chmod +x gradlew
-          # Run clean to ensure we aren't using bad cache, then assemble
-          ./gradlew clean assembleDebug --no-daemon --stacktrace
-
-      - name: Debug - List Output Files
-        if: always()
-        working-directory: android
-        run: |
-          echo "Listing all APKs found:"
-          find app/build/outputs -name "*.apk" || echo "No APKs found"
-          echo "Full tree of outputs:"
-          ls -R app/build/outputs || true
+          # Run assembleDebug and catch EVERY bit of output
+          ./gradlew assembleDebug --no-daemon --console=plain --info > build_full_log.txt 2>&1 || (tail -n 200 build_full_log.txt && exit 1)
+          
+          echo "### BUILD FINISHED ###"
+          echo "Searching for APKs..."
+          find . -name "*.apk"
+          
+          echo "Output directory structure:"
+          ls -R app/build/outputs || echo "Outputs dir not found at expected path"
 
       - name: Upload APK Artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: ss-property-guru-debug
-          # Use a broad path and ignore if missing to avoid job failure
-          path: android/app/build/outputs/apk/debug/
-          if-no-files-found: warn
+          path: "android/**/*.apk"
+          if-no-files-found: error
           retention-days: 14
 
-      - name: Upload Entire Output on Failure
-        if: failure()
+      - name: Upload Logs on Failure
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-outputs-on-failure
-          path: android/app/build/outputs/
+          name: build-diagnostics
+          path: |
+            android/build_full_log.txt
+            android/app/build/outputs/
           retention-days: 7
