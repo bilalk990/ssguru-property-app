@@ -32,10 +32,21 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          # Run assembleDebug and catch EVERY bit of output
-          ./gradlew assembleDebug --no-daemon --console=plain --info > build_full_log.txt 2>&1 || (tail -n 200 build_full_log.txt && exit 1)
+          echo "Running assembleDebug..."
+          # Run assembleDebug and output to build_full_log.txt, but do not exit immediately on failure
+          ./gradlew assembleDebug --no-daemon --console=plain > build_full_log.txt 2>&1 || BUILD_FAILED=true
           
-          echo "### BUILD FINISHED ###"
+          if [ "$BUILD_FAILED" = "true" ]; then
+            echo "### 🚨 Android Build Failed" >> $GITHUB_STEP_SUMMARY
+            echo '```log' >> $GITHUB_STEP_SUMMARY
+            # Extract the actual failure line and the lines around it
+            tail -n 250 build_full_log.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "Build failed. Check the Step Summary for details."
+            exit 1
+          fi
+          
+          echo "### ✅ Android Build Succeeded" >> $GITHUB_STEP_SUMMARY
           echo "Searching for APKs..."
           find . -name "*.apk"
           
