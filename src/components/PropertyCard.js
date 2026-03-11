@@ -4,8 +4,9 @@ import {
     Text,
     Image,
     StyleSheet,
-    TouchableOpacity,
+    TouchableWithoutFeedback,
     Dimensions,
+    Animated,
 } from 'react-native';
 import Colors from '../constants/colors';
 
@@ -13,22 +14,84 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.44;
 
 const PropertyCard = ({ property, onPress, style, horizontal = false }) => {
+    const scaleAnim = React.useRef(new Animated.Value(1)).current;
+
+    const handlePressIn = () => {
+        Animated.spring(scaleAnim, {
+            toValue: 0.96,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const handlePressOut = () => {
+        Animated.spring(scaleAnim, {
+            toValue: 1,
+            friction: 3,
+            tension: 40,
+            useNativeDriver: true,
+        }).start();
+    };
+
     if (horizontal) {
         return (
-            <TouchableOpacity
-                style={[styles.horizontalCard, style]}
-                onPress={onPress}
-                activeOpacity={0.85}>
-                <Image
-                    source={{ uri: property.images[0] }}
-                    style={styles.horizontalImage}
-                    resizeMode="cover"
-                />
-                <View style={styles.horizontalBadge}>
-                    <Text style={styles.badgeText}>{property.type}</Text>
+            <TouchableWithoutFeedback
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+                onPress={onPress}>
+                <Animated.View style={[styles.horizontalCard, style, { transform: [{ scale: scaleAnim }] }]}>
+                    <Image
+                        source={{ uri: property.images[0] }}
+                        style={styles.horizontalImage}
+                        resizeMode="cover"
+                    />
+                    <View style={styles.horizontalBadge}>
+                        <Text style={styles.badgeText}>{property.type}</Text>
+                    </View>
+                    <View style={styles.horizontalContent}>
+                        <Text style={styles.horizontalTitle} numberOfLines={1}>
+                            {property.title}
+                        </Text>
+                        <View style={styles.locationRow}>
+                            <Text style={styles.locationIcon}>📍</Text>
+                            <Text style={styles.locationText} numberOfLines={1}>
+                                {property.area}, {property.city}
+                            </Text>
+                        </View>
+                        <View style={styles.horizontalFooter}>
+                            <Text style={styles.price}>{property.price}</Text>
+                            <View style={styles.sqftBadge}>
+                                <Text style={styles.sqftText}>{property.sqft}</Text>
+                            </View>
+                        </View>
+                    </View>
+                </Animated.View>
+            </TouchableWithoutFeedback>
+        );
+    }
+
+    return (
+        <TouchableWithoutFeedback
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
+            onPress={onPress}>
+            <Animated.View style={[styles.card, style, { transform: [{ scale: scaleAnim }] }]}>
+                <View style={styles.imageContainer}>
+                    <Image
+                        source={{ uri: property.images[0] }}
+                        style={styles.image}
+                        resizeMode="cover"
+                    />
+                    <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{property.type}</Text>
+                    </View>
+                    {property.featured && (
+                        <View style={styles.featuredBadge}>
+                            <Text style={styles.featuredText}>⭐ Featured</Text>
+                        </View>
+                    )}
                 </View>
-                <View style={styles.horizontalContent}>
-                    <Text style={styles.horizontalTitle} numberOfLines={1}>
+                <View style={styles.content}>
+                    <Text style={styles.title} numberOfLines={2}>
                         {property.title}
                     </Text>
                     <View style={styles.locationRow}>
@@ -37,74 +100,33 @@ const PropertyCard = ({ property, onPress, style, horizontal = false }) => {
                             {property.area}, {property.city}
                         </Text>
                     </View>
-                    <View style={styles.horizontalFooter}>
+                    <View style={styles.infoRow}>
+                        {property.bedrooms > 0 && (
+                            <View style={styles.infoItem}>
+                                <Text style={styles.infoIcon}>🛏️</Text>
+                                <Text style={styles.infoText}>{property.bedrooms}</Text>
+                            </View>
+                        )}
+                        {property.bathrooms > 0 && (
+                            <View style={styles.infoItem}>
+                                <Text style={styles.infoIcon}>🚿</Text>
+                                <Text style={styles.infoText}>{property.bathrooms}</Text>
+                            </View>
+                        )}
+                        <View style={styles.infoItem}>
+                            <Text style={styles.infoIcon}>📐</Text>
+                            <Text style={styles.infoText}>{property.sqft}</Text>
+                        </View>
+                    </View>
+                    <View style={styles.footer}>
                         <Text style={styles.price}>{property.price}</Text>
-                        <View style={styles.sqftBadge}>
-                            <Text style={styles.sqftText}>{property.sqft}</Text>
-                        </View>
+                        <Text style={styles.dateText}>{property.postedDate}</Text>
                     </View>
                 </View>
-            </TouchableOpacity>
-        );
-    }
-
-    return (
-        <TouchableOpacity
-            style={[styles.card, style]}
-            onPress={onPress}
-            activeOpacity={0.85}>
-            <View style={styles.imageContainer}>
-                <Image
-                    source={{ uri: property.images[0] }}
-                    style={styles.image}
-                    resizeMode="cover"
-                />
-                <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{property.type}</Text>
-                </View>
-                {property.featured && (
-                    <View style={styles.featuredBadge}>
-                        <Text style={styles.featuredText}>⭐ Featured</Text>
-                    </View>
-                )}
-            </View>
-            <View style={styles.content}>
-                <Text style={styles.title} numberOfLines={2}>
-                    {property.title}
-                </Text>
-                <View style={styles.locationRow}>
-                    <Text style={styles.locationIcon}>📍</Text>
-                    <Text style={styles.locationText} numberOfLines={1}>
-                        {property.area}, {property.city}
-                    </Text>
-                </View>
-                <View style={styles.infoRow}>
-                    {property.bedrooms > 0 && (
-                        <View style={styles.infoItem}>
-                            <Text style={styles.infoIcon}>🛏️</Text>
-                            <Text style={styles.infoText}>{property.bedrooms}</Text>
-                        </View>
-                    )}
-                    {property.bathrooms > 0 && (
-                        <View style={styles.infoItem}>
-                            <Text style={styles.infoIcon}>🚿</Text>
-                            <Text style={styles.infoText}>{property.bathrooms}</Text>
-                        </View>
-                    )}
-                    <View style={styles.infoItem}>
-                        <Text style={styles.infoIcon}>📐</Text>
-                        <Text style={styles.infoText}>{property.sqft}</Text>
-                    </View>
-                </View>
-                <View style={styles.footer}>
-                    <Text style={styles.price}>{property.price}</Text>
-                    <Text style={styles.dateText}>{property.postedDate}</Text>
-                </View>
-            </View>
-        </TouchableOpacity>
+            </Animated.View>
+        </TouchableWithoutFeedback>
     );
 };
-
 const styles = StyleSheet.create({
     // Vertical Card
     card: {

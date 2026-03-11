@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Platform, Animated } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Colors from '../constants/colors';
@@ -22,16 +22,33 @@ const SellStackNav = createNativeStackNavigator();
 const ProfileStackNav = createNativeStackNavigator();
 
 // Tab icon component
-const TabIcon = ({ label, emoji, focused }) => (
-    <View style={[styles.tabItem, focused && styles.tabItemActive]}>
-        <Text style={[styles.tabEmoji, focused && styles.tabEmojiActive]}>
-            {emoji}
-        </Text>
-        <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>
-            {label}
-        </Text>
-    </View>
-);
+const TabIcon = ({ label, emoji, focused }) => {
+    const scaleAnim = useRef(new Animated.Value(focused ? 1.1 : 1)).current;
+
+    useEffect(() => {
+        Animated.spring(scaleAnim, {
+            toValue: focused ? 1.15 : 1,
+            friction: 4,
+            tension: 50,
+            useNativeDriver: true,
+        }).start();
+    }, [focused, scaleAnim]);
+
+    return (
+        <Animated.View style={[
+            styles.tabItem,
+            focused && styles.tabItemActive,
+            { transform: [{ scale: scaleAnim }] }
+        ]}>
+            <Text style={[styles.tabEmoji, focused && styles.tabEmojiActive]}>
+                {emoji}
+            </Text>
+            <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>
+                {label}
+            </Text>
+        </Animated.View>
+    );
+};
 
 // Home Stack
 const HomeStack = () => (

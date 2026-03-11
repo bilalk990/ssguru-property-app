@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
     StyleSheet,
-    ScrollView,
     Image,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     StatusBar,
     Dimensions,
     FlatList,
     Platform,
+    Animated,
 } from 'react-native';
 import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
@@ -18,8 +19,49 @@ import { featuredProperties } from '../../constants/dummyData';
 
 const { width } = Dimensions.get('window');
 
+const ActionCard = ({ title, desc, emoji, color, onPress }) => {
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+
+    const handlePressIn = () => {
+        Animated.spring(scaleAnim, { toValue: 0.94, useNativeDriver: true }).start();
+    };
+    const handlePressOut = () => {
+        Animated.spring(scaleAnim, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }).start();
+    };
+
+    return (
+        <TouchableWithoutFeedback onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={onPress}>
+            <Animated.View style={[styles.actionCard, { transform: [{ scale: scaleAnim }] }]}>
+                <View style={[styles.actionIconBox, { backgroundColor: color }]}>
+                    <Text style={styles.actionEmoji}>{emoji}</Text>
+                </View>
+                <Text style={styles.actionTitle}>{title}</Text>
+                <Text style={styles.actionDesc}>{desc}</Text>
+            </Animated.View>
+        </TouchableWithoutFeedback>
+    );
+};
+
 const HomeScreen = ({ navigation }) => {
     const [search, setSearch] = useState('');
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(30)).current;
+
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 600,
+                useNativeDriver: true,
+            }),
+            Animated.spring(slideAnim, {
+                toValue: 0,
+                tension: 40,
+                friction: 7,
+                useNativeDriver: true,
+            })
+        ]).start();
+    }, [fadeAnim, slideAnim]);
 
     const featured = featuredProperties.filter(p => p.featured);
 
@@ -27,9 +69,10 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.container}>
             <StatusBar backgroundColor={Colors.primary} barStyle="light-content" />
 
-            <ScrollView
+            <Animated.ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}>
+                contentContainerStyle={styles.scrollContent}
+                style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
                 {/* Header */}
                 <View style={styles.header}>
                     <View style={styles.headerTop}>
@@ -62,49 +105,34 @@ const HomeScreen = ({ navigation }) => {
 
                 {/* Quick Actions */}
                 <View style={styles.actionsSection}>
-                    <TouchableOpacity
-                        style={styles.actionCard}
-                        activeOpacity={0.85}
-                        onPress={() => navigation.navigate('BuyTab')}>
-                        <View style={[styles.actionIconBox, { backgroundColor: Colors.primarySoft }]}>
-                            <Text style={styles.actionEmoji}>🏠</Text>
-                        </View>
-                        <Text style={styles.actionTitle}>Buy Property</Text>
-                        <Text style={styles.actionDesc}>Browse listings</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.actionCard}
-                        activeOpacity={0.85}
-                        onPress={() => navigation.navigate('SellTab')}>
-                        <View style={[styles.actionIconBox, { backgroundColor: Colors.accentSoft }]}>
-                            <Text style={styles.actionEmoji}>💰</Text>
-                        </View>
-                        <Text style={styles.actionTitle}>Sell Property</Text>
-                        <Text style={styles.actionDesc}>List your property</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.actionCard}
-                        activeOpacity={0.85}
-                        onPress={() => navigation.navigate('Enquiry')}>
-                        <View style={[styles.actionIconBox, { backgroundColor: '#EDE7F6' }]}>
-                            <Text style={styles.actionEmoji}>📝</Text>
-                        </View>
-                        <Text style={styles.actionTitle}>Enquiry</Text>
-                        <Text style={styles.actionDesc}>Submit requirement</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.actionCard}
-                        activeOpacity={0.85}
-                        onPress={() => navigation.navigate('MyProperties')}>
-                        <View style={[styles.actionIconBox, { backgroundColor: '#E3F2FD' }]}>
-                            <Text style={styles.actionEmoji}>📋</Text>
-                        </View>
-                        <Text style={styles.actionTitle}>My Listings</Text>
-                        <Text style={styles.actionDesc}>Manage properties</Text>
-                    </TouchableOpacity>
+                    <ActionCard
+                        title="Buy Property"
+                        desc="Browse listings"
+                        emoji="🏠"
+                        color={Colors.primarySoft}
+                        onPress={() => navigation.navigate('BuyTab')}
+                    />
+                    <ActionCard
+                        title="Sell Property"
+                        desc="List your property"
+                        emoji="💰"
+                        color={Colors.accentSoft}
+                        onPress={() => navigation.navigate('SellTab')}
+                    />
+                    <ActionCard
+                        title="Enquiry"
+                        desc="Submit requirement"
+                        emoji="📝"
+                        color="#EDE7F6"
+                        onPress={() => navigation.navigate('Enquiry')}
+                    />
+                    <ActionCard
+                        title="My Listings"
+                        desc="Manage properties"
+                        emoji="📋"
+                        color="#E3F2FD"
+                        onPress={() => navigation.navigate('MyProperties')}
+                    />
                 </View>
 
                 {/* Featured Properties */}
@@ -174,7 +202,7 @@ const HomeScreen = ({ navigation }) => {
                 </TouchableOpacity>
 
                 <View style={{ height: 20 }} />
-            </ScrollView>
+            </Animated.ScrollView>
         </View>
     );
 };
