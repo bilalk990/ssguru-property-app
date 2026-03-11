@@ -18,7 +18,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
@@ -29,26 +28,52 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0 ndk;27.1.12297006'
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: wrapper
+          # Disable automatic build scan to avoid potential failures there
+          build-scan-publish: false
+
+      - name: Debug - List Files Before Build
+        working-directory: android
+        run: ls -R app/src/main/ || true
 
       - name: Build Debug APK
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          # Run clean to ensure we aren't using bad cache, then assemble
+          ./gradlew clean assembleDebug --no-daemon --stacktrace
+
+      - name: Debug - List Output Files
+        if: always()
+        working-directory: android
+        run: |
+          echo "Listing all APKs found:"
+          find app/build/outputs -name "*.apk" || echo "No APKs found"
+          echo "Full tree of outputs:"
+          ls -R app/build/outputs || true
 
       - name: Upload APK Artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: ss-property-guru-debug
-          path: android/app/build/outputs/apk/debug/*.apk
+          # Use a broad path and ignore if missing to avoid job failure
+          path: android/app/build/outputs/apk/debug/
+          if-no-files-found: warn
           retention-days: 14
 
-      - name: Upload All APKs on Failure (for debugging)
+      - name: Upload Entire Output on Failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: all-build-outputs
+          name: build-outputs-on-failure
           path: android/app/build/outputs/
+          retention-days: 7
