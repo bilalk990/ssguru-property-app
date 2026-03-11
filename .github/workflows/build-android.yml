@@ -36,19 +36,19 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee build_log.txt
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK Artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: ss-property-guru-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/*.apk
           retention-days: 14
 
-      - name: Upload Build Log on Failure
+      - name: Upload All APKs on Failure (for debugging)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: build-log
-          path: android/build_log.txt
+          name: all-build-outputs
+          path: android/app/build/outputs/
