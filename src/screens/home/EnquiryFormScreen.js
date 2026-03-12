@@ -10,6 +10,7 @@ import {
     TouchableOpacity,
     Platform,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
 import { submitEnquiry } from '../../api/propertyApi';
@@ -61,7 +62,7 @@ const EnquiryFormScreen = ({ navigation }) => {
                 <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}>
-                    <Text style={styles.backIcon}>←</Text>
+                    <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Submit Enquiry</Text>
                 <View style={{ width: 44 }} />
@@ -73,7 +74,9 @@ const EnquiryFormScreen = ({ navigation }) => {
                 keyboardShouldPersistTaps="handled">
                 {/* Info Card */}
                 <View style={styles.infoCard}>
-                    <Text style={styles.infoEmoji}>📝</Text>
+                    <View style={styles.infoIconWrapper}>
+                        <Icon name="chatbubbles-outline" size={36} color={Colors.primary} />
+                    </View>
                     <Text style={styles.infoTitle}>Tell Us What You Need</Text>
                     <Text style={styles.infoDesc}>
                         Share your property requirement and our team will connect you with
@@ -146,7 +149,7 @@ const EnquiryFormScreen = ({ navigation }) => {
                     onPress={handleSubmit}
                     loading={loading}
                     size="large"
-                    icon="🚀"
+                    icon="send"
                     style={styles.submitButton}
                 />
 
@@ -200,9 +203,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 24,
     },
-    infoEmoji: {
-        fontSize: 36,
-        marginBottom: 10,
+    infoIconWrapper: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: Colors.background,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 15,
     },
     infoTitle: {
         fontSize: 18,

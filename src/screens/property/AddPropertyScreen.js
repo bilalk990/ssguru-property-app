@@ -12,6 +12,7 @@ import {
     Image,
 } from 'react-native';
 import Colors from '../../constants/colors';
+import Icon from 'react-native-vector-icons/Ionicons';
 import CustomButton from '../../components/CustomButton';
 import { addProperty } from '../../api/propertyApi';
 import { propertyTypes } from '../../constants/dummyData';
@@ -87,7 +88,7 @@ const AddPropertyScreen = ({ navigation }) => {
                 <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}>
-                    <Text style={styles.backIcon}>←</Text>
+                    <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>List Your Property</Text>
                 <View style={{ width: 44 }} />
@@ -99,7 +100,7 @@ const AddPropertyScreen = ({ navigation }) => {
                 keyboardShouldPersistTaps="handled">
                 {/* Payment Notice */}
                 <View style={styles.paymentNotice}>
-                    <Text style={styles.paymentEmoji}>💳</Text>
+                    <Icon name="card-outline" size={32} color={Colors.accent} />
                     <View style={styles.paymentInfo}>
                         <Text style={styles.paymentTitle}>Listing Fee: ₹20</Text>
                         <Text style={styles.paymentDesc}>
@@ -117,7 +118,7 @@ const AddPropertyScreen = ({ navigation }) => {
                     <TouchableOpacity
                         style={styles.addImageButton}
                         onPress={handlePickImage}>
-                        <Text style={styles.addImageIcon}>📷</Text>
+                        <Icon name="camera-outline" size={28} color={Colors.primary} />
                         <Text style={styles.addImageText}>Add Photo</Text>
                     </TouchableOpacity>
                     {images.map((img, index) => (
@@ -126,7 +127,7 @@ const AddPropertyScreen = ({ navigation }) => {
                             <TouchableOpacity
                                 style={styles.removeImageButton}
                                 onPress={() => removeImage(index)}>
-                                <Text style={styles.removeImageText}>✕</Text>
+                                <Icon name="close" size={16} color={Colors.textWhite} />
                             </TouchableOpacity>
                         </View>
                     ))}
@@ -253,7 +254,7 @@ const AddPropertyScreen = ({ navigation }) => {
                     onPress={handleSubmit}
                     loading={loading}
                     size="large"
-                    icon="🚀"
+                    icon="rocket-outline"
                     style={styles.submitButton}
                 />
 

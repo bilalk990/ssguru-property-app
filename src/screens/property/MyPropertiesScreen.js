@@ -10,6 +10,7 @@ import {
     Platform,
     Image,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import Loader from '../../components/Loader';
 import { getMyProperties, deleteProperty } from '../../api/propertyApi';
@@ -88,18 +89,18 @@ const MyPropertiesScreen = ({ navigation }) => {
                         onPress={() =>
                             navigation.navigate('PropertyDetail', { property: item })
                         }>
-                        <Text style={styles.viewIcon}>👁️</Text>
+                        <Icon name="eye-outline" size={16} color={Colors.textSecondary} />
                         <Text style={styles.actionText}>View</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.actionButton, styles.editAction]}>
-                        <Text style={styles.editIcon}>✏️</Text>
+                        <Icon name="create-outline" size={16} color={Colors.primary} />
                         <Text style={[styles.actionText, styles.editText]}>Edit</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.actionButton, styles.deleteAction]}
                         onPress={() => handleDelete(item.id)}>
-                        <Text style={styles.deleteIcon}>🗑️</Text>
+                        <Icon name="trash-outline" size={16} color={Colors.error} />
                         <Text style={[styles.actionText, styles.deleteText]}>Delete</Text>
                     </TouchableOpacity>
                 </View>
@@ -116,13 +117,13 @@ const MyPropertiesScreen = ({ navigation }) => {
                 <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}>
-                    <Text style={styles.backIcon}>←</Text>
+                    <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>My Properties</Text>
                 <TouchableOpacity
                     style={styles.addButton}
                     onPress={() => navigation.navigate('AddProperty')}>
-                    <Text style={styles.addIcon}>+</Text>
+                    <Icon name="add" size={28} color={Colors.textWhite} />
                 </TouchableOpacity>
             </View>
 
@@ -133,11 +134,13 @@ const MyPropertiesScreen = ({ navigation }) => {
                     data={properties}
                     renderItem={renderProperty}
                     keyExtractor={item => item.id.toString()}
-                    contentContainerStyle={styles.listContent}
+                    contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyEmoji}>🏠</Text>
+                            <View style={styles.emptyIconBox}>
+                                <Icon name="business-outline" size={60} color={Colors.primarySoft} />
+                            </View>
                             <Text style={styles.emptyTitle}>No properties listed</Text>
                             <Text style={styles.emptyText}>
                                 Start listing your properties to reach thousands of buyers
@@ -311,9 +314,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 80,
     },
-    emptyEmoji: {
-        fontSize: 60,
-        marginBottom: 16,
+    emptyIconBox: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: Colors.surfaceSecondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 24,
     },
     emptyTitle: {
         fontSize: 20,

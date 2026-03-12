@@ -10,6 +10,7 @@ import {
     StatusBar,
     Platform,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from '@react-navigation/native';
 import Colors from '../../constants/colors';
@@ -40,43 +41,43 @@ const ProfileScreen = ({ navigation }) => {
 
     const menuItems = [
         {
-            icon: '📋',
+            icon: 'business-outline',
             title: 'My Properties',
             subtitle: `${user.propertiesListed} listings`,
             onPress: () => navigation.navigate('MyProperties'),
         },
         {
-            icon: '📝',
+            icon: 'chatbubbles-outline',
             title: 'My Enquiries',
             subtitle: `${user.enquiriesMade} enquiries`,
             onPress: () => { },
         },
         {
-            icon: '💳',
+            icon: 'card-outline',
             title: 'Payment History',
             subtitle: 'View transactions',
             onPress: () => { },
         },
         {
-            icon: '🔔',
+            icon: 'notifications-outline',
             title: 'Notifications',
             subtitle: 'Manage alerts',
             onPress: () => { },
         },
         {
-            icon: '⚙️',
+            icon: 'settings-outline',
             title: 'Settings',
             subtitle: 'App preferences',
             onPress: () => { },
         },
         {
-            icon: '📞',
+            icon: 'call-outline',
             title: 'Contact Us',
             subtitle: 'Get help & support',
             onPress: () => { },
         },
         {
-            icon: 'ℹ️',
+            icon: 'information-circle-outline',
             title: 'About',
             subtitle: 'App info & version',
             onPress: () => { },
@@ -87,7 +88,9 @@ const ProfileScreen = ({ navigation }) => {
         <View style={styles.container}>
             <StatusBar backgroundColor={Colors.primary} barStyle="light-content" />
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 120 }}>
                 {/* Profile Header */}
                 <View style={styles.header}>
                     <View style={styles.profileSection}>
@@ -112,7 +115,7 @@ const ProfileScreen = ({ navigation }) => {
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
-                            <Text style={styles.statValue}>⭐</Text>
+                            <Icon name="star" size={20} color="#FFD700" />
                             <Text style={styles.statLabel}>Premium</Text>
                         </View>
                     </View>
@@ -164,20 +167,22 @@ const ProfileScreen = ({ navigation }) => {
                             onPress={item.onPress}
                             activeOpacity={0.7}>
                             <View style={styles.menuLeft}>
-                                <Text style={styles.menuIcon}>{item.icon}</Text>
+                                <View style={styles.menuIconWrapper}>
+                                    <Icon name={item.icon} size={22} color={Colors.primary} />
+                                </View>
                                 <View>
                                     <Text style={styles.menuTitle}>{item.title}</Text>
                                     <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
                                 </View>
                             </View>
-                            <Text style={styles.menuArrow}>›</Text>
+                            <Icon name="chevron-forward" size={18} color={Colors.textLight} />
                         </TouchableOpacity>
                     ))}
                 </View>
 
                 {/* Logout */}
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                    <Text style={styles.logoutIcon}>🚪</Text>
+                    <Icon name="log-out-outline" size={20} color={Colors.error} />
                     <Text style={styles.logoutText}>Logout</Text>
                 </TouchableOpacity>
 
@@ -320,8 +325,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 14,
     },
-    menuIcon: {
-        fontSize: 22,
+    menuIconWrapper: {
+        width: 38,
+        height: 38,
+        borderRadius: 12,
+        backgroundColor: Colors.primarySoft,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     menuTitle: {
         fontSize: 15,

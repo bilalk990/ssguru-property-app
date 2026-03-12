@@ -11,41 +11,40 @@ import {
     Linking,
     Platform,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const PropertyDetailScreen = ({ route, navigation }) => {
     const { property } = route.params;
     const [activeImageIndex, setActiveImageIndex] = useState(0);
 
     const handleCall = () => {
-        Linking.openURL(`tel:${property.agentPhone}`);
+        Linking.openURL(`tel:${property.agentPhone || '1234567890'}`);
     };
 
     const handleWhatsApp = () => {
         const message = `Hi, I'm interested in the property: ${property.title} (${property.price})`;
-        Linking.openURL(
-            `whatsapp://send?phone=${property.agentPhone.replace(/\s/g, '')}&text=${encodeURIComponent(message)}`,
-        );
+        const phone = property.agentPhone ? property.agentPhone.replace(/\s/g, '') : '1234567890';
+        Linking.openURL(`whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`);
     };
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor="transparent" translucent barStyle="light-content" />
+            <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Image Carousel */}
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+                {/* Image Section */}
                 <View style={styles.imageSection}>
                     <ScrollView
                         horizontal
                         pagingEnabled
                         showsHorizontalScrollIndicator={false}
                         onMomentumScrollEnd={e => {
-                            const index = Math.round(
-                                e.nativeEvent.contentOffset.x / width,
-                            );
+                            const index = Math.round(e.nativeEvent.contentOffset.x / width);
                             setActiveImageIndex(index);
                         }}>
                         {property.images.map((img, index) => (
@@ -58,124 +57,125 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                         ))}
                     </ScrollView>
 
+                    {/* Gradient Overlay */}
+                    <LinearGradient
+                        colors={['rgba(0,0,0,0.6)', 'transparent', 'rgba(0,0,0,0.7)']}
+                        style={styles.imageGradient}
+                    />
+
                     {/* Back Button */}
                     <TouchableOpacity
                         style={styles.backButton}
                         onPress={() => navigation.goBack()}>
-                        <Text style={styles.backIcon}>←</Text>
+                        <Icon name="arrow-back" size={24} color={Colors.textWhite} />
                     </TouchableOpacity>
 
-                    {/* Image Dots */}
-                    <View style={styles.dotContainer}>
-                        {property.images.map((_, index) => (
-                            <View
-                                key={index}
-                                style={[
-                                    styles.dot,
-                                    activeImageIndex === index && styles.dotActive,
-                                ]}
-                            />
-                        ))}
-                    </View>
-
-                    {/* Image Counter */}
+                    {/* Image Counter Badge */}
                     <View style={styles.imageCounter}>
+                        <Icon name="images-outline" size={14} color={Colors.textWhite} />
                         <Text style={styles.imageCounterText}>
                             {activeImageIndex + 1}/{property.images.length}
                         </Text>
                     </View>
-                </View>
 
-                {/* Content */}
-                <View style={styles.content}>
-                    {/* Price & Type */}
-                    <View style={styles.priceRow}>
-                        <Text style={styles.price}>{property.price}</Text>
+                    {/* Price Header inside Image */}
+                    <View style={styles.priceContainer}>
+                        <Text style={styles.priceText}>{property.price}</Text>
                         <View style={styles.typeBadge}>
                             <Text style={styles.typeBadgeText}>{property.type}</Text>
                         </View>
                     </View>
+                </View>
 
-                    {/* Title */}
+                {/* Main Content */}
+                <View style={styles.content}>
                     <Text style={styles.title}>{property.title}</Text>
 
-                    {/* Location */}
-                    <View style={styles.locationRow}>
-                        <Text style={styles.locationIcon}>📍</Text>
+                    <View style={styles.locationWrapper}>
+                        <Icon name="location-outline" size={16} color={Colors.primary} />
                         <Text style={styles.locationText}>
                             {property.area}, {property.city}
                         </Text>
                     </View>
 
-                    {/* Quick Info */}
+                    {/* Elite Info Grid */}
                     <View style={styles.infoGrid}>
-                        {property.bedrooms > 0 && (
-                            <View style={styles.infoBox}>
-                                <Text style={styles.infoBoxIcon}>🛏️</Text>
-                                <Text style={styles.infoBoxValue}>{property.bedrooms}</Text>
-                                <Text style={styles.infoBoxLabel}>Bedrooms</Text>
+                        <View style={styles.infoItem}>
+                            <View style={styles.infoIconBox}>
+                                <Icon name="bed-outline" size={22} color={Colors.primary} />
                             </View>
-                        )}
-                        {property.bathrooms > 0 && (
-                            <View style={styles.infoBox}>
-                                <Text style={styles.infoBoxIcon}>🚿</Text>
-                                <Text style={styles.infoBoxValue}>{property.bathrooms}</Text>
-                                <Text style={styles.infoBoxLabel}>Bathrooms</Text>
+                            <Text style={styles.infoValue}>{property.bedrooms || 0}</Text>
+                            <Text style={styles.infoLabel}>Beds</Text>
+                        </View>
+                        <View style={styles.infoDivider} />
+                        <View style={styles.infoItem}>
+                            <View style={styles.infoIconBox}>
+                                <Icon name="water-outline" size={22} color={Colors.primary} />
                             </View>
-                        )}
-                        <View style={styles.infoBox}>
-                            <Text style={styles.infoBoxIcon}>📐</Text>
-                            <Text style={styles.infoBoxValue}>{property.sqft}</Text>
-                            <Text style={styles.infoBoxLabel}>Area</Text>
+                            <Text style={styles.infoValue}>{property.bathrooms || 0}</Text>
+                            <Text style={styles.infoLabel}>Baths</Text>
+                        </View>
+                        <View style={styles.infoDivider} />
+                        <View style={styles.infoItem}>
+                            <View style={styles.infoIconBox}>
+                                <Icon name="expand-outline" size={22} color={Colors.primary} />
+                            </View>
+                            <Text style={styles.infoValue}>{property.sqft || '-'}</Text>
+                            <Text style={styles.infoLabel}>Sq.Ft</Text>
                         </View>
                     </View>
 
-                    {/* Description */}
+                    {/* Description Section */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>📄 Description</Text>
-                        <Text style={styles.description}>{property.description}</Text>
+                        <Text style={styles.sectionTitle}>Overview</Text>
+                        <Text style={styles.descriptionText}>{property.description}</Text>
                     </View>
 
-                    {/* Agent Info */}
+                    {/* Luxury Agent Card */}
                     <View style={styles.agentCard}>
                         <View style={styles.agentInfo}>
-                            <View style={styles.agentAvatar}>
-                                <Text style={styles.agentInitial}>
-                                    {property.agent.charAt(0)}
-                                </Text>
+                            <View style={styles.avatarWrapper}>
+                                <Image
+                                    source={{ uri: property.agentAvatar || 'https://i.pravatar.cc/150' }}
+                                    style={styles.avatar}
+                                />
+                                <View style={styles.verifiedBadge}>
+                                    <Icon name="checkmark-sharp" size={10} color={Colors.textWhite} />
+                                </View>
                             </View>
-                            <View>
+                            <View style={styles.agentTextContainer}>
                                 <Text style={styles.agentName}>{property.agent}</Text>
-                                <Text style={styles.agentLabel}>Property Agent</Text>
+                                <Text style={styles.agentRole}>Elite Property Consultant</Text>
                             </View>
+                            <TouchableOpacity style={styles.miniCall} onPress={handleCall}>
+                                <Icon name="call" size={20} color={Colors.primary} />
+                            </TouchableOpacity>
                         </View>
                     </View>
 
-                    {/* Posted Date */}
-                    <View style={styles.postedRow}>
-                        <Text style={styles.postedIcon}>🕐</Text>
-                        <Text style={styles.postedText}>
-                            Posted {property.postedDate}
-                        </Text>
+                    <View style={styles.dateRow}>
+                        <Icon name="time-outline" size={14} color={Colors.textLight} />
+                        <Text style={styles.dateText}>Listed {property.postedDate || 'Just now'}</Text>
                     </View>
                 </View>
             </ScrollView>
 
-            {/* Bottom Bar */}
-            <View style={styles.bottomBar}>
-                <CustomButton
-                    title="Call Agent"
-                    onPress={handleCall}
-                    variant="outline"
-                    icon="📞"
-                    style={styles.callButton}
-                />
-                <CustomButton
-                    title="WhatsApp"
-                    onPress={handleWhatsApp}
-                    icon="💬"
-                    style={styles.whatsappButton}
-                />
+            {/* Premium Action Bar */}
+            <View style={styles.footer}>
+                <TouchableOpacity style={styles.callActionButton} onPress={handleCall}>
+                    <Icon name="call" size={20} color={Colors.primary} />
+                    <Text style={styles.callLabel}>Call</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.whatsappActionButton} onPress={handleWhatsApp}>
+                    <LinearGradient
+                        colors={[Colors.primary, '#1B5E20']}
+                        style={styles.whatsappGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}>
+                        <Icon name="logo-whatsapp" size={20} color={Colors.textWhite} />
+                        <Text style={styles.whatsappLabel}>Contact Agent</Text>
+                    </LinearGradient>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -186,217 +186,284 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: Colors.background,
     },
+    scrollContent: {
+        paddingBottom: 100,
+    },
     // Image Section
     imageSection: {
-        position: 'relative',
+        height: height * 0.45,
+        backgroundColor: Colors.border,
     },
     propertyImage: {
         width,
-        height: 320,
-        backgroundColor: Colors.borderLight,
+        height: '100%',
+    },
+    imageGradient: {
+        ...StyleSheet.absoluteFillObject,
     },
     backButton: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? 54 : 20,
-        left: 16,
-        width: 42,
-        height: 42,
-        borderRadius: 14,
-        backgroundColor: 'rgba(0,0,0,0.4)',
+        top: Platform.OS === 'ios' ? 50 : 30,
+        left: 20,
+        width: 45,
+        height: 45,
+        borderRadius: 22.5,
+        backgroundColor: 'rgba(0,0,0,0.3)',
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    backIcon: {
-        fontSize: 22,
-        color: Colors.textWhite,
-    },
-    dotContainer: {
-        position: 'absolute',
-        bottom: 16,
-        alignSelf: 'center',
-        flexDirection: 'row',
-        gap: 6,
-    },
-    dot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: 'rgba(255,255,255,0.5)',
-    },
-    dotActive: {
-        backgroundColor: Colors.textWhite,
-        width: 24,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
     },
     imageCounter: {
         position: 'absolute',
-        bottom: 16,
-        right: 16,
+        top: Platform.OS === 'ios' ? 50 : 30,
+        right: 20,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 10,
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
     imageCounterText: {
         color: Colors.textWhite,
         fontSize: 12,
-        fontWeight: '600',
+        fontWeight: '700',
+    },
+    priceContainer: {
+        position: 'absolute',
+        bottom: 25,
+        left: 20,
+        right: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+    },
+    priceText: {
+        fontSize: 32,
+        fontWeight: '900',
+        color: Colors.textWhite,
+        textShadowColor: 'rgba(0,0,0,0.3)',
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 4,
+    },
+    typeBadge: {
+        backgroundColor: Colors.accentMuted,
+        paddingHorizontal: 15,
+        paddingVertical: 6,
+        borderRadius: 12,
+    },
+    typeBadgeText: {
+        color: Colors.textWhite,
+        fontSize: 12,
+        fontWeight: '800',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     // Content
     content: {
-        padding: 20,
-    },
-    priceRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    price: {
-        fontSize: 26,
-        fontWeight: '800',
-        color: Colors.primary,
-    },
-    typeBadge: {
-        backgroundColor: Colors.primarySoft,
-        paddingHorizontal: 14,
-        paddingVertical: 6,
-        borderRadius: 10,
-    },
-    typeBadgeText: {
-        color: Colors.primary,
-        fontWeight: '700',
-        fontSize: 13,
+        marginTop: -30,
+        borderTopLeftRadius: 35,
+        borderTopRightRadius: 35,
+        backgroundColor: Colors.background,
+        padding: 30,
+        paddingTop: 35,
     },
     title: {
-        fontSize: 22,
-        fontWeight: '700',
+        fontSize: 26,
+        fontWeight: '800',
         color: Colors.textPrimary,
-        marginBottom: 10,
-        lineHeight: 30,
+        marginBottom: 12,
+        lineHeight: 34,
     },
-    locationRow: {
+    locationWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
-    },
-    locationIcon: {
-        fontSize: 16,
-        marginRight: 6,
+        gap: 8,
+        marginBottom: 30,
     },
     locationText: {
         fontSize: 15,
         color: Colors.textSecondary,
+        fontWeight: '500',
     },
-    // Info Grid
+    // Elite Grid
     infoGrid: {
         flexDirection: 'row',
-        backgroundColor: Colors.backgroundSecondary,
-        borderRadius: 16,
-        padding: 16,
-        gap: 12,
-        marginBottom: 24,
+        backgroundColor: Colors.surfaceSecondary,
+        borderRadius: 24,
+        padding: 24,
+        marginBottom: 35,
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
-    infoBox: {
+    infoItem: {
         flex: 1,
         alignItems: 'center',
-        padding: 12,
-        backgroundColor: Colors.backgroundCard,
-        borderRadius: 12,
+        gap: 6,
     },
-    infoBoxIcon: {
-        fontSize: 22,
-        marginBottom: 6,
+    infoIconBox: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(27, 94, 32, 0.08)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 4,
     },
-    infoBoxValue: {
-        fontSize: 16,
+    infoValue: {
+        fontSize: 18,
         fontWeight: '800',
         color: Colors.textPrimary,
-        marginBottom: 2,
     },
-    infoBoxLabel: {
+    infoLabel: {
         fontSize: 11,
+        fontWeight: '600',
         color: Colors.textSecondary,
-        fontWeight: '500',
+        textTransform: 'uppercase',
+    },
+    infoDivider: {
+        width: 1,
+        height: 40,
+        backgroundColor: 'rgba(0,0,0,0.05)',
     },
     // Description
     section: {
-        marginBottom: 24,
+        marginBottom: 35,
     },
     sectionTitle: {
-        fontSize: 17,
-        fontWeight: '700',
+        fontSize: 20,
+        fontWeight: '800',
         color: Colors.textPrimary,
-        marginBottom: 10,
+        marginBottom: 15,
     },
-    description: {
-        fontSize: 14,
+    descriptionText: {
+        fontSize: 15,
         color: Colors.textSecondary,
-        lineHeight: 22,
+        lineHeight: 26,
     },
     // Agent Card
     agentCard: {
-        backgroundColor: Colors.backgroundSecondary,
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
+        backgroundColor: Colors.background,
+        borderRadius: 24,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.05,
+        shadowRadius: 20,
+        elevation: 2,
     },
     agentInfo: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 14,
     },
-    agentAvatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 14,
+    avatarWrapper: {
+        position: 'relative',
+    },
+    avatar: {
+        width: 54,
+        height: 54,
+        borderRadius: 18,
+    },
+    verifiedBadge: {
+        position: 'absolute',
+        bottom: -2,
+        right: -2,
+        width: 18,
+        height: 18,
+        borderRadius: 9,
         backgroundColor: Colors.primary,
         justifyContent: 'center',
         alignItems: 'center',
+        borderWidth: 2,
+        borderColor: Colors.textWhite,
     },
-    agentInitial: {
-        fontSize: 20,
-        fontWeight: '800',
-        color: Colors.textWhite,
+    agentTextContainer: {
+        flex: 1,
+        marginLeft: 15,
     },
     agentName: {
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: '700',
         color: Colors.textPrimary,
     },
-    agentLabel: {
+    agentRole: {
         fontSize: 13,
         color: Colors.textSecondary,
+        marginTop: 2,
     },
-    // Posted
-    postedRow: {
+    miniCall: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: Colors.primarySoft,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    dateRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
-        marginBottom: 80,
+        paddingLeft: 4,
     },
-    postedIcon: {
-        fontSize: 14,
-    },
-    postedText: {
+    dateText: {
         fontSize: 13,
         color: Colors.textLight,
+        fontWeight: '500',
     },
-    // Bottom Bar
-    bottomBar: {
-        flexDirection: 'row',
-        padding: 16,
-        paddingBottom: Platform.OS === 'ios' ? 34 : 16,
-        gap: 12,
+    // Footer
+    footer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
         backgroundColor: Colors.background,
+        paddingHorizontal: 20,
+        paddingTop: 15,
+        paddingBottom: Platform.OS === 'ios' ? 35 : 20,
+        flexDirection: 'row',
+        gap: 15,
         borderTopWidth: 1,
         borderTopColor: Colors.border,
     },
-    callButton: {
-        flex: 1,
+    callActionButton: {
+        width: 60,
+        height: 60,
+        borderRadius: 18,
+        borderWidth: 1.5,
+        borderColor: Colors.border,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: Colors.surfaceSecondary,
     },
-    whatsappButton: {
+    callLabel: {
+        fontSize: 10,
+        fontWeight: '700',
+        color: Colors.primary,
+        marginTop: 2,
+    },
+    whatsappActionButton: {
         flex: 1,
+        height: 60,
+    },
+    whatsappGradient: {
+        flex: 1,
+        borderRadius: 18,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 10,
+    },
+    whatsappLabel: {
+        color: Colors.textWhite,
+        fontSize: 16,
+        fontWeight: '700',
     },
 });
 
 export default PropertyDetailScreen;
+

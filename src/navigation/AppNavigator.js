@@ -95,15 +95,29 @@ const ProfileStack = () => (
     </ProfileStackNav.Navigator>
 );
 
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+
 // Bottom Tabs
 const AppNavigator = () => {
     return (
         <Tab.Navigator
-            screenOptions={{
-                headerShown: false,
-                tabBarStyle: styles.tabBar,
-                tabBarShowLabel: false,
-                tabBarHideOnKeyboard: true,
+            screenOptions={({ route }) => {
+                const routeName = getFocusedRouteNameFromRoute(route) ?? '';
+                const hideTabs = [
+                    'PropertyDetail',
+                    'Enquiry',
+                    'AddProperty',
+                    'MyProperties',
+                    'AddPropertyMain',
+                    'EnquiryForm'
+                ].includes(routeName);
+
+                return {
+                    headerShown: false,
+                    tabBarShowLabel: false,
+                    tabBarHideOnKeyboard: true,
+                    tabBarStyle: hideTabs ? { display: 'none' } : styles.tabBar,
+                };
             }}>
             <Tab.Screen
                 name="HomeTab"
