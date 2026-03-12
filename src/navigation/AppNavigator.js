@@ -98,76 +98,68 @@ const ProfileStack = () => (
 // Bottom Tabs
 const AppNavigator = () => {
     return (
-        <View style={styles.tabBarWrapper}>
-            <Tab.Navigator
-                screenOptions={{
-                    headerShown: false,
-                    tabBarStyle: styles.tabBar,
-                    tabBarShowLabel: false,
-                }}>
-                <Tab.Screen
-                    name="HomeTab"
-                    component={HomeStack}
-                    options={{
-                        tabBarIcon: ({ focused }) => (
-                            <TabIcon label="Home" icon="home" focused={focused} />
-                        ),
-                    }}
-                />
-                <Tab.Screen
-                    name="BuyTab"
-                    component={BuyStack}
-                    options={{
-                        tabBarIcon: ({ focused }) => (
-                            <TabIcon label="Explore" icon="search" focused={focused} />
-                        ),
-                    }}
-                />
-                <Tab.Screen
-                    name="SellTab"
-                    component={SellStack}
-                    options={{
-                        tabBarIcon: ({ focused }) => (
-                            <TabIcon label="List" icon="add-circle" focused={focused} />
-                        ),
-                    }}
-                />
-                <Tab.Screen
-                    name="ProfileTab"
-                    component={ProfileStack}
-                    options={{
-                        tabBarIcon: ({ focused }) => (
-                            <TabIcon label="You" icon="person" focused={focused} />
-                        ),
-                    }}
-                />
-            </Tab.Navigator>
-        </View>
+        <Tab.Navigator
+            screenOptions={{
+                headerShown: false,
+                tabBarStyle: styles.tabBar,
+                tabBarShowLabel: false,
+                tabBarHideOnKeyboard: true,
+            }}>
+            <Tab.Screen
+                name="HomeTab"
+                component={HomeStack}
+                options={{
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon label="Home" icon="home" focused={focused} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="BuyTab"
+                component={BuyStack}
+                options={{
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon label="Explore" icon="search" focused={focused} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="SellTab"
+                component={SellStack}
+                options={{
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon label="List" icon="add-circle" focused={focused} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="ProfileTab"
+                component={ProfileStack}
+                options={{
+                    tabBarIcon: ({ focused }) => (
+                        <TabIcon label="You" icon="person" focused={focused} />
+                    ),
+                }}
+            />
+        </Tab.Navigator>
     );
 };
 
 const styles = StyleSheet.create({
-    tabBarWrapper: {
+    tabBar: {
         position: 'absolute',
         bottom: Platform.OS === 'ios' ? 24 : 16,
         left: 20,
         right: 20,
         height: 68,
-        borderRadius: 24,
-        backgroundColor: 'transparent',
-        // This makes sure the tab bar floats
-    },
-    tabBar: {
-        position: 'absolute',
-        height: 68,
         backgroundColor: Colors.background,
         borderRadius: 24,
         borderTopWidth: 0,
-        elevation: 12,
-        shadowColor: Colors.primary,
+        elevation: 10,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
