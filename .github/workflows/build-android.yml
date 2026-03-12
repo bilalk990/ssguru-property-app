@@ -28,13 +28,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Build Debug APK
+      - name: Build Release APK
         working-directory: android
         run: |
           chmod +x gradlew
-          echo "Running assembleDebug..."
-          # Run assembleDebug and output to build_full_log.txt, but do not exit immediately on failure
-          ./gradlew assembleDebug --no-daemon --console=plain > build_full_log.txt 2>&1 || BUILD_FAILED=true
+          echo "Running assembleRelease..."
+          # Run assembleRelease and output to build_full_log.txt, but do not exit immediately on failure
+          ./gradlew assembleRelease --no-daemon --console=plain > build_full_log.txt 2>&1 || BUILD_FAILED=true
           
           if [ "$BUILD_FAILED" = "true" ]; then
             echo "### 🚨 Android Build Failed" >> $GITHUB_STEP_SUMMARY
@@ -57,8 +57,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ss-property-guru-debug
-          path: "android/**/*.apk"
+          name: ss-property-guru-apk
+          path: "android/app/build/outputs/apk/release/*.apk"
           if-no-files-found: error
           retention-days: 14
 
