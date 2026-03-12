@@ -5,6 +5,7 @@ import {
     StyleSheet,
     ActivityIndicator,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../constants/colors';
 
 const CustomButton = ({
@@ -72,7 +73,13 @@ const CustomButton = ({
                 />
             ) : (
                 <>
-                    {icon && <Text style={styles.icon}>{icon}</Text>}
+                    {icon && (
+                        <Icon
+                            name={icon}
+                            size={size === 'large' ? 20 : 16}
+                            color={variant === 'outline' ? Colors.primary : Colors.textWhite}
+                        />
+                    )}
                     <Text style={[...getTextStyle(), textStyle]}>{title}</Text>
                 </>
             )}
