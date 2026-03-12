@@ -12,6 +12,8 @@ import {
     Alert,
     Dimensions,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
 import { sendOtp } from '../../api/authApi';
@@ -43,46 +45,50 @@ const LoginScreen = ({ navigation }) => {
         <KeyboardAvoidingView
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-            <StatusBar backgroundColor={Colors.background} barStyle="dark-content" />
+            <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled">
-                {/* Top decoration */}
-                <View style={styles.topDecoration}>
-                    <View style={styles.decorCircle1} />
-                    <View style={styles.decorCircle2} />
-                </View>
 
-                {/* Logo */}
-                <View style={styles.logoSection}>
-                    <Image
-                        source={require('../../assets/logo.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
+                {/* Modern Decorative Background */}
+                <View style={styles.topDecoration}>
+                    <LinearGradient
+                        colors={[Colors.primarySoft, Colors.background]}
+                        style={styles.decorCircle}
+                    />
+                    <LinearGradient
+                        colors={[Colors.accentSoft, Colors.background]}
+                        style={styles.decorCircleSmall}
                     />
                 </View>
 
-                {/* Welcome Text */}
-                <View style={styles.welcomeSection}>
-                    <Text style={styles.welcomeTitle}>Welcome!</Text>
-                    <Text style={styles.welcomeSubtitle}>
-                        Sign in to explore properties & list your own
-                    </Text>
+                {/* Header Content */}
+                <View style={styles.header}>
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('../../assets/logo.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
+                    </View>
+                    <Text style={styles.title}>Welcome Back</Text>
+                    <Text style={styles.subtitle}>Enter your details to manage your properties</Text>
                 </View>
 
-                {/* Phone Input */}
-                <View style={styles.inputSection}>
-                    <Text style={styles.inputLabel}>Phone Number</Text>
-                    <View style={styles.phoneInputContainer}>
-                        <View style={styles.countryCode}>
-                            <Text style={styles.flag}>🇮🇳</Text>
-                            <Text style={styles.codeText}>+91</Text>
+                {/* Input Card */}
+                <View style={styles.card}>
+                    <Text style={styles.label}>Phone Number</Text>
+                    <View style={styles.inputWrapper}>
+                        <View style={styles.prefix}>
+                            <Icon name="call" size={18} color={Colors.primary} />
+                            <Text style={styles.prefixText}>+91</Text>
                         </View>
-                        <View style={styles.divider} />
+                        <View style={styles.verticalDivider} />
                         <TextInput
-                            style={styles.phoneInput}
-                            placeholder="Enter your phone number"
+                            style={styles.input}
+                            placeholder="000 000 0000"
                             placeholderTextColor={Colors.textLight}
                             keyboardType="phone-pad"
                             maxLength={10}
@@ -92,21 +98,23 @@ const LoginScreen = ({ navigation }) => {
                     </View>
 
                     <CustomButton
-                        title="Send OTP"
+                        title="Continue"
                         onPress={handleSendOTP}
                         loading={loading}
                         size="large"
-                        style={styles.otpButton}
-                        icon="📱"
+                        style={styles.button}
+                        icon="arrow-forward"
                     />
                 </View>
 
-                {/* Terms */}
-                <Text style={styles.termsText}>
-                    By continuing, you agree to our{' '}
-                    <Text style={styles.linkText}>Terms of Service</Text> &{' '}
-                    <Text style={styles.linkText}>Privacy Policy</Text>
-                </Text>
+                {/* Footer */}
+                <View style={styles.footer}>
+                    <Text style={styles.footerText}>
+                        By proceeding, you agree to our{' '}
+                        <Text style={styles.link}>Terms</Text> and{' '}
+                        <Text style={styles.link}>Privacy Policy</Text>
+                    </Text>
+                </View>
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -120,113 +128,139 @@ const styles = StyleSheet.create({
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: 24,
-        paddingBottom: 40,
+        paddingTop: Platform.OS === 'ios' ? 40 : 20,
     },
     topDecoration: {
         position: 'absolute',
-        top: -80,
-        right: -60,
+        top: -100,
+        right: -100,
+        zIndex: -1,
     },
-    decorCircle1: {
-        width: 200,
-        height: 200,
-        borderRadius: 100,
-        backgroundColor: Colors.primarySoft,
-        opacity: 0.5,
+    decorCircle: {
+        width: 300,
+        height: 300,
+        borderRadius: 150,
+        opacity: 0.6,
     },
-    decorCircle2: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        backgroundColor: Colors.accentSoft,
-        opacity: 0.4,
+    decorCircleSmall: {
+        width: 150,
+        height: 150,
+        borderRadius: 75,
         position: 'absolute',
-        top: 100,
-        left: -40,
+        bottom: 50,
+        left: -50,
+        opacity: 0.4,
     },
-    logoSection: {
+    header: {
         alignItems: 'center',
-        marginTop: 80,
-        marginBottom: 20,
-    },
-    logo: {
-        width: width * 0.4,
-        height: width * 0.4,
-    },
-    welcomeSection: {
-        alignItems: 'center',
+        marginTop: 60,
         marginBottom: 40,
     },
-    welcomeTitle: {
-        fontSize: 30,
+    logoContainer: {
+        width: 100,
+        height: 100,
+        borderRadius: 24,
+        padding: 20,
+        backgroundColor: Colors.surface,
+        elevation: 10,
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        marginBottom: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    logo: {
+        width: '100%',
+        height: '100%',
+    },
+    title: {
+        fontSize: 32,
         fontWeight: '800',
         color: Colors.textPrimary,
+        letterSpacing: -0.5,
         marginBottom: 8,
     },
-    welcomeSubtitle: {
+    subtitle: {
         fontSize: 15,
         color: Colors.textSecondary,
         textAlign: 'center',
+        paddingHorizontal: 20,
         lineHeight: 22,
     },
-    inputSection: {
-        marginBottom: 30,
+    card: {
+        backgroundColor: Colors.surface,
+        borderRadius: 28,
+        padding: 24,
+        elevation: 4,
+        shadowColor: Colors.shadowDark,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.05,
+        shadowRadius: 24,
     },
-    inputLabel: {
-        fontSize: 14,
-        fontWeight: '600',
+    label: {
+        fontSize: 13,
+        fontWeight: '700',
         color: Colors.textPrimary,
-        marginBottom: 10,
-    },
-    phoneInputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: Colors.backgroundSecondary,
-        borderRadius: 16,
-        borderWidth: 1.5,
-        borderColor: Colors.border,
-        paddingHorizontal: 16,
-        height: 58,
-        marginBottom: 20,
-    },
-    countryCode: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    flag: {
-        fontSize: 20,
-    },
-    codeText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: Colors.textPrimary,
-    },
-    divider: {
-        width: 1.5,
-        height: 28,
-        backgroundColor: Colors.border,
-        marginHorizontal: 14,
-    },
-    phoneInput: {
-        flex: 1,
-        fontSize: 16,
-        color: Colors.textPrimary,
+        marginBottom: 12,
+        marginLeft: 4,
+        textTransform: 'uppercase',
         letterSpacing: 1,
     },
-    otpButton: {
-        marginTop: 4,
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: Colors.surfaceSecondary,
+        borderRadius: 18,
+        height: 64,
+        paddingHorizontal: 16,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.02)',
     },
-    termsText: {
+    prefix: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    prefixText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: Colors.textPrimary,
+    },
+    verticalDivider: {
+        width: 1,
+        height: 24,
+        backgroundColor: Colors.border,
+        marginHorizontal: 16,
+    },
+    input: {
+        flex: 1,
+        fontSize: 17,
+        color: Colors.textPrimary,
+        fontWeight: '600',
+        letterSpacing: 1,
+    },
+    button: {
+        marginTop: 10,
+    },
+    footer: {
+        marginTop: 'auto',
+        marginBottom: 40,
+        paddingHorizontal: 40,
+    },
+    footerText: {
         fontSize: 12,
         color: Colors.textLight,
         textAlign: 'center',
         lineHeight: 18,
     },
-    linkText: {
+    link: {
         color: Colors.primary,
-        fontWeight: '600',
+        fontWeight: '700',
     },
 });
 
 export default LoginScreen;
+
