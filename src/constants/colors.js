@@ -17,9 +17,11 @@ const Colors = {
 
   // Backgrounds
   background: '#FFFFFF',
-  backgroundSecondary: '#F5F7FA',
+  backgroundSecondary: '#F8F9FC',
   backgroundCard: '#FFFFFF',
   backgroundDark: '#0A1F0D',
+  surface: '#FFFFFF',
+  surfaceSecondary: '#F1F3F7',
 
   // Text
   textPrimary: '#1A1A2E',
@@ -40,9 +42,11 @@ const Colors = {
   info: '#3B82F6',
 
   // Shadows / Overlays
-  shadow: 'rgba(0, 0, 0, 0.08)',
-  shadowDark: 'rgba(0, 0, 0, 0.15)',
-  overlay: 'rgba(0, 0, 0, 0.5)',
+  shadow: 'rgba(0, 0, 0, 0.06)',
+  shadowMedium: 'rgba(0, 0, 0, 0.12)',
+  shadowDark: 'rgba(0, 0, 0, 0.2)',
+  overlay: 'rgba(0, 0, 0, 0.4)',
+  glassEffect: 'rgba(255, 255, 255, 0.8)',
 
   // Gradient pairs
   gradientPrimary: ['#2E7D32', '#1B5E20'],

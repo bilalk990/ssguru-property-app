@@ -12,6 +12,8 @@ import {
     Platform,
     Animated,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
 import PropertyCard from '../../components/PropertyCard';
@@ -19,7 +21,7 @@ import { featuredProperties } from '../../constants/dummyData';
 
 const { width } = Dimensions.get('window');
 
-const ActionCard = ({ title, desc, emoji, color, onPress }) => {
+const ActionCard = ({ title, desc, icon, color, onPress }) => {
     const scaleAnim = useRef(new Animated.Value(1)).current;
 
     const handlePressIn = () => {
@@ -33,7 +35,7 @@ const ActionCard = ({ title, desc, emoji, color, onPress }) => {
         <TouchableWithoutFeedback onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={onPress}>
             <Animated.View style={[styles.actionCard, { transform: [{ scale: scaleAnim }] }]}>
                 <View style={[styles.actionIconBox, { backgroundColor: color }]}>
-                    <Text style={styles.actionEmoji}>{emoji}</Text>
+                    <Icon name={icon} size={24} color={Colors.primary} />
                 </View>
                 <Text style={styles.actionTitle}>{title}</Text>
                 <Text style={styles.actionDesc}>{desc}</Text>
@@ -67,14 +69,19 @@ const HomeScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor={Colors.primary} barStyle="light-content" />
+            <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
             <Animated.ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
                 style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-                {/* Header */}
-                <View style={styles.header}>
+
+                {/* Header with Gradient */}
+                <LinearGradient
+                    colors={Colors.gradientPrimary}
+                    style={styles.header}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}>
                     <View style={styles.headerTop}>
                         <View style={styles.headerLeft}>
                             <Image
@@ -82,17 +89,18 @@ const HomeScreen = ({ navigation }) => {
                                 style={styles.headerLogo}
                                 resizeMode="contain"
                             />
+                            <View>
+                                <Text style={styles.welcomeText}>Welcome to</Text>
+                                <Text style={styles.appName}>Property Guru</Text>
+                            </View>
                         </View>
                         <TouchableOpacity
                             style={styles.profileButton}
                             onPress={() => navigation.navigate('ProfileTab')}>
-                            <Text style={styles.profileIcon}>👤</Text>
+                            <Icon name="person-circle-outline" size={28} color={Colors.textWhite} />
                         </TouchableOpacity>
                     </View>
                     <Text style={styles.headerTitle}>Find Your Dream{'\n'}Property</Text>
-                    <Text style={styles.headerSubtitle}>
-                        Discover the best properties across India
-                    </Text>
 
                     {/* Search Bar */}
                     <SearchBar
@@ -101,35 +109,35 @@ const HomeScreen = ({ navigation }) => {
                         style={styles.searchBar}
                         onFilterPress={() => navigation.navigate('BuyTab')}
                     />
-                </View>
+                </LinearGradient>
 
                 {/* Quick Actions */}
                 <View style={styles.actionsSection}>
                     <ActionCard
-                        title="Buy Property"
-                        desc="Browse listings"
-                        emoji="🏠"
+                        title="Buy"
+                        desc="Find homes"
+                        icon="home"
                         color={Colors.primarySoft}
                         onPress={() => navigation.navigate('BuyTab')}
                     />
                     <ActionCard
-                        title="Sell Property"
-                        desc="List your property"
-                        emoji="💰"
+                        title="Sell"
+                        desc="List & Earn"
+                        icon="cash"
                         color={Colors.accentSoft}
                         onPress={() => navigation.navigate('SellTab')}
                     />
                     <ActionCard
                         title="Enquiry"
-                        desc="Submit requirement"
-                        emoji="📝"
+                        desc="Expert help"
+                        icon="chatbubble-ellipses"
                         color="#EDE7F6"
                         onPress={() => navigation.navigate('Enquiry')}
                     />
                     <ActionCard
-                        title="My Listings"
-                        desc="Manage properties"
-                        emoji="📋"
+                        title="My Ops"
+                        desc="Manage all"
+                        icon="apps"
                         color="#E3F2FD"
                         onPress={() => navigation.navigate('MyProperties')}
                     />
@@ -138,9 +146,12 @@ const HomeScreen = ({ navigation }) => {
                 {/* Featured Properties */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>⭐ Featured Properties</Text>
+                        <View style={styles.sectionTitleRow}>
+                            <Icon name="star" size={20} color={Colors.warning} />
+                            <Text style={styles.sectionTitle}>Featured Properties</Text>
+                        </View>
                         <TouchableOpacity onPress={() => navigation.navigate('BuyTab')}>
-                            <Text style={styles.viewAllText}>View All →</Text>
+                            <Text style={styles.viewAllText}>View All</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -165,9 +176,12 @@ const HomeScreen = ({ navigation }) => {
                 {/* Recent Properties */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>🏘️ Recent Listings</Text>
+                        <View style={styles.sectionTitleRow}>
+                            <Icon name="time" size={20} color={Colors.primary} />
+                            <Text style={styles.sectionTitle}>Recent Listings</Text>
+                        </View>
                         <TouchableOpacity onPress={() => navigation.navigate('BuyTab')}>
-                            <Text style={styles.viewAllText}>View All →</Text>
+                            <Text style={styles.viewAllText}>View All</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -187,21 +201,23 @@ const HomeScreen = ({ navigation }) => {
                     style={styles.enquiryCTA}
                     activeOpacity={0.9}
                     onPress={() => navigation.navigate('Enquiry')}>
-                    <View style={styles.ctaContent}>
-                        <Text style={styles.ctaEmoji}>🏗️</Text>
-                        <Text style={styles.ctaTitle}>
-                            Can't find what you're looking for?
-                        </Text>
-                        <Text style={styles.ctaSubtitle}>
-                            Submit your property requirement and we'll help you find it!
-                        </Text>
-                        <View style={styles.ctaButton}>
-                            <Text style={styles.ctaButtonText}>Submit Enquiry →</Text>
+                    <LinearGradient
+                        colors={['#1B5E20', '#0A1F0D']}
+                        style={styles.ctaContent}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}>
+                        <Icon name="construct" size={40} color={Colors.accentMuted} style={styles.ctaIcon} />
+                        <View style={styles.ctaTextContainer}>
+                            <Text style={styles.ctaTitle}>Can't find it?</Text>
+                            <Text style={styles.ctaSubtitle}>
+                                Submit your requirement and we'll help you find it!
+                            </Text>
                         </View>
-                    </View>
+                        <Icon name="arrow-forward-circle" size={32} color={Colors.textWhite} />
+                    </LinearGradient>
                 </TouchableOpacity>
 
-                <View style={{ height: 20 }} />
+                <View style={{ height: 100 }} />
             </Animated.ScrollView>
         </View>
     );
@@ -217,167 +233,162 @@ const styles = StyleSheet.create({
     },
     // Header
     header: {
-        backgroundColor: Colors.primary,
         paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'ios' ? 60 : 20,
-        paddingBottom: 30,
-        borderBottomLeftRadius: 28,
-        borderBottomRightRadius: 28,
+        paddingTop: Platform.OS === 'ios' ? 60 : 50,
+        paddingBottom: 35,
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
+        elevation: 10,
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 15,
     },
     headerTop: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 25,
     },
     headerLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
+        gap: 12,
+    },
+    welcomeText: {
+        fontSize: 12,
+        color: 'rgba(255,255,255,0.7)',
+        fontWeight: '500',
+    },
+    appName: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: Colors.textWhite,
     },
     headerLogo: {
-        width: 50,
-        height: 50,
+        width: 44,
+        height: 44,
         borderRadius: 12,
         backgroundColor: Colors.textWhite,
     },
     profileButton: {
         width: 44,
         height: 44,
-        borderRadius: 14,
-        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.15)',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    profileIcon: {
-        fontSize: 22,
-    },
     headerTitle: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: '800',
         color: Colors.textWhite,
-        lineHeight: 36,
-        marginBottom: 6,
-    },
-    headerSubtitle: {
-        fontSize: 14,
-        color: 'rgba(255,255,255,0.8)',
-        marginBottom: 20,
+        lineHeight: 40,
+        marginBottom: 25,
     },
     searchBar: {
-        marginBottom: 4,
+        marginTop: 5,
     },
     // Quick Actions
     actionsSection: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         paddingHorizontal: 16,
-        paddingTop: 20,
-        gap: 10,
+        paddingTop: 24,
+        gap: 12,
         justifyContent: 'space-between',
     },
     actionCard: {
-        width: (width - 52) / 2,
+        width: (width - 44) / 2,
         backgroundColor: Colors.backgroundCard,
-        borderRadius: 16,
+        borderRadius: 20,
         padding: 16,
-        elevation: 2,
-        shadowColor: Colors.shadow,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        elevation: 3,
+        shadowColor: Colors.shadowMedium,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
     },
     actionIconBox: {
-        width: 46,
-        height: 46,
-        borderRadius: 14,
+        width: 48,
+        height: 48,
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 10,
-    },
-    actionEmoji: {
-        fontSize: 22,
+        marginBottom: 12,
     },
     actionTitle: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: '700',
         color: Colors.textPrimary,
         marginBottom: 2,
     },
     actionDesc: {
-        fontSize: 12,
+        fontSize: 11,
         color: Colors.textSecondary,
     },
     // Sections
     section: {
         paddingHorizontal: 16,
-        marginTop: 24,
+        marginTop: 30,
     },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 14,
+        marginBottom: 16,
+    },
+    sectionTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: 19,
         fontWeight: '800',
         color: Colors.textPrimary,
     },
     viewAllText: {
-        fontSize: 14,
+        fontSize: 13,
         color: Colors.primary,
-        fontWeight: '600',
+        fontWeight: '700',
     },
     featuredList: {
-        paddingLeft: 0,
         paddingRight: 16,
     },
     // Enquiry CTA
     enquiryCTA: {
         marginHorizontal: 16,
-        marginTop: 24,
-        borderRadius: 20,
+        marginTop: 30,
+        borderRadius: 24,
         overflow: 'hidden',
-        backgroundColor: Colors.primaryDark,
-        elevation: 4,
+        elevation: 6,
         shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
     },
     ctaContent: {
-        padding: 24,
+        padding: 20,
+        flexDirection: 'row',
         alignItems: 'center',
     },
-    ctaEmoji: {
-        fontSize: 40,
-        marginBottom: 12,
+    ctaIcon: {
+        marginRight: 15,
+    },
+    ctaTextContainer: {
+        flex: 1,
     },
     ctaTitle: {
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: '800',
         color: Colors.textWhite,
-        textAlign: 'center',
-        marginBottom: 8,
+        marginBottom: 4,
     },
     ctaSubtitle: {
-        fontSize: 13,
-        color: 'rgba(255,255,255,0.8)',
-        textAlign: 'center',
-        lineHeight: 20,
-        marginBottom: 16,
-    },
-    ctaButton: {
-        backgroundColor: Colors.accentLight,
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderRadius: 12,
-    },
-    ctaButtonText: {
-        color: Colors.textWhite,
-        fontWeight: '700',
-        fontSize: 14,
+        fontSize: 12,
+        color: 'rgba(255,255,255,0.7)',
+        lineHeight: 18,
     },
 });
 

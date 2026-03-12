@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Platform, Animated } from 'react-native';
+import { View, Text, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../constants/colors';
 
-// Screens
+// ... existing screens imports ...
 import HomeScreen from '../screens/home/HomeScreen';
 import BuyPropertyScreen from '../screens/property/BuyPropertyScreen';
 import PropertyDetailScreen from '../screens/property/PropertyDetailScreen';
@@ -13,44 +14,54 @@ import MyPropertiesScreen from '../screens/property/MyPropertiesScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import EnquiryFormScreen from '../screens/home/EnquiryFormScreen';
 
+const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
 
-// Create SEPARATE stack instances for each tab to avoid route name conflicts
+// Create SEPARATE stack instances
 const HomeStackNav = createNativeStackNavigator();
 const BuyStackNav = createNativeStackNavigator();
 const SellStackNav = createNativeStackNavigator();
 const ProfileStackNav = createNativeStackNavigator();
 
 // Tab icon component
-const TabIcon = ({ label, emoji, focused }) => {
-    const scaleAnim = useRef(new Animated.Value(focused ? 1.1 : 1)).current;
+const TabIcon = ({ label, icon, focused }) => {
+    const scaleAnim = useRef(new Animated.Value(focused ? 1 : 0.9)).current;
+    const opacityAnim = useRef(new Animated.Value(focused ? 1 : 0.5)).current;
 
     useEffect(() => {
-        Animated.spring(scaleAnim, {
-            toValue: focused ? 1.15 : 1,
-            friction: 4,
-            tension: 50,
-            useNativeDriver: true,
-        }).start();
-    }, [focused, scaleAnim]);
+        Animated.parallel([
+            Animated.spring(scaleAnim, {
+                toValue: focused ? 1.1 : 1,
+                friction: 5,
+                useNativeDriver: true,
+            }),
+            Animated.timing(opacityAnim, {
+                toValue: focused ? 1 : 0.6,
+                duration: 250,
+                useNativeDriver: true,
+            })
+        ]).start();
+    }, [focused, scaleAnim, opacityAnim]);
 
     return (
         <Animated.View style={[
             styles.tabItem,
-            focused && styles.tabItemActive,
-            { transform: [{ scale: scaleAnim }] }
+            { transform: [{ scale: scaleAnim }], opacity: opacityAnim }
         ]}>
-            <Text style={[styles.tabEmoji, focused && styles.tabEmojiActive]}>
-                {emoji}
-            </Text>
-            <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>
-                {label}
-            </Text>
+            <Icon
+                name={focused ? icon : `${icon}-outline`}
+                size={22}
+                color={focused ? Colors.primary : Colors.textLight}
+            />
+            {focused && (
+                <Text style={styles.tabLabelActive}>{label}</Text>
+            )}
+            {focused && <View style={styles.activeIndicator} />}
         </Animated.View>
     );
 };
 
-// Home Stack
+// ... existing stack components ...
 const HomeStack = () => (
     <HomeStackNav.Navigator screenOptions={{ headerShown: false }}>
         <HomeStackNav.Screen name="HomeMain" component={HomeScreen} />
@@ -61,7 +72,6 @@ const HomeStack = () => (
     </HomeStackNav.Navigator>
 );
 
-// Buy Stack
 const BuyStack = () => (
     <BuyStackNav.Navigator screenOptions={{ headerShown: false }}>
         <BuyStackNav.Screen name="BuyMain" component={BuyPropertyScreen} />
@@ -69,14 +79,12 @@ const BuyStack = () => (
     </BuyStackNav.Navigator>
 );
 
-// Sell Stack
 const SellStack = () => (
     <SellStackNav.Navigator screenOptions={{ headerShown: false }}>
         <SellStackNav.Screen name="AddPropertyMain" component={AddPropertyScreen} />
     </SellStackNav.Navigator>
 );
 
-// Profile Stack
 const ProfileStack = () => (
     <ProfileStackNav.Navigator screenOptions={{ headerShown: false }}>
         <ProfileStackNav.Screen name="ProfileMain" component={ProfileScreen} />
@@ -90,93 +98,102 @@ const ProfileStack = () => (
 // Bottom Tabs
 const AppNavigator = () => {
     return (
-        <Tab.Navigator
-            screenOptions={{
-                headerShown: false,
-                tabBarStyle: styles.tabBar,
-                tabBarShowLabel: false,
-            }}>
-            <Tab.Screen
-                name="HomeTab"
-                component={HomeStack}
-                options={{
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon label="Home" emoji="🏠" focused={focused} />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="BuyTab"
-                component={BuyStack}
-                options={{
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon label="Buy" emoji="🔍" focused={focused} />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="SellTab"
-                component={SellStack}
-                options={{
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon label="Sell" emoji="💰" focused={focused} />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="ProfileTab"
-                component={ProfileStack}
-                options={{
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon label="Profile" emoji="👤" focused={focused} />
-                    ),
-                }}
-            />
-        </Tab.Navigator>
+        <View style={styles.tabBarWrapper}>
+            <Tab.Navigator
+                screenOptions={{
+                    headerShown: false,
+                    tabBarStyle: styles.tabBar,
+                    tabBarShowLabel: false,
+                }}>
+                <Tab.Screen
+                    name="HomeTab"
+                    component={HomeStack}
+                    options={{
+                        tabBarIcon: ({ focused }) => (
+                            <TabIcon label="Home" icon="home" focused={focused} />
+                        ),
+                    }}
+                />
+                <Tab.Screen
+                    name="BuyTab"
+                    component={BuyStack}
+                    options={{
+                        tabBarIcon: ({ focused }) => (
+                            <TabIcon label="Explore" icon="search" focused={focused} />
+                        ),
+                    }}
+                />
+                <Tab.Screen
+                    name="SellTab"
+                    component={SellStack}
+                    options={{
+                        tabBarIcon: ({ focused }) => (
+                            <TabIcon label="List" icon="add-circle" focused={focused} />
+                        ),
+                    }}
+                />
+                <Tab.Screen
+                    name="ProfileTab"
+                    component={ProfileStack}
+                    options={{
+                        tabBarIcon: ({ focused }) => (
+                            <TabIcon label="You" icon="person" focused={focused} />
+                        ),
+                    }}
+                />
+            </Tab.Navigator>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
+    tabBarWrapper: {
+        position: 'absolute',
+        bottom: Platform.OS === 'ios' ? 24 : 16,
+        left: 20,
+        right: 20,
+        height: 68,
+        borderRadius: 24,
+        backgroundColor: 'transparent',
+        // This makes sure the tab bar floats
+    },
     tabBar: {
-        height: Platform.OS === 'ios' ? 88 : 68,
-        paddingTop: 8,
-        paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+        position: 'absolute',
+        height: 68,
         backgroundColor: Colors.background,
-        borderTopWidth: 1,
-        borderTopColor: Colors.border,
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
+        borderRadius: 24,
+        borderTopWidth: 0,
+        elevation: 12,
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     tabItem: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 4,
-        paddingHorizontal: 12,
-        borderRadius: 12,
-    },
-    tabItemActive: {
-        backgroundColor: Colors.primarySoft,
-    },
-    tabEmoji: {
-        fontSize: 22,
-        marginBottom: 2,
-        opacity: 0.5,
-    },
-    tabEmojiActive: {
-        opacity: 1,
-    },
-    tabLabel: {
-        fontSize: 11,
-        fontWeight: '500',
-        color: Colors.textLight,
+        height: '100%',
+        width: (width - 40) / 4,
+        paddingTop: 4,
     },
     tabLabelActive: {
-        color: Colors.primary,
+        fontSize: 10,
         fontWeight: '700',
+        color: Colors.primary,
+        marginTop: 2,
+    },
+    activeIndicator: {
+        position: 'absolute',
+        bottom: 8,
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: Colors.primary,
     },
 });
+
 
 export default AppNavigator;
