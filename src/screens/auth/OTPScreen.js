@@ -13,6 +13,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { verifyOtp } from '../../api/authApi';
 
 const OTP_LENGTH = 4;
@@ -99,13 +100,15 @@ const OTPScreen = ({ route, navigation }) => {
                     <TouchableOpacity
                         style={styles.backButton}
                         onPress={() => navigation.goBack()}>
-                        <Text style={styles.backIcon}>←</Text>
+                        <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                     </TouchableOpacity>
                 </View>
 
                 {/* Title */}
                 <View style={styles.titleSection}>
-                    <Text style={styles.emoji}>🔐</Text>
+                    <View style={styles.lockIconWrapper}>
+                        <Icon name="lock-closed-outline" size={40} color={Colors.primary} />
+                    </View>
                     <Text style={styles.title}>Verify Phone</Text>
                     <Text style={styles.subtitle}>
                         Enter the 4-digit code sent to{'\n'}
@@ -143,7 +146,7 @@ const OTPScreen = ({ route, navigation }) => {
                     loading={loading}
                     size="large"
                     style={styles.verifyButton}
-                    icon="✓"
+                    icon="checkmark-circle-outline"
                 />
 
                 {/* Resend */}
@@ -194,8 +197,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 40,
     },
-    emoji: {
-        fontSize: 50,
+    lockIconWrapper: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: Colors.primarySoft,
+        justifyContent: 'center',
+        alignItems: 'center',
         marginBottom: 16,
     },
     title: {

@@ -9,6 +9,7 @@ import {
     Modal,
     StatusBar,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
 import PropertyCard from '../../components/PropertyCard';
@@ -68,9 +69,12 @@ const BuyPropertyScreen = ({ navigation }) => {
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
                     <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>⚡ Filters</Text>
-                        <TouchableOpacity onPress={() => setShowFilter(false)}>
-                            <Text style={styles.closeButton}>✕</Text>
+                        <View style={styles.modalTitleRow}>
+                            <Icon name="options" size={20} color={Colors.primary} />
+                            <Text style={styles.modalTitle}> Filters</Text>
+                        </View>
+                        <TouchableOpacity onPress={() => setShowFilter(false)} style={styles.closeIconWrapper}>
+                            <Icon name="close" size={24} color={Colors.textSecondary} />
                         </TouchableOpacity>
                     </View>
 
@@ -165,30 +169,33 @@ const BuyPropertyScreen = ({ navigation }) => {
                 <View style={styles.activeFilters}>
                     {selectedCity !== 'All Cities' && (
                         <View style={styles.activeChip}>
-                            <Text style={styles.activeChipText}>📍 {selectedCity}</Text>
+                            <Icon name="location" size={12} color={Colors.primary} />
+                            <Text style={styles.activeChipText}>{selectedCity}</Text>
                             <TouchableOpacity
                                 onPress={() => setSelectedCity('All Cities')}>
-                                <Text style={styles.removeChip}>✕</Text>
+                                <Icon name="close-circle" size={14} color={Colors.primary} />
                             </TouchableOpacity>
                         </View>
                     )}
                     {selectedType !== 'All Types' && (
                         <View style={styles.activeChip}>
-                            <Text style={styles.activeChipText}>🏠 {selectedType}</Text>
+                            <Icon name="business" size={12} color={Colors.primary} />
+                            <Text style={styles.activeChipText}>{selectedType}</Text>
                             <TouchableOpacity
                                 onPress={() => setSelectedType('All Types')}>
-                                <Text style={styles.removeChip}>✕</Text>
+                                <Icon name="close-circle" size={14} color={Colors.primary} />
                             </TouchableOpacity>
                         </View>
                     )}
                     {selectedPrice.label !== 'All Prices' && (
                         <View style={styles.activeChip}>
+                            <Icon name="cash" size={12} color={Colors.primary} />
                             <Text style={styles.activeChipText}>
-                                💰 {selectedPrice.label}
+                                {selectedPrice.label}
                             </Text>
                             <TouchableOpacity
                                 onPress={() => setSelectedPrice(priceRanges[0])}>
-                                <Text style={styles.removeChip}>✕</Text>
+                                <Icon name="close-circle" size={14} color={Colors.primary} />
                             </TouchableOpacity>
                         </View>
                     )}
@@ -206,7 +213,10 @@ const BuyPropertyScreen = ({ navigation }) => {
 
             {/* Top Bar */}
             <View style={styles.topBar}>
-                <Text style={styles.screenTitle}>🏠 Properties</Text>
+                <View style={styles.screenHeaderTitle}>
+                    <Icon name="business" size={24} color={Colors.primary} />
+                    <Text style={styles.screenTitle}>Properties</Text>
+                </View>
                 <SearchBar
                     value={search}
                     onChangeText={setSearch}
@@ -230,12 +240,14 @@ const BuyPropertyScreen = ({ navigation }) => {
                         />
                     )}
                     keyExtractor={item => item.id.toString()}
-                    contentContainerStyle={styles.listContent}
+                    contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
                     showsVerticalScrollIndicator={false}
                     ListHeaderComponent={renderHeader}
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyEmoji}>🔍</Text>
+                            <View style={styles.emptyIconWrapper}>
+                                <Icon name="search-outline" size={50} color={Colors.textLight} />
+                            </View>
                             <Text style={styles.emptyTitle}>No properties found</Text>
                             <Text style={styles.emptyText}>
                                 Try adjusting your search or filters
@@ -266,11 +278,16 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: Colors.border,
     },
+    screenHeaderTitle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 14,
+    },
     screenTitle: {
         fontSize: 24,
         fontWeight: '800',
         color: Colors.textPrimary,
-        marginBottom: 14,
     },
     searchBar: {
         marginBottom: 0,
@@ -331,15 +348,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 20,
     },
+    modalTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
     modalTitle: {
         fontSize: 20,
         fontWeight: '800',
         color: Colors.textPrimary,
     },
-    closeButton: {
-        fontSize: 22,
-        color: Colors.textSecondary,
-        padding: 4,
+    closeIconWrapper: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: Colors.backgroundSecondary,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     filterLabel: {
         fontSize: 15,
@@ -411,9 +436,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 60,
     },
-    emptyEmoji: {
-        fontSize: 50,
-        marginBottom: 16,
+    emptyIconWrapper: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: Colors.surfaceSecondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
     },
     emptyTitle: {
         fontSize: 18,

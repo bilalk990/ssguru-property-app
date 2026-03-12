@@ -8,6 +8,7 @@ import {
     Dimensions,
     Animated,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../constants/colors';
 
 const { width } = Dimensions.get('window');
@@ -52,7 +53,7 @@ const PropertyCard = ({ property, onPress, style, horizontal = false }) => {
                             {property.title}
                         </Text>
                         <View style={styles.locationRow}>
-                            <Text style={styles.locationIcon}>📍</Text>
+                            <Icon name="location-outline" size={12} color={Colors.textSecondary} style={{ marginRight: 4 }} />
                             <Text style={styles.locationText} numberOfLines={1}>
                                 {property.area}, {property.city}
                             </Text>
@@ -86,7 +87,8 @@ const PropertyCard = ({ property, onPress, style, horizontal = false }) => {
                     </View>
                     {property.featured && (
                         <View style={styles.featuredBadge}>
-                            <Text style={styles.featuredText}>⭐ Featured</Text>
+                            <Icon name="star" size={10} color={Colors.textWhite} style={{ marginRight: 4 }} />
+                            <Text style={styles.featuredText}>Featured</Text>
                         </View>
                     )}
                 </View>
@@ -95,7 +97,7 @@ const PropertyCard = ({ property, onPress, style, horizontal = false }) => {
                         {property.title}
                     </Text>
                     <View style={styles.locationRow}>
-                        <Text style={styles.locationIcon}>📍</Text>
+                        <Icon name="location-outline" size={14} color={Colors.textSecondary} style={{ marginRight: 4 }} />
                         <Text style={styles.locationText} numberOfLines={1}>
                             {property.area}, {property.city}
                         </Text>
@@ -103,18 +105,18 @@ const PropertyCard = ({ property, onPress, style, horizontal = false }) => {
                     <View style={styles.infoRow}>
                         {property.bedrooms > 0 && (
                             <View style={styles.infoItem}>
-                                <Text style={styles.infoIcon}>🛏️</Text>
+                                <Icon name="bed-outline" size={14} color={Colors.textSecondary} />
                                 <Text style={styles.infoText}>{property.bedrooms}</Text>
                             </View>
                         )}
                         {property.bathrooms > 0 && (
                             <View style={styles.infoItem}>
-                                <Text style={styles.infoIcon}>🚿</Text>
+                                <Icon name="water-outline" size={14} color={Colors.textSecondary} />
                                 <Text style={styles.infoText}>{property.bathrooms}</Text>
                             </View>
                         )}
                         <View style={styles.infoItem}>
-                            <Text style={styles.infoIcon}>📐</Text>
+                            <Icon name="resize-outline" size={14} color={Colors.textSecondary} />
                             <Text style={styles.infoText}>{property.sqft}</Text>
                         </View>
                     </View>
@@ -167,15 +169,18 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 12,
         right: 12,
-        backgroundColor: Colors.accentLight,
+        backgroundColor: Colors.accent,
         paddingHorizontal: 10,
-        paddingVertical: 4,
+        paddingVertical: 5,
         borderRadius: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     featuredText: {
         color: Colors.textWhite,
-        fontSize: 11,
-        fontWeight: '700',
+        fontSize: 10,
+        fontWeight: '800',
+        textTransform: 'uppercase',
     },
     content: {
         padding: 14,

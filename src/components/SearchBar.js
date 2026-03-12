@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../constants/colors';
 
 const SearchBar = ({
@@ -12,7 +13,7 @@ const SearchBar = ({
     return (
         <View style={[styles.container, style]}>
             <View style={styles.searchContainer}>
-                <Text style={styles.searchIcon}>🔍</Text>
+                <Icon name="search-outline" size={20} color={Colors.textLight} style={{ marginRight: 8 }} />
                 <TextInput
                     style={styles.input}
                     value={value}
@@ -22,8 +23,8 @@ const SearchBar = ({
                 />
             </View>
             {onFilterPress && (
-                <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
-                    <Text style={styles.filterIcon}>⚡</Text>
+                <TouchableOpacity style={styles.filterButton} onPress={onFilterPress} activeOpacity={0.8}>
+                    <Icon name="options-outline" size={22} color={Colors.textWhite} />
                 </TouchableOpacity>
             )}
         </View>
@@ -48,8 +49,7 @@ const styles = StyleSheet.create({
         borderColor: Colors.border,
     },
     searchIcon: {
-        fontSize: 16,
-        marginRight: 10,
+        marginRight: 0,
     },
     input: {
         flex: 1,
