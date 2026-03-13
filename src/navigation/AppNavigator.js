@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -26,28 +27,32 @@ const ProfileStackNav = createNativeStackNavigator();
 // Tab icon component
 const TabIcon = ({ label, icon, focused }) => {
     const scaleAnim = useRef(new Animated.Value(focused ? 1 : 0.9)).current;
-    const opacityAnim = useRef(new Animated.Value(focused ? 1 : 0.5)).current;
+    const bgOpacityAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
 
     useEffect(() => {
         Animated.parallel([
             Animated.spring(scaleAnim, {
-                toValue: focused ? 1.1 : 1,
-                friction: 5,
+                toValue: focused ? 1 : 0.95,
+                friction: 8,
                 useNativeDriver: true,
             }),
-            Animated.timing(opacityAnim, {
-                toValue: focused ? 1 : 0.6,
+            Animated.timing(bgOpacityAnim, {
+                toValue: focused ? 1 : 0,
                 duration: 250,
                 useNativeDriver: true,
             })
         ]).start();
-    }, [focused, scaleAnim, opacityAnim]);
+    }, [focused, scaleAnim, bgOpacityAnim]);
 
     return (
         <Animated.View style={[
-            styles.tabItem,
-            { transform: [{ scale: scaleAnim }], opacity: opacityAnim }
+            styles.tabItemContainer,
+            { transform: [{ scale: scaleAnim }] }
         ]}>
+            <Animated.View style={[
+                styles.activePill,
+                { opacity: bgOpacityAnim }
+            ]} />
             <Icon
                 name={focused ? icon : `${icon}-outline`}
                 size={22}
@@ -56,7 +61,6 @@ const TabIcon = ({ label, icon, focused }) => {
             {focused && (
                 <Text style={styles.tabLabelActive}>{label}</Text>
             )}
-            {focused && <View style={styles.activeIndicator} />}
         </Animated.View>
     );
 };
@@ -99,6 +103,8 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 // Bottom Tabs
 const AppNavigator = () => {
+    const insets = useSafeAreaInsets();
+
     return (
         <Tab.Navigator
             screenOptions={({ route }) => {
@@ -116,7 +122,10 @@ const AppNavigator = () => {
                     headerShown: false,
                     tabBarShowLabel: false,
                     tabBarHideOnKeyboard: true,
-                    tabBarStyle: hideTabs ? { display: 'none' } : styles.tabBar,
+                    tabBarStyle: [
+                        hideTabs ? { display: 'none' } : styles.tabBar,
+                        { height: 65 + (Platform.OS === 'ios' ? insets.bottom : 10) }
+                    ],
                 };
             }}>
             <Tab.Screen
@@ -162,42 +171,39 @@ const AppNavigator = () => {
 const styles = StyleSheet.create({
     tabBar: {
         position: 'absolute',
-        bottom: Platform.OS === 'ios' ? 24 : 16,
-        left: 20,
-        right: 20,
-        height: 68,
-        backgroundColor: Colors.background,
-        borderRadius: 24,
-        borderTopWidth: 0,
-        elevation: 10,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: Colors.surface,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.05)',
+        elevation: 20,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: -10 },
         shadowOpacity: 0.1,
-        shadowRadius: 10,
+        shadowRadius: 20,
+        flexDirection: 'row',
+        paddingHorizontal: 12,
+    },
+    tabItemContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        height: 48,
+        paddingHorizontal: 16,
+        borderRadius: 24,
+        alignSelf: 'center',
     },
-    tabItem: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        width: (width - 40) / 4,
-        paddingTop: 4,
+    activePill: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(46, 125, 50, 0.08)',
+        borderRadius: 24,
     },
     tabLabelActive: {
-        fontSize: 10,
+        fontSize: 13,
         fontWeight: '700',
         color: Colors.primary,
-        marginTop: 2,
-    },
-    activeIndicator: {
-        position: 'absolute',
-        bottom: 8,
-        width: 4,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: Colors.primary,
+        marginLeft: 10,
     },
 });
 

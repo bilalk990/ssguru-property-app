@@ -90,7 +90,7 @@ const ProfileScreen = ({ navigation }) => {
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 120 }}>
+                contentContainerStyle={{ paddingBottom: 100 }}>
                 {/* Profile Header */}
                 <View style={styles.header}>
                     <View style={styles.profileSection}>
