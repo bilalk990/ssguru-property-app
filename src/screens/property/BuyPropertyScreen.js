@@ -240,7 +240,7 @@ const BuyPropertyScreen = ({ navigation }) => {
                         />
                     )}
                     keyExtractor={item => item.id.toString()}
-                    contentContainerStyle={[styles.listContent, { paddingBottom: 100 }]}
+                    contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
                     showsVerticalScrollIndicator={false}
                     ListHeaderComponent={renderHeader}
                     ListEmptyComponent={

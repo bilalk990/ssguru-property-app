@@ -49,18 +49,17 @@ const TabIcon = ({ label, icon, focused }) => {
             styles.tabItemContainer,
             { transform: [{ scale: scaleAnim }] }
         ]}>
-            <Animated.View style={[
-                styles.activePill,
-                { opacity: bgOpacityAnim }
-            ]} />
             <Icon
                 name={focused ? icon : `${icon}-outline`}
-                size={22}
+                size={24}
                 color={focused ? Colors.primary : Colors.textLight}
             />
-            {focused && (
-                <Text style={styles.tabLabelActive}>{label}</Text>
-            )}
+            <Text style={[
+                styles.tabLabel,
+                focused && styles.tabLabelActive
+            ]}>
+                {label}
+            </Text>
         </Animated.View>
     );
 };
@@ -124,7 +123,7 @@ const AppNavigator = () => {
                     tabBarHideOnKeyboard: true,
                     tabBarStyle: [
                         hideTabs ? { display: 'none' } : styles.tabBar,
-                        { height: 65 + (Platform.OS === 'ios' ? insets.bottom : 10) }
+                        { height: Platform.OS === 'ios' ? 88 : 65 }
                     ],
                 };
             }}>
@@ -170,40 +169,31 @@ const AppNavigator = () => {
 
 const styles = StyleSheet.create({
     tabBar: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: Colors.surface,
+        backgroundColor: Colors.background,
         borderTopWidth: 1,
-        borderTopColor: 'rgba(0,0,0,0.05)',
-        elevation: 20,
+        borderTopColor: Colors.border,
+        elevation: 8,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 20,
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
         flexDirection: 'row',
-        paddingHorizontal: 12,
     },
     tabItemContainer: {
-        flexDirection: 'row',
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        height: 48,
-        paddingHorizontal: 16,
-        borderRadius: 24,
-        alignSelf: 'center',
+        paddingTop: 8,
     },
-    activePill: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(46, 125, 50, 0.08)',
-        borderRadius: 24,
+    tabLabel: {
+        fontSize: 10,
+        fontWeight: '500',
+        color: Colors.textLight,
+        marginTop: 4,
     },
     tabLabelActive: {
-        fontSize: 13,
         fontWeight: '700',
         color: Colors.primary,
-        marginLeft: 10,
     },
 });
 

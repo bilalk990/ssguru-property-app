@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     },
     // Image Section
     imageSection: {
-        height: height * 0.45,
+        height: height * 0.55,
         backgroundColor: Colors.border,
     },
     propertyImage: {
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     },
     backButton: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? 50 : 30,
+        top: Platform.OS === 'ios' ? 60 : 50,
         left: 20,
         width: 45,
         height: 45,
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     },
     imageCounter: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? 50 : 30,
+        top: Platform.OS === 'ios' ? 60 : 50,
         right: 20,
         backgroundColor: 'rgba(0,0,0,0.5)',
         paddingHorizontal: 15,
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     },
     // Content
     content: {
-        marginTop: -30,
+        marginTop: -20,
         borderTopLeftRadius: 35,
         borderTopRightRadius: 35,
         backgroundColor: Colors.background,

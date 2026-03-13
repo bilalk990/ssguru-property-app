@@ -73,7 +73,7 @@ const HomeScreen = ({ navigation }) => {
 
             <Animated.ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 100 }}
+                contentContainerStyle={{ paddingBottom: 20 }}
                 style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
 
                 {/* Header with Gradient */}
