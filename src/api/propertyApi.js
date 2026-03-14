@@ -1,104 +1,57 @@
 import apiClient from './apiClient';
-import { featuredProperties } from '../constants/dummyData';
 
-// Stub functions - replace with real API calls when backend is ready
+/**
+ * Property API Service
+ * Maps to Postman 'Properties' folder
+ */
 
+// GET /api/v1/properties
 export const getProperties = async (filters = {}) => {
-    // TODO: Replace with real API
-    // return apiClient.get('/properties', { params: filters });
+    return apiClient.get('/properties', { params: filters });
+};
 
-    return new Promise(resolve => {
-        setTimeout(() => {
-            let results = [...featuredProperties];
+// GET /api/v1/properties/:id
+export const getPropertyById = async (id) => {
+    return apiClient.get(`/properties/${id}`);
+};
 
-            if (filters.city && filters.city !== 'All Cities') {
-                results = results.filter(p => p.city === filters.city);
-            }
-            if (filters.type && filters.type !== 'All Types') {
-                results = results.filter(p => p.type === filters.type);
-            }
-            if (filters.search) {
-                const q = filters.search.toLowerCase();
-                results = results.filter(
-                    p =>
-                        p.title.toLowerCase().includes(q) ||
-                        p.city.toLowerCase().includes(q) ||
-                        p.area.toLowerCase().includes(q),
-                );
-            }
-            if (filters.minPrice) {
-                results = results.filter(p => p.priceNum >= filters.minPrice);
-            }
-            if (filters.maxPrice && filters.maxPrice !== Infinity) {
-                results = results.filter(p => p.priceNum <= filters.maxPrice);
-            }
+// GET /api/v1/properties/franchise/:franchiseId
+export const getPropertiesByFranchise = async (franchiseId) => {
+    return apiClient.get(`/properties/franchise/${franchiseId}`);
+};
 
-            resolve({ data: { success: true, properties: results } });
-        }, 800);
+// GET /api/v1/properties/agent/:agentId
+export const getPropertiesByAgent = async (agentId) => {
+    return apiClient.get(`/properties/agent/${agentId}`);
+};
+
+// POST /api/v1/properties
+export const addProperty = async (formData) => {
+    return apiClient.post('/properties', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
     });
 };
 
-export const getPropertyById = async id => {
-    // TODO: Replace with real API
-    // return apiClient.get(`/properties/${id}`);
-
-    return new Promise(resolve => {
-        setTimeout(() => {
-            const property = featuredProperties.find(p => p.id === id);
-            resolve({ data: { success: true, property } });
-        }, 500);
+// PUT /api/v1/properties/:id
+export const updateProperty = async (id, formData) => {
+    return apiClient.put(`/properties/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
     });
 };
 
-export const addProperty = async formData => {
-    // TODO: Replace with real API (multipart/form-data)
-    // return apiClient.post('/properties', formData, {
-    //   headers: { 'Content-Type': 'multipart/form-data' },
-    // });
-
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({ data: { success: true, message: 'Property listed successfully' } });
-        }, 1500);
-    });
+// DELETE /api/v1/properties/:id
+export const deleteProperty = async (id) => {
+    return apiClient.delete(`/properties/${id}`);
 };
 
-export const getMyProperties = async () => {
-    // TODO: Replace with real API
-    // return apiClient.get('/my-properties');
-
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({
-                data: {
-                    success: true,
-                    properties: featuredProperties.slice(0, 3),
-                },
-            });
-        }, 800);
-    });
+// My Properties (Frontend logic filter or backend endpoint if exists)
+export const getMyProperties = async (userId) => {
+    // Assuming we fetch filtered properties or there's a specific 'me' endpoint
+    return apiClient.get('/properties', { params: { userId } });
 };
 
-export const deleteProperty = async id => {
-    // TODO: Replace with real API
-    // return apiClient.delete(`/properties/${id}`);
-
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({ data: { success: true, message: 'Property deleted' } });
-        }, 800);
-    });
-};
-
-export const submitEnquiry = async enquiryData => {
-    // TODO: Replace with real API
-    // return apiClient.post('/enquiry', enquiryData);
-
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({
-                data: { success: true, message: 'Enquiry submitted successfully' },
-            });
-        }, 1000);
-    });
+// Enquiry (Assuming mapping to a specific endpoint or generic contact)
+export const submitEnquiry = async (enquiryData) => {
+    // Postman doesn't have a specific 'Enquiry' folder, likely handles via messages or generic POST
+    return apiClient.post('/enquiry', enquiryData);
 };

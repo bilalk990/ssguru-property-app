@@ -172,9 +172,12 @@ export const featuredProperties = [
             'https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=800',
             'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800',
         ],
-        agent: 'Arjun Mehta',
-        agentPhone: '+91 98765 43217',
-        postedDate: '12 hours ago',
+        agent: 'Zeeshan Khan',
+        agentAvatar: 'https://i.pravatar.cc/150?u=1',
+        agentPhone: '+91 7400763089',
+        postedDate: '2 hours ago',
+        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', // Placeholder video
+        features: ['Private Terrace', 'Jacuzzi', 'Italian Marble', 'Smart Home'],
         featured: true,
     },
 ];

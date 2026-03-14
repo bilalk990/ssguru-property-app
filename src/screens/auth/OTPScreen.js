@@ -9,18 +9,21 @@ import {
     Platform,
     Alert,
     TouchableOpacity,
+    ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { verifyOtp } from '../../api/authApi';
+import { verifyOtp, resetPassword, forgotPassword } from '../../api/authApi';
 
 const OTP_LENGTH = 4;
 
 const OTPScreen = ({ route, navigation }) => {
-    const { phone } = route.params;
+    const { email, mode } = route.params || {}; // mode: 'verify' or 'forgot'
     const [otp, setOtp] = useState(['', '', '', '']);
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [timer, setTimer] = useState(30);
     const inputRefs = useRef([]);
@@ -37,7 +40,6 @@ const OTPScreen = ({ route, navigation }) => {
         newOtp[index] = text;
         setOtp(newOtp);
 
-        // Auto-focus next input
         if (text && index < OTP_LENGTH - 1) {
             inputRefs.current[index + 1]?.focus();
         }
@@ -58,34 +60,40 @@ const OTPScreen = ({ route, navigation }) => {
 
         setLoading(true);
         try {
-            const response = await verifyOtp(phone, otpString);
-            const { token, user } = response.data;
-
-            // Store token and user data
-            await AsyncStorage.setItem('authToken', token);
-            await AsyncStorage.setItem('userData', JSON.stringify(user));
-            await AsyncStorage.setItem('isLoggedIn', 'true');
-
-            // Navigate to main app
-            navigation.reset({
-                index: 0,
-                routes: [{ name: 'MainApp' }],
-            });
+            if (mode === 'forgot') {
+                if (!password || password !== confirmPassword) {
+                    Alert.alert('Password Error', 'Passwords must match and not be empty.');
+                    setLoading(false);
+                    return;
+                }
+                await resetPassword({ email, otp: otpString, password, confirmPassword });
+                Alert.alert('Success', 'Password reset successfully. Please login.', [
+                    { text: 'Login', onPress: () => navigation.navigate('Login') }
+                ]);
+            } else {
+                await verifyOtp(email, otpString);
+                Alert.alert('Verified', 'Your email has been verified. Please login.', [
+                    { text: 'Login', onPress: () => navigation.navigate('Login') }
+                ]);
+            }
         } catch (error) {
             Alert.alert(
                 'Verification Failed',
-                error?.response?.data?.message || 'Invalid OTP. Please try again.',
+                error?.response?.data?.message || 'Invalid OTP or session expired.',
             );
-            setOtp(['', '', '', '']);
-            inputRefs.current[0]?.focus();
         } finally {
             setLoading(false);
         }
     };
 
-    const handleResend = () => {
-        setTimer(30);
-        Alert.alert('OTP Sent', 'A new OTP has been sent to your phone.');
+    const handleResend = async () => {
+        try {
+            await forgotPassword(email);
+            setTimer(30);
+            Alert.alert('OTP Sent', 'A new verification code has been sent to your email.');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to resend OTP.');
+        }
     };
 
     return (
@@ -94,8 +102,7 @@ const OTPScreen = ({ route, navigation }) => {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <StatusBar backgroundColor={Colors.background} barStyle="dark-content" />
 
-            <View style={styles.content}>
-                {/* Header */}
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <View style={styles.header}>
                     <TouchableOpacity
                         style={styles.backButton}
@@ -104,19 +111,23 @@ const OTPScreen = ({ route, navigation }) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Title */}
                 <View style={styles.titleSection}>
                     <View style={styles.lockIconWrapper}>
-                        <Icon name="lock-closed-outline" size={40} color={Colors.primary} />
+                        <Icon
+                            name={mode === 'forgot' ? "key-outline" : "mail-open-outline"}
+                            size={40}
+                            color={Colors.primary}
+                        />
                     </View>
-                    <Text style={styles.title}>Verify Phone</Text>
+                    <Text style={styles.title}>
+                        {mode === 'forgot' ? 'Reset Password' : 'Verify Email'}
+                    </Text>
                     <Text style={styles.subtitle}>
-                        Enter the 4-digit code sent to{'\n'}
-                        <Text style={styles.phoneText}>+91 {phone}</Text>
+                        Enter the code sent to{'\n'}
+                        <Text style={styles.phoneText}>{email}</Text>
                     </Text>
                 </View>
 
-                {/* OTP Inputs */}
                 <View style={styles.otpContainer}>
                     {otp.map((digit, index) => (
                         <TextInput
@@ -134,14 +145,31 @@ const OTPScreen = ({ route, navigation }) => {
                     ))}
                 </View>
 
-                {/* Hint for dummy */}
-                <View style={styles.hintBox}>
-                    <Text style={styles.hintText}>💡 Use OTP: 1234 for testing</Text>
-                </View>
+                {mode === 'forgot' && (
+                    <View style={styles.forgotFields}>
+                        <Text style={styles.label}>New Password</Text>
+                        <TextInput
+                            style={styles.fieldInput}
+                            placeholder="••••••••"
+                            placeholderTextColor={Colors.textLight}
+                            secureTextEntry
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+                        <Text style={[styles.label, { marginTop: 15 }]}>Confirm Password</Text>
+                        <TextInput
+                            style={styles.fieldInput}
+                            placeholder="••••••••"
+                            placeholderTextColor={Colors.textLight}
+                            secureTextEntry
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                        />
+                    </View>
+                )}
 
-                {/* Verify Button */}
                 <CustomButton
-                    title="Verify & Continue"
+                    title={mode === 'forgot' ? "Reset & Continue" : "Verify & Login"}
                     onPress={handleVerify}
                     loading={loading}
                     size="large"
@@ -149,19 +177,18 @@ const OTPScreen = ({ route, navigation }) => {
                     icon="checkmark-circle-outline"
                 />
 
-                {/* Resend */}
                 <View style={styles.resendSection}>
                     {timer > 0 ? (
                         <Text style={styles.timerText}>
-                            Resend OTP in <Text style={styles.timerBold}>{timer}s</Text>
+                            Resend code in <Text style={styles.timerBold}>{timer}s</Text>
                         </Text>
                     ) : (
                         <TouchableOpacity onPress={handleResend}>
-                            <Text style={styles.resendText}>Resend OTP</Text>
+                            <Text style={styles.resendText}>Resend Code</Text>
                         </TouchableOpacity>
                     )}
                 </View>
-            </View>
+            </ScrollView>
         </KeyboardAvoidingView>
     );
 };
@@ -171,9 +198,10 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: Colors.background,
     },
-    content: {
-        flex: 1,
+    scrollContent: {
+        flexGrow: 1,
         paddingHorizontal: 24,
+        paddingBottom: 40,
     },
     header: {
         paddingTop: Platform.OS === 'ios' ? 60 : 20,
@@ -183,15 +211,11 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 14,
-        backgroundColor: Colors.backgroundSecondary,
+        backgroundColor: Colors.surfaceSecondary,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
         borderColor: Colors.border,
-    },
-    backIcon: {
-        fontSize: 22,
-        color: Colors.textPrimary,
     },
     titleSection: {
         alignItems: 'center',
@@ -226,7 +250,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         gap: 14,
-        marginBottom: 20,
+        marginBottom: 30,
     },
     otpInput: {
         width: 60,
@@ -234,7 +258,7 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         borderWidth: 2,
         borderColor: Colors.border,
-        backgroundColor: Colors.backgroundSecondary,
+        backgroundColor: Colors.surfaceSecondary,
         textAlign: 'center',
         fontSize: 24,
         fontWeight: '700',
@@ -244,18 +268,27 @@ const styles = StyleSheet.create({
         borderColor: Colors.primary,
         backgroundColor: Colors.primarySoft,
     },
-    hintBox: {
-        alignSelf: 'center',
-        backgroundColor: Colors.accentSoft,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 10,
+    forgotFields: {
         marginBottom: 30,
     },
-    hintText: {
+    label: {
         fontSize: 13,
-        color: Colors.accent,
+        fontWeight: '700',
+        color: Colors.textPrimary,
+        marginBottom: 8,
+        marginLeft: 4,
+        textTransform: 'uppercase',
+    },
+    fieldInput: {
+        backgroundColor: Colors.surfaceSecondary,
+        borderRadius: 15,
+        height: 55,
+        paddingHorizontal: 16,
+        fontSize: 16,
+        color: Colors.textPrimary,
         fontWeight: '600',
+        borderWidth: 1,
+        borderColor: Colors.border,
     },
     verifyButton: {
         marginBottom: 24,

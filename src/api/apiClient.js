@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Base URL placeholder - replace with actual API URL when provided
-const BASE_URL = 'https://api.sspropertyguru.com/api';
+const BASE_URL = 'https://api.sspropertyguru.com/api/v1';
 
 const apiClient = axios.create({
     baseURL: BASE_URL,

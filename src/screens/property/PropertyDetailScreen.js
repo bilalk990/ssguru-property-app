@@ -13,22 +13,51 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Video from 'react-native-video';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
+import { createEnquiry } from '../../api/enquiryApi';
 
 const { width, height } = Dimensions.get('window');
 
 const PropertyDetailScreen = ({ route, navigation }) => {
-    const { property } = route.params;
+    const { property: initialProperty } = route.params || {};
+    const [property, setProperty] = useState(initialProperty || {});
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [loading, setLoading] = useState(false);
+
+    if (!property || Object.keys(property).length === 0) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ color: Colors.textSecondary }}>Property not found</Text>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Text style={{ color: Colors.primary, marginTop: 10 }}>Go Back</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
+    const images = property.images || [];
 
     const handleCall = () => {
         Linking.openURL(`tel:${property.agentPhone || '1234567890'}`);
     };
 
-    const handleWhatsApp = () => {
+    const handleWhatsApp = async () => {
         const message = `Hi, I'm interested in the property: ${property.title} (${property.price})`;
         const phone = property.agentPhone ? property.agentPhone.replace(/\s/g, '') : '1234567890';
+
+        // Log enquiry to backend first
+        try {
+            await createEnquiry({
+                propertyId: property.id || property._id,
+                message: `WhatsApp interest: ${property.title}`,
+                name: 'App User', // Should ideally be current user name
+            });
+        } catch (e) {
+            console.warn('Silent enquiry log failed', e);
+        }
+
         Linking.openURL(`whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`);
     };
 
@@ -47,10 +76,10 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                             const index = Math.round(e.nativeEvent.contentOffset.x / width);
                             setActiveImageIndex(index);
                         }}>
-                        {property.images.map((img, index) => (
+                        {images.map((img, index) => (
                             <Image
                                 key={index}
-                                source={{ uri: img }}
+                                source={{ uri: typeof img === 'string' ? img : img.url }}
                                 style={styles.propertyImage}
                                 resizeMode="cover"
                             />
@@ -74,7 +103,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                     <View style={styles.imageCounter}>
                         <Icon name="images-outline" size={14} color={Colors.textWhite} />
                         <Text style={styles.imageCounterText}>
-                            {activeImageIndex + 1}/{property.images.length}
+                            {activeImageIndex + 1}/{images.length}
                         </Text>
                     </View>
 
@@ -129,6 +158,35 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Overview</Text>
                         <Text style={styles.descriptionText}>{property.description}</Text>
+                    </View>
+
+                    {/* Property Video */}
+                    {property.videoUrl && (
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Property Tour Video</Text>
+                            <View style={styles.videoWrapper}>
+                                <Video
+                                    source={{ uri: property.videoUrl }}
+                                    style={styles.videoPlayer}
+                                    controls={true}
+                                    resizeMode="cover"
+                                    paused={true}
+                                />
+                            </View>
+                        </View>
+                    )}
+
+                    {/* Features List */}
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Key Features</Text>
+                        <View style={styles.featuresGrid}>
+                            {(property.features || ['Elite Design', 'Premium Location', 'Vastu Compliant']).map((feature, idx) => (
+                                <View key={idx} style={styles.featureItem}>
+                                    <Icon name="checkmark-circle" size={18} color={Colors.primary} />
+                                    <Text style={styles.featureText}>{feature}</Text>
+                                </View>
+                            ))}
+                        </View>
                     </View>
 
                     {/* Luxury Agent Card */}
@@ -413,6 +471,40 @@ const styles = StyleSheet.create({
     dateText: {
         fontSize: 13,
         color: Colors.textLight,
+        fontWeight: '500',
+    },
+    // Video
+    videoWrapper: {
+        height: 220,
+        backgroundColor: '#000',
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginTop: 10,
+    },
+    videoPlayer: {
+        width: '100%',
+        height: '100%',
+    },
+    // Features
+    featuresGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+        marginTop: 5,
+    },
+    featureItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: Colors.surfaceSecondary,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 12,
+        width: '48%', // Two column
+    },
+    featureText: {
+        fontSize: 13,
+        color: Colors.textPrimary,
         fontWeight: '500',
     },
     // Footer

@@ -29,16 +29,18 @@ const BuyPropertyScreen = ({ navigation }) => {
     const fetchProperties = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await getProperties({
+            const params = {
                 search,
-                city: selectedCity,
-                type: selectedType,
-                minPrice: selectedPrice.min,
-                maxPrice: selectedPrice.max,
-            });
-            setProperties(response.data.properties);
+                city: selectedCity === 'All Cities' ? undefined : selectedCity,
+                type: selectedType === 'All Types' ? undefined : selectedType,
+                minPrice: selectedPrice.min || undefined,
+                maxPrice: (selectedPrice.max && selectedPrice.max !== Infinity) ? selectedPrice.max : undefined,
+            };
+            const response = await getProperties(params);
+            const listings = response.data?.properties || response.data || [];
+            setProperties(listings);
         } catch (error) {
-            console.log('Error fetching properties:', error);
+            console.error('Error fetching properties:', error);
         } finally {
             setLoading(false);
         }

@@ -1,42 +1,43 @@
 import apiClient from './apiClient';
 
-// Stub functions - replace with real API calls when backend is ready
+/**
+ * Authentication API Service
+ * Maps to Postman 'Auth' folder
+ */
 
-export const sendOtp = async phoneNumber => {
-    // TODO: Replace with real API
-    // return apiClient.post('/login', { phone: phoneNumber });
-
-    // Simulated response
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve({ data: { success: true, message: 'OTP sent successfully' } });
-        }, 1500);
+// POST /api/v1/auth/signup
+export const signup = async (formData) => {
+    return apiClient.post('/auth/signup', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
     });
 };
 
-export const verifyOtp = async (phoneNumber, otp) => {
-    // TODO: Replace with real API
-    // return apiClient.post('/verify-otp', { phone: phoneNumber, otp });
+// POST /api/v1/auth/signin
+export const signin = async (email, password) => {
+    return apiClient.post('/auth/signin', { email, password });
+};
 
-    // Simulated response
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            if (otp === '1234') {
-                resolve({
-                    data: {
-                        success: true,
-                        token: 'dummy_jwt_token_xxx',
-                        user: {
-                            id: 1,
-                            name: 'User',
-                            phone: phoneNumber,
-                            email: '',
-                        },
-                    },
-                });
-            } else {
-                reject({ response: { data: { message: 'Invalid OTP' } } });
-            }
-        }, 1500);
-    });
+// GET /api/v1/auth/me/:id
+export const getMe = async (id) => {
+    return apiClient.get(`/auth/me/${id}`);
+};
+
+// POST /api/v1/auth/forgot-password
+export const forgotPassword = async (email) => {
+    return apiClient.post('/auth/forgot-password', { email });
+};
+
+// POST /api/v1/auth/verify-otp
+export const verifyOtp = async (email, otp) => {
+    return apiClient.post('/auth/verify-otp', { email, otp });
+};
+
+// POST /api/v1/auth/reset-password
+export const resetPassword = async (data) => {
+    return apiClient.post('/auth/reset-password', data);
+};
+
+// Legacy support if needed for old phone logic (Mapped to forgot-password if it's OTP based)
+export const sendOtp = async (email) => {
+    return forgotPassword(email);
 };

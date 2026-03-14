@@ -15,38 +15,60 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { launchImageLibrary } from 'react-native-image-picker';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
-import { signin } from '../../api/authApi';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { signup } from '../../api/authApi';
 
 const { width } = Dimensions.get('window');
 
-const LoginScreen = ({ navigation }) => {
+const SignupScreen = ({ navigation }) => {
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('User'); // 'User' or 'Agent'
+    const [role, setRole] = useState('User');
+    const [avatar, setAvatar] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleLogin = async () => {
-        if (!email || !password) {
-            Alert.alert('Fields Required', 'Please enter both email and password.');
+    const handlePickImage = () => {
+        launchImageLibrary({ mediaType: 'photo', quality: 0.7 }, (response) => {
+            if (response.assets && response.assets.length > 0) {
+                setAvatar(response.assets[0]);
+            }
+        });
+    };
+
+    const handleSignup = async () => {
+        if (!name || !email || !password) {
+            Alert.alert('Fields Required', 'Please fill in all mandatory fields.');
             return;
         }
 
         setLoading(true);
         try {
-            const response = await signin(email, password);
-            if (response.data && response.data.token) {
-                await AsyncStorage.setItem('authToken', response.data.token);
-                await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-                navigation.replace('MainApp');
-            } else {
-                Alert.alert('Login Failed', 'Invalid credentials or server error.');
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('password', password);
+            formData.append('role', role); // This might needs mapping to backend roles
+
+            if (avatar) {
+                formData.append('avatar', {
+                    uri: Platform.OS === 'android' ? avatar.uri : avatar.uri.replace('file://', ''),
+                    type: avatar.type,
+                    name: avatar.fileName || `avatar_${Date.now()}.jpg`,
+                });
+            }
+
+            const response = await signup(formData);
+            if (response.data) {
+                Alert.alert('Success', 'Account created! Please check your email for OTP verification.', [
+                    { text: 'OK', onPress: () => navigation.navigate('OTP', { email, mode: 'verify' }) }
+                ]);
             }
         } catch (error) {
-            const message = error.response?.data?.message || 'Failed to sign in. Please check your credentials.';
+            const message = error.response?.data?.message || 'Failed to create account. Please try again.';
             Alert.alert('Error', message);
         } finally {
             setLoading(false);
@@ -64,29 +86,31 @@ const LoginScreen = ({ navigation }) => {
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled">
 
-                {/* Modern Decorative Background */}
                 <View style={styles.topDecoration}>
                     <LinearGradient
                         colors={[Colors.primarySoft, Colors.background]}
                         style={styles.decorCircle}
                     />
-                    <LinearGradient
-                        colors={[Colors.accentSoft, Colors.background]}
-                        style={styles.decorCircleSmall}
-                    />
                 </View>
 
-                {/* Header Content */}
+                {/* Header */}
                 <View style={styles.header}>
-                    <View style={styles.logoContainer}>
-                        <Image
-                            source={require('../../assets/logo.png')}
-                            style={styles.logo}
-                            resizeMode="contain"
-                        />
-                    </View>
-                    <Text style={styles.title}>Welcome Back</Text>
-                    <Text style={styles.subtitle}>Enter your credentials to manage your properties</Text>
+                    <Text style={styles.title}>Join SS Guru</Text>
+                    <Text style={styles.subtitle}>Start your elite property journey today</Text>
+                </View>
+
+                {/* Avatar Picker */}
+                <View style={styles.avatarContainer}>
+                    <TouchableOpacity onPress={handlePickImage} style={styles.avatarWrapper}>
+                        {avatar ? (
+                            <Image source={{ uri: avatar.uri }} style={styles.avatarImage} />
+                        ) : (
+                            <View style={styles.avatarPlaceholder}>
+                                <Icon name="camera-outline" size={32} color={Colors.primary} />
+                                <Text style={styles.avatarText}>Add Photo</Text>
+                            </View>
+                        )}
+                    </TouchableOpacity>
                 </View>
 
                 {/* Role Selection */}
@@ -95,20 +119,30 @@ const LoginScreen = ({ navigation }) => {
                         style={[styles.roleChip, role === 'User' && styles.roleChipActive]}
                         onPress={() => setRole('User')}
                     >
-                        <Icon name="person-outline" size={18} color={role === 'User' ? Colors.textWhite : Colors.textSecondary} />
-                        <Text style={[styles.roleText, role === 'User' && styles.roleTextActive]}>User</Text>
+                        <Text style={[styles.roleText, role === 'User' && styles.roleTextActive]}>I'm a Buyer</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.roleChip, role === 'Agent' && styles.roleChipActive]}
                         onPress={() => setRole('Agent')}
                     >
-                        <Icon name="business-outline" size={18} color={role === 'Agent' ? Colors.textWhite : Colors.textSecondary} />
-                        <Text style={[styles.roleText, role === 'Agent' && styles.roleTextActive]}>Agent</Text>
+                        <Text style={[styles.roleText, role === 'Agent' && styles.roleTextActive]}>I'm an Agent</Text>
                     </TouchableOpacity>
                 </View>
 
-                {/* Input Card */}
+                {/* Form Card */}
                 <View style={styles.card}>
+                    <Text style={styles.label}>Full Name</Text>
+                    <View style={styles.inputWrapper}>
+                        <Icon name="person-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="John Doe"
+                            placeholderTextColor={Colors.textLight}
+                            value={name}
+                            onChangeText={setName}
+                        />
+                    </View>
+
                     <Text style={styles.label}>Email Address</Text>
                     <View style={styles.inputWrapper}>
                         <Icon name="mail-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
@@ -139,26 +173,18 @@ const LoginScreen = ({ navigation }) => {
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('OTP', { email, mode: 'forgot' })}
-                        style={styles.forgotBtn}
-                    >
-                        <Text style={styles.forgotText}>Forgot Password?</Text>
-                    </TouchableOpacity>
-
                     <CustomButton
-                        title="Sign In"
-                        onPress={handleLogin}
+                        title="Create Account"
+                        onPress={handleSignup}
                         loading={loading}
                         size="large"
                         style={styles.button}
-                        icon="log-in-outline"
                     />
 
-                    <View style={styles.signupContainer}>
-                        <Text style={styles.noAccountText}>Don't have an account? </Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                            <Text style={styles.signupLink}>Sign Up</Text>
+                    <View style={styles.loginContainer}>
+                        <Text style={styles.alreadyAccountText}>Already have an account? </Text>
+                        <TouchableOpacity onPress={() => navigation.goBack()}>
+                            <Text style={styles.loginLink}>Sign In</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -166,7 +192,7 @@ const LoginScreen = ({ navigation }) => {
                 {/* Footer */}
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>
-                        By signing in, you agree to our{' '}
+                        By signing up, you agree to our{' '}
                         <Text style={styles.link}>Terms</Text> and{' '}
                         <Text style={styles.link}>Privacy Policy</Text>
                     </Text>
@@ -184,66 +210,88 @@ const styles = StyleSheet.create({
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: 24,
-        paddingTop: Platform.OS === 'ios' ? 40 : 20,
+        paddingTop: 40,
     },
     topDecoration: {
         position: 'absolute',
-        top: -100,
-        right: -100,
+        top: -150,
+        right: -150,
         zIndex: -1,
     },
     decorCircle: {
-        width: 300,
-        height: 300,
-        borderRadius: 150,
-        opacity: 0.6,
-    },
-    decorCircleSmall: {
-        width: 150,
-        height: 150,
-        borderRadius: 75,
-        position: 'absolute',
-        bottom: 50,
-        left: -50,
-        opacity: 0.4,
+        width: 400,
+        height: 400,
+        borderRadius: 200,
+        opacity: 0.5,
     },
     header: {
-        alignItems: 'center',
-        marginTop: 60,
-        marginBottom: 40,
-    },
-    logoContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: 24,
-        padding: 20,
-        backgroundColor: Colors.surface,
-        elevation: 10,
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 20,
-        marginBottom: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    logo: {
-        width: '100%',
-        height: '100%',
+        marginTop: 20,
+        marginBottom: 30,
     },
     title: {
         fontSize: 32,
         fontWeight: '800',
         color: Colors.textPrimary,
         letterSpacing: -0.5,
-        marginBottom: 8,
     },
     subtitle: {
-        fontSize: 15,
+        fontSize: 16,
         color: Colors.textSecondary,
-        textAlign: 'center',
-        paddingHorizontal: 20,
-        lineHeight: 22,
+        marginTop: 5,
+    },
+    avatarContainer: {
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    avatarWrapper: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: Colors.surfaceSecondary,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
+    },
+    avatarPlaceholder: {
+        alignItems: 'center',
+    },
+    avatarText: {
+        fontSize: 12,
+        color: Colors.primary,
+        fontWeight: '600',
+        marginTop: 4,
+    },
+    roleContainer: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 25,
+    },
+    roleChip: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 15,
+        backgroundColor: Colors.surfaceSecondary,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: Colors.border,
+    },
+    roleChipActive: {
+        backgroundColor: Colors.primary,
+        borderColor: Colors.primary,
+    },
+    roleText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: Colors.textSecondary,
+    },
+    roleTextActive: {
+        color: Colors.textWhite,
     },
     card: {
         backgroundColor: Colors.surface,
@@ -259,21 +307,18 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '700',
         color: Colors.textPrimary,
-        marginBottom: 12,
+        marginBottom: 10,
         marginLeft: 4,
         textTransform: 'uppercase',
-        letterSpacing: 1,
     },
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: Colors.surfaceSecondary,
         borderRadius: 18,
-        height: 64,
+        height: 60,
         paddingHorizontal: 16,
         marginBottom: 20,
-        borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.02)',
     },
     inputIcon: {
         marginRight: 12,
@@ -284,29 +329,19 @@ const styles = StyleSheet.create({
         color: Colors.textPrimary,
         fontWeight: '600',
     },
-    forgotBtn: {
-        alignSelf: 'trailing',
-        marginBottom: 25,
-        marginTop: -10,
-    },
-    forgotText: {
-        color: Colors.primary,
-        fontSize: 14,
-        fontWeight: '600',
-    },
     button: {
         marginTop: 10,
     },
-    signupContainer: {
+    loginContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         marginTop: 25,
     },
-    noAccountText: {
+    alreadyAccountText: {
         color: Colors.textSecondary,
         fontSize: 14,
     },
-    signupLink: {
+    loginLink: {
         color: Colors.primary,
         fontSize: 14,
         fontWeight: '700',
@@ -314,7 +349,6 @@ const styles = StyleSheet.create({
     footer: {
         marginTop: 40,
         marginBottom: 40,
-        paddingHorizontal: 40,
     },
     footerText: {
         fontSize: 12,
@@ -326,42 +360,6 @@ const styles = StyleSheet.create({
         color: Colors.primary,
         fontWeight: '700',
     },
-    // Role Styles
-    roleContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 15,
-        marginBottom: 25,
-    },
-    roleChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        paddingHorizontal: 25,
-        paddingVertical: 12,
-        borderRadius: 20,
-        backgroundColor: Colors.surfaceSecondary,
-        borderWidth: 1,
-        borderColor: Colors.border,
-    },
-    roleChipActive: {
-        backgroundColor: Colors.primary,
-        borderColor: Colors.primary,
-        elevation: 4,
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-    },
-    roleText: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: Colors.textSecondary,
-    },
-    roleTextActive: {
-        color: Colors.textWhite,
-    },
 });
 
-export default LoginScreen;
-
+export default SignupScreen;

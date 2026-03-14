@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     View,
     Text,
@@ -11,13 +11,17 @@ import {
     FlatList,
     Platform,
     Animated,
+    RefreshControl,
+    ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
 import PropertyCard from '../../components/PropertyCard';
-import { featuredProperties } from '../../constants/dummyData';
+import { getProperties } from '../../api/propertyApi';
+import { getAgents } from '../../api/agentApi';
+import { getCurrentStream } from '../../api/streamApi';
 
 const { width } = Dimensions.get('window');
 
@@ -46,10 +50,42 @@ const ActionCard = ({ title, desc, icon, color, onPress }) => {
 
 const HomeScreen = ({ navigation }) => {
     const [search, setSearch] = useState('');
+    const [properties, setProperties] = useState([]);
+    const [agents, setAgents] = useState([]);
+    const [isLive, setIsLive] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(30)).current;
 
+    const fetchHomeData = useCallback(async (isRefreshing = false) => {
+        if (isRefreshing) setRefreshing(true);
+        else setLoading(true);
+
+        try {
+            const [propRes, agentRes, streamRes] = await Promise.all([
+                getProperties({ limit: 10 }),
+                getAgents({ limit: 5 }),
+                getCurrentStream().catch(() => ({ data: null }))
+            ]);
+
+            const listings = propRes.data?.properties || propRes.data || [];
+            const topAgents = agentRes.data?.agents || agentRes.data || [];
+
+            setProperties(listings);
+            setAgents(topAgents);
+            setIsLive(!!streamRes.data?.url);
+        } catch (error) {
+            console.error('Home Data Error:', error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    }, []);
+
     useEffect(() => {
+        fetchHomeData();
         Animated.parallel([
             Animated.timing(fadeAnim, {
                 toValue: 1,
@@ -63,9 +99,12 @@ const HomeScreen = ({ navigation }) => {
                 useNativeDriver: true,
             })
         ]).start();
-    }, [fadeAnim, slideAnim]);
+    }, [fadeAnim, slideAnim, fetchHomeData]);
 
-    const featured = featuredProperties.filter(p => p.featured);
+    const onRefresh = () => fetchHomeData(true);
+
+    const featured = properties.filter(p => p.featured || p.isFeatured);
+    const recent = properties.slice(0, 5);
 
     return (
         <View style={styles.container}>
@@ -74,6 +113,9 @@ const HomeScreen = ({ navigation }) => {
             <Animated.ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
+                }
                 style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
 
                 {/* Header with Gradient */}
@@ -118,14 +160,14 @@ const HomeScreen = ({ navigation }) => {
                         desc="Find homes"
                         icon="home"
                         color={Colors.primarySoft}
-                        onPress={() => navigation.navigate('BuyTab')}
+                        onPress={() => navigation.navigate('Projects')}
                     />
                     <ActionCard
                         title="Sell"
                         desc="List & Earn"
                         icon="cash"
                         color={Colors.accentSoft}
-                        onPress={() => navigation.navigate('SellTab')}
+                        onPress={() => navigation.navigate('Sell')}
                     />
                     <ActionCard
                         title="Enquiry"
@@ -135,72 +177,138 @@ const HomeScreen = ({ navigation }) => {
                         onPress={() => navigation.navigate('Enquiry')}
                     />
                     <ActionCard
-                        title="My Ops"
-                        desc="Manage all"
-                        icon="apps"
-                        color="#E3F2FD"
-                        onPress={() => navigation.navigate('MyProperties')}
+                        title="Our Agents"
+                        desc="Meet experts"
+                        icon="people"
+                        color="#E8F5E9"
+                        onPress={() => navigation.navigate('Agents')}
+                    />
+                    <ActionCard
+                        title="Gallery"
+                        desc="Showcases"
+                        icon="images"
+                        color="#FFF3E0"
+                        onPress={() => navigation.navigate('Gallery')}
+                    />
+                    <ActionCard
+                        title="Franchise"
+                        desc="Partner"
+                        icon="briefcase"
+                        color="#F3E5F5"
+                        onPress={() => navigation.navigate('Franchise')}
                     />
                 </View>
 
-                {/* Featured Properties */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <View style={styles.sectionTitleRow}>
-                            <Icon name="star" size={20} color={Colors.warning} />
-                            <Text style={styles.sectionTitle}>Featured Properties</Text>
-                        </View>
-                        <TouchableOpacity onPress={() => navigation.navigate('BuyTab')}>
-                            <Text style={styles.viewAllText}>View All</Text>
-                        </TouchableOpacity>
+                {loading && !refreshing ? (
+                    <View style={{ marginTop: 100 }}>
+                        <ActivityIndicator size="large" color={Colors.primary} />
                     </View>
+                ) : (
+                    <>
+                        {/* Featured Properties */}
+                        {featured.length > 0 && (
+                            <View style={styles.section}>
+                                <View style={styles.sectionHeader}>
+                                    <View style={styles.sectionTitleRow}>
+                                        <Icon name="star" size={20} color={Colors.warning} />
+                                        <Text style={styles.sectionTitle}>Featured Properties</Text>
+                                    </View>
+                                    <TouchableOpacity onPress={() => navigation.navigate('BuyTab')}>
+                                        <Text style={styles.viewAllText}>View All</Text>
+                                    </TouchableOpacity>
+                                </View>
 
-                    <FlatList
-                        data={featured}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.featuredList}
-                        renderItem={({ item }) => (
-                            <PropertyCard
-                                property={item}
-                                horizontal
-                                onPress={() =>
-                                    navigation.navigate('PropertyDetail', { property: item })
-                                }
-                            />
+                                <FlatList
+                                    data={featured}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={styles.featuredList}
+                                    renderItem={({ item }) => (
+                                        <PropertyCard
+                                            property={item}
+                                            horizontal
+                                            onPress={() =>
+                                                navigation.navigate('PropertyDetail', { property: item })
+                                            }
+                                        />
+                                    )}
+                                    keyExtractor={item => (item.id || item._id).toString()}
+                                />
+                            </View>
                         )}
-                        keyExtractor={item => item.id.toString()}
-                    />
-                </View>
 
-                {/* Recent Properties */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <View style={styles.sectionTitleRow}>
-                            <Icon name="time" size={20} color={Colors.primary} />
-                            <Text style={styles.sectionTitle}>Recent Listings</Text>
+                        {/* Top Agents Section */}
+                        {agents.length > 0 && (
+                            <View style={styles.section}>
+                                <View style={styles.sectionHeader}>
+                                    <View style={styles.sectionTitleRow}>
+                                        <Icon name="people" size={20} color={Colors.primary} />
+                                        <Text style={styles.sectionTitle}>Elite Agents</Text>
+                                    </View>
+                                    <TouchableOpacity onPress={() => navigation.navigate('Agents')}>
+                                        <Text style={styles.viewAllText}>View All</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <FlatList
+                                    data={agents}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={styles.agentList}
+                                    renderItem={({ item }) => (
+                                        <TouchableOpacity
+                                            style={styles.agentSmallCard}
+                                            onPress={() => navigation.navigate('Agents')}
+                                        >
+                                            <Image
+                                                source={{ uri: item.avatar || 'https://i.pravatar.cc/150' }}
+                                                style={styles.agentAvatarSmall}
+                                            />
+                                            <Text style={styles.agentNameSmall} numberOfLines={1}>{item.name}</Text>
+                                            <Text style={styles.agentStatsSmall}>{item.propertiesCount || 0} Props</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    keyExtractor={item => (item.id || item._id).toString()}
+                                />
+                            </View>
+                        )}
+
+                        {/* Recent Properties */}
+                        <View style={styles.section}>
+                            <View style={styles.sectionHeader}>
+                                <View style={styles.sectionTitleRow}>
+                                    <Icon name="time" size={20} color={Colors.primary} />
+                                    <Text style={styles.sectionTitle}>Recent Listings</Text>
+                                </View>
+                                <TouchableOpacity onPress={() => navigation.navigate('BuyTab')}>
+                                    <Text style={styles.viewAllText}>View All</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {recent.length === 0 ? (
+                                <View style={styles.emptyContainer}>
+                                    <Icon name="home-outline" size={40} color={Colors.textLight} />
+                                    <Text style={styles.emptyText}>No properties found yet</Text>
+                                </View>
+                            ) : (
+                                recent.map(property => (
+                                    <PropertyCard
+                                        key={property.id || property._id}
+                                        property={property}
+                                        onPress={() =>
+                                            navigation.navigate('PropertyDetail', { property })
+                                        }
+                                    />
+                                ))
+                            )}
                         </View>
-                        <TouchableOpacity onPress={() => navigation.navigate('BuyTab')}>
-                            <Text style={styles.viewAllText}>View All</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {featuredProperties.slice(0, 3).map(property => (
-                        <PropertyCard
-                            key={property.id}
-                            property={property}
-                            onPress={() =>
-                                navigation.navigate('PropertyDetail', { property })
-                            }
-                        />
-                    ))}
-                </View>
+                    </>
+                )}
 
                 {/* Enquiry CTA */}
                 <TouchableOpacity
                     style={styles.enquiryCTA}
                     activeOpacity={0.9}
-                    onPress={() => navigation.navigate('Enquiry')}>
+                    onPress={() => navigation.navigate('PostRequirement')}>
                     <LinearGradient
                         colors={['#1B5E20', '#0A1F0D']}
                         style={styles.ctaContent}
@@ -210,12 +318,23 @@ const HomeScreen = ({ navigation }) => {
                         <View style={styles.ctaTextContainer}>
                             <Text style={styles.ctaTitle}>Can't find it?</Text>
                             <Text style={styles.ctaSubtitle}>
-                                Submit your requirement and we'll help you find it!
+                                Submit your detailed requirements and our team will find the data.
                             </Text>
                         </View>
                         <Icon name="arrow-forward-circle" size={32} color={Colors.textWhite} />
                     </LinearGradient>
                 </TouchableOpacity>
+
+                {/* Live Floating Button */}
+                {isLive && (
+                    <TouchableOpacity
+                        style={styles.liveFloat}
+                        onPress={() => navigation.navigate('LiveTour')}
+                    >
+                        <View style={styles.liveDot} />
+                        <Text style={styles.liveFloatText}>WATCH LIVE TOUR</Text>
+                    </TouchableOpacity>
+                )}
 
             </Animated.ScrollView>
         </View>
@@ -298,33 +417,36 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     actionCard: {
-        width: (width - 44) / 2,
+        width: (width - 48) / 3, // Three columns
         backgroundColor: Colors.backgroundCard,
         borderRadius: 20,
-        padding: 16,
+        padding: 12,
         elevation: 3,
         shadowColor: Colors.shadowMedium,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
+        alignItems: 'center',
     },
     actionIconBox: {
-        width: 48,
-        height: 48,
-        borderRadius: 16,
+        width: 44,
+        height: 44,
+        borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: 8,
     },
     actionTitle: {
-        fontSize: 15,
+        fontSize: 13,
         fontWeight: '700',
         color: Colors.textPrimary,
         marginBottom: 2,
+        textAlign: 'center',
     },
     actionDesc: {
-        fontSize: 11,
+        fontSize: 9,
         color: Colors.textSecondary,
+        textAlign: 'center',
     },
     // Sections
     section: {
@@ -388,6 +510,81 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: 'rgba(255,255,255,0.7)',
         lineHeight: 18,
+    },
+    emptyContainer: {
+        alignItems: 'center',
+        marginTop: 40,
+        marginBottom: 20,
+    },
+    emptyText: {
+        color: Colors.textLight,
+        fontSize: 14,
+        marginTop: 10,
+    },
+    // New Styles
+    agentList: {
+        paddingRight: 16,
+        paddingBottom: 5,
+    },
+    agentSmallCard: {
+        width: 100,
+        backgroundColor: Colors.background,
+        borderRadius: 15,
+        padding: 12,
+        marginRight: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: Colors.border,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 5,
+    },
+    agentAvatarSmall: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginBottom: 8,
+    },
+    agentNameSmall: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: Colors.textPrimary,
+        textAlign: 'center',
+    },
+    agentStatsSmall: {
+        fontSize: 10,
+        color: Colors.primary,
+        fontWeight: '600',
+        marginTop: 2,
+    },
+    liveFloat: {
+        position: 'absolute',
+        top: 130, // Below search bar area
+        right: 0,
+        backgroundColor: '#FF0000',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderTopLeftRadius: 20,
+        borderBottomLeftRadius: 20,
+        zIndex: 100,
+        elevation: 10,
+        gap: 6,
+    },
+    liveDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: '#FFF',
+    },
+    liveFloatText: {
+        color: '#FFF',
+        fontSize: 10,
+        fontWeight: '900',
+        letterSpacing: 0.5,
     },
 });
 

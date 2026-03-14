@@ -13,7 +13,17 @@ import PropertyDetailScreen from '../screens/property/PropertyDetailScreen';
 import AddPropertyScreen from '../screens/property/AddPropertyScreen';
 import MyPropertiesScreen from '../screens/property/MyPropertiesScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
+import AgentsScreen from '../screens/agent/AgentsScreen';
+import GalleryScreen from '../screens/corporate/GalleryScreen';
+import FranchiseScreen from '../screens/corporate/FranchiseScreen';
+import AboutContactScreen from '../screens/corporate/AboutContactScreen';
 import EnquiryFormScreen from '../screens/home/EnquiryFormScreen';
+import LiveTourScreen from '../screens/home/LiveTourScreen';
+import PostRequirementScreen from '../screens/home/PostRequirementScreen';
+import AdminDashboardScreen from '../screens/profile/AdminDashboardScreen';
+import NotificationScreen from '../screens/profile/NotificationScreen';
+import ManagementListScreen from '../screens/profile/ManagementListScreen';
+import LeadsScreen from '../screens/agent/LeadsScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
@@ -72,6 +82,10 @@ const HomeStack = () => (
         <HomeStackNav.Screen name="Enquiry" component={EnquiryFormScreen} />
         <HomeStackNav.Screen name="MyProperties" component={MyPropertiesScreen} />
         <HomeStackNav.Screen name="AddProperty" component={AddPropertyScreen} />
+        <HomeStackNav.Screen name="Agents" component={AgentsScreen} />
+        <HomeStackNav.Screen name="Gallery" component={GalleryScreen} />
+        <HomeStackNav.Screen name="Franchise" component={FranchiseScreen} />
+        <HomeStackNav.Screen name="AboutContact" component={AboutContactScreen} />
     </HomeStackNav.Navigator>
 );
 
@@ -95,75 +109,72 @@ const ProfileStack = () => (
         <ProfileStackNav.Screen name="AddProperty" component={AddPropertyScreen} />
         <ProfileStackNav.Screen name="Enquiry" component={EnquiryFormScreen} />
         <ProfileStackNav.Screen name="PropertyDetail" component={PropertyDetailScreen} />
+        <ProfileStackNav.Screen name="Agents" component={AgentsScreen} />
+        <ProfileStackNav.Screen name="Gallery" component={GalleryScreen} />
+        <ProfileStackNav.Screen name="Franchise" component={FranchiseScreen} />
+        <ProfileStackNav.Screen name="AboutContact" component={AboutContactScreen} />
     </ProfileStackNav.Navigator>
 );
 
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+const Stack = createNativeStackNavigator(); // Define Stack navigator
 
 // Bottom Tabs
 const AppNavigator = () => {
     const insets = useSafeAreaInsets();
 
-    return (
+    const MainTabNavigator = () => (
         <Tab.Navigator
-            screenOptions={({ route }) => {
-                const routeName = getFocusedRouteNameFromRoute(route) ?? '';
-                const hideTabs = [
-                    'PropertyDetail',
-                    'Enquiry',
-                    'AddProperty',
-                    'MyProperties',
-                    'AddPropertyMain',
-                    'EnquiryForm'
-                ].includes(routeName);
-
-                return {
-                    headerShown: false,
-                    tabBarShowLabel: false,
-                    tabBarHideOnKeyboard: true,
-                    tabBarStyle: [
-                        hideTabs ? { display: 'none' } : styles.tabBar,
-                        { height: Platform.OS === 'ios' ? 88 : 65 }
-                    ],
-                };
-            }}>
-            <Tab.Screen
-                name="HomeTab"
-                component={HomeStack}
-                options={{
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon label="Home" icon="home" focused={focused} />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="BuyTab"
-                component={BuyStack}
-                options={{
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon label="Explore" icon="search" focused={focused} />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="SellTab"
-                component={SellStack}
-                options={{
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon label="List" icon="add-circle" focused={focused} />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="ProfileTab"
-                component={ProfileStack}
-                options={{
-                    tabBarIcon: ({ focused }) => (
-                        <TabIcon label="You" icon="person" focused={focused} />
-                    ),
-                }}
-            />
+            screenOptions={({ route }) => ({
+                headerShown: false,
+                tabBarHideOnKeyboard: true,
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName;
+                    if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
+                    else if (route.name === 'Projects') iconName = focused ? 'search' : 'search-outline'; // Changed from business to search for explore
+                    else if (route.name === 'Sell') iconName = focused ? 'add-circle' : 'add-circle-outline';
+                    else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
+                    return <Icon name={iconName} size={24} color={color} />;
+                },
+                tabBarActiveTintColor: Colors.primary,
+                tabBarInactiveTintColor: Colors.textLight,
+                tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginBottom: 5 },
+                tabBarStyle: {
+                    height: 65 + insets.bottom,
+                    backgroundColor: Colors.background,
+                    borderTopWidth: 1,
+                    borderTopColor: Colors.border,
+                    paddingTop: 10,
+                    paddingBottom: insets.bottom > 0 ? insets.bottom : 5,
+                    elevation: 0,
+                    shadowOpacity: 0,
+                },
+            })}
+        >
+            <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Projects" component={BuyPropertyScreen} />
+            <Tab.Screen name="Sell" component={AddPropertyScreen} />
+            <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
+    );
+
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+            <Stack.Screen name="PropertyDetail" component={PropertyDetailScreen} />
+            <Stack.Screen name="Enquiry" component={EnquiryFormScreen} />
+            <Stack.Screen name="MyProperties" component={MyPropertiesScreen} />
+            <Stack.Screen name="AddProperty" component={AddPropertyScreen} />
+            <Stack.Screen name="Agents" component={AgentsScreen} />
+            <Stack.Screen name="Gallery" component={GalleryScreen} />
+            <Stack.Screen name="Franchise" component={FranchiseScreen} />
+            <Stack.Screen name="AboutContact" component={AboutContactScreen} />
+            <Stack.Screen name="LiveTour" component={LiveTourScreen} />
+            <Stack.Screen name="PostRequirement" component={PostRequirementScreen} />
+            <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+            <Stack.Screen name="Notification" component={NotificationScreen} />
+            <Stack.Screen name="ManagementList" component={ManagementListScreen} />
+            <Stack.Screen name="Leads" component={LeadsScreen} />
+        </Stack.Navigator>
     );
 };
 

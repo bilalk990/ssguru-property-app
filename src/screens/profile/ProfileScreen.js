@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -9,15 +9,34 @@ import {
     Alert,
     StatusBar,
     Platform,
+    ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from '@react-navigation/native';
 import Colors from '../../constants/colors';
-import { dummyUser } from '../../constants/dummyData';
+import { getMe } from '../../api/authApi';
 
 const ProfileScreen = ({ navigation }) => {
-    const user = dummyUser;
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const fetchProfile = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await getMe();
+            setUser(response.data?.user || response.data);
+        } catch (error) {
+            console.error('Profile Fetch Error:', error);
+            // If 401, handle logout
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchProfile();
+    }, [fetchProfile]);
 
     const handleLogout = () => {
         Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -26,7 +45,8 @@ const ProfileScreen = ({ navigation }) => {
                 text: 'Logout',
                 style: 'destructive',
                 onPress: async () => {
-                    await AsyncStorage.clear();
+                    await AsyncStorage.removeItem('access_token');
+                    await AsyncStorage.removeItem('user_data');
                     // Reset to root-level Splash screen
                     navigation.dispatch(
                         CommonActions.reset({
@@ -39,48 +59,70 @@ const ProfileScreen = ({ navigation }) => {
         ]);
     };
 
+    if (loading && !user) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center' }]}>
+                <ActivityIndicator size="large" color={Colors.primary} />
+            </View>
+        );
+    }
+
+    const userData = user || {};
+
     const menuItems = [
+        ...(userData.role === 'admin' ? [{
+            icon: 'bar-chart-outline',
+            title: 'Admin Dashboard',
+            subtitle: 'Platform analytics & stats',
+            onPress: () => navigation.navigate('AdminDashboard'),
+        }] : []),
         {
             icon: 'business-outline',
             title: 'My Properties',
-            subtitle: `${user.propertiesListed} listings`,
+            subtitle: `${userData.propertiesListed || 0} listings`,
             onPress: () => navigation.navigate('MyProperties'),
         },
         {
-            icon: 'chatbubbles-outline',
-            title: 'My Enquiries',
-            subtitle: `${user.enquiriesMade} enquiries`,
-            onPress: () => { },
+            icon: 'add-circle-outline',
+            title: 'Post Requirement',
+            subtitle: 'Tell us what you need',
+            onPress: () => navigation.navigate('PostRequirement'),
         },
         {
-            icon: 'card-outline',
-            title: 'Payment History',
-            subtitle: 'View transactions',
-            onPress: () => { },
+            icon: 'people-outline',
+            title: 'Our Agents',
+            subtitle: 'Meet our property experts',
+            onPress: () => navigation.navigate('Agents'),
+        },
+        {
+            icon: 'images-outline',
+            title: 'Gallery',
+            subtitle: 'Property showcases',
+            onPress: () => navigation.navigate('Gallery'),
+        },
+        {
+            icon: 'briefcase-outline',
+            title: 'Franchise Partner',
+            subtitle: 'Business opportunities',
+            onPress: () => navigation.navigate('Franchise'),
         },
         {
             icon: 'notifications-outline',
             title: 'Notifications',
-            subtitle: 'Manage alerts',
-            onPress: () => { },
+            subtitle: 'Alerts & updates',
+            onPress: () => navigation.navigate('Notification'),
         },
+        ...((userData.role === 'admin' || userData.role === 'agent') ? [{
+            icon: 'flash-outline',
+            title: 'Leads Manager',
+            subtitle: 'Enquiries & Requirements',
+            onPress: () => navigation.navigate('Leads'),
+        }] : []),
         {
-            icon: 'settings-outline',
-            title: 'Settings',
-            subtitle: 'App preferences',
-            onPress: () => { },
-        },
-        {
-            icon: 'call-outline',
-            title: 'Contact Us',
-            subtitle: 'Get help & support',
-            onPress: () => { },
-        },
-        {
-            icon: 'information-circle-outline',
-            title: 'About',
-            subtitle: 'App info & version',
-            onPress: () => { },
+            icon: 'shield-checkmark-outline',
+            title: 'Support & Legal',
+            subtitle: 'Help, Terms & Privacy',
+            onPress: () => navigation.navigate('AboutContact'),
         },
     ];
 
@@ -94,29 +136,35 @@ const ProfileScreen = ({ navigation }) => {
                 {/* Profile Header */}
                 <View style={styles.header}>
                     <View style={styles.profileSection}>
-                        <Image source={{ uri: user.avatar }} style={styles.avatar} />
-                        <Text style={styles.userName}>{user.name}</Text>
-                        <Text style={styles.userPhone}>{user.phone}</Text>
-                        <Text style={styles.memberSince}>
-                            Member since {user.memberSince}
-                        </Text>
+                        <Image
+                            source={{ uri: userData.avatar || 'https://i.pravatar.cc/150' }}
+                            style={styles.avatar}
+                        />
+                        <Text style={styles.userName}>{userData.name || 'Guest User'}</Text>
+                        <Text style={styles.userPhone}>{userData.email || userData.phone || 'No contact info'}</Text>
+                        <TouchableOpacity
+                            style={styles.editProfileBtn}
+                            onPress={() => Alert.alert('Edit Profile', 'Soon: Update your profile info here.')}
+                        >
+                            <Icon name="pencil" size={14} color={Colors.textWhite} />
+                        </TouchableOpacity>
                     </View>
 
                     {/* Stats */}
                     <View style={styles.statsRow}>
                         <View style={styles.statItem}>
-                            <Text style={styles.statValue}>{user.propertiesListed}</Text>
+                            <Text style={styles.statValue}>{userData.propertiesListed || 0}</Text>
                             <Text style={styles.statLabel}>Listed</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
-                            <Text style={styles.statValue}>{user.enquiriesMade}</Text>
+                            <Text style={styles.statValue}>{userData.enquiriesMade || 0}</Text>
                             <Text style={styles.statLabel}>Enquiries</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
                             <Icon name="star" size={20} color="#FFD700" />
-                            <Text style={styles.statLabel}>Premium</Text>
+                            <Text style={styles.statLabel}>{userData.role === 'agent' ? 'Expert' : 'Premium'}</Text>
                         </View>
                     </View>
                 </View>
@@ -126,35 +174,26 @@ const ProfileScreen = ({ navigation }) => {
                     <TouchableOpacity
                         style={styles.quickAction}
                         onPress={() => navigation.navigate('AddProperty')}>
-                        <View
-                            style={[
-                                styles.quickIconBox,
-                                { backgroundColor: Colors.primarySoft },
-                            ]}>
-                            <Text style={styles.quickEmoji}>➕</Text>
+                        <View style={[styles.quickIconBox, { backgroundColor: Colors.primarySoft }]}>
+                            <Icon name="add-circle-outline" size={24} color={Colors.primary} />
                         </View>
                         <Text style={styles.quickText}>Add{'\n'}Property</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.quickAction}
-                        onPress={() => navigation.navigate('MyProperties')}>
-                        <View
-                            style={[
-                                styles.quickIconBox,
-                                { backgroundColor: Colors.accentSoft },
-                            ]}>
-                            <Text style={styles.quickEmoji}>📋</Text>
+                        onPress={() => navigation.navigate('Agents')}>
+                        <View style={[styles.quickIconBox, { backgroundColor: '#E8F5E9' }]}>
+                            <Icon name="people-outline" size={24} color="#2E7D32" />
                         </View>
-                        <Text style={styles.quickText}>My{'\n'}Listings</Text>
+                        <Text style={styles.quickText}>Meet{'\n'}Agents</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.quickAction}
-                        onPress={() => navigation.navigate('Enquiry')}>
-                        <View
-                            style={[styles.quickIconBox, { backgroundColor: '#E3F2FD' }]}>
-                            <Text style={styles.quickEmoji}>📝</Text>
+                        onPress={() => navigation.navigate('Gallery')}>
+                        <View style={[styles.quickIconBox, { backgroundColor: '#E3F2FD' }]}>
+                            <Icon name="images-outline" size={24} color="#1565C0" />
                         </View>
-                        <Text style={styles.quickText}>Submit{'\n'}Enquiry</Text>
+                        <Text style={styles.quickText}>View{'\n'}Gallery</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -235,6 +274,13 @@ const styles = StyleSheet.create({
     memberSince: {
         fontSize: 12,
         color: 'rgba(255,255,255,0.6)',
+        marginBottom: 8,
+    },
+    editProfileBtn: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        padding: 6,
+        borderRadius: 10,
+        marginTop: 5,
     },
     statsRow: {
         flexDirection: 'row',

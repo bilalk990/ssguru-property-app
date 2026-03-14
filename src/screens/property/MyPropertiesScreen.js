@@ -23,9 +23,10 @@ const MyPropertiesScreen = ({ navigation }) => {
         setLoading(true);
         try {
             const response = await getMyProperties();
-            setProperties(response.data.properties);
+            const listings = response.data?.properties || response.data || [];
+            setProperties(listings);
         } catch (error) {
-            console.log('Error:', error);
+            console.error('MyProperties Fetch Error:', error);
         } finally {
             setLoading(false);
         }
@@ -93,13 +94,15 @@ const MyPropertiesScreen = ({ navigation }) => {
                         <Text style={styles.actionText}>View</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.editAction]}>
+                        style={[styles.actionButton, styles.editAction]}
+                        onPress={() => navigation.navigate('AddProperty', { editMode: true, propertyData: item })}
+                    >
                         <Icon name="create-outline" size={16} color={Colors.primary} />
                         <Text style={[styles.actionText, styles.editText]}>Edit</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.actionButton, styles.deleteAction]}
-                        onPress={() => handleDelete(item.id)}>
+                        onPress={() => handleDelete(item.id || item._id)}>
                         <Icon name="trash-outline" size={16} color={Colors.error} />
                         <Text style={[styles.actionText, styles.deleteText]}>Delete</Text>
                     </TouchableOpacity>
