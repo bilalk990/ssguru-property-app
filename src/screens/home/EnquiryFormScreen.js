@@ -13,32 +13,45 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
-import { submitEnquiry } from '../../api/propertyApi';
-import { cities } from '../../constants/dummyData';
+import { createEnquiry } from '../../api/enquiryApi';
+import { getDistricts } from '../../api/districtApi';
+import { propertyTypes } from '../../constants/appConstants';
 
 const EnquiryFormScreen = ({ navigation }) => {
     const [form, setForm] = useState({
         name: '',
         phone: '',
-        city: '',
+        city: '', // This will now store the selected district
         requirement: '',
     });
+    const [districts, setDistricts] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [selectedCity, setSelectedCity] = useState('');
+
+    useEffect(() => {
+        const fetchDistricts = async () => {
+            try {
+                const res = await getDistricts();
+                setDistricts(res.data?.districts || res.data || []);
+            } catch (e) {
+                console.error(e);
+            }
+        };
+        fetchDistricts();
+    }, []);
 
     const updateField = (field, value) => {
         setForm(prev => ({ ...prev, [field]: value }));
     };
 
     const handleSubmit = async () => {
-        if (!form.name || !form.phone || !selectedCity || !form.requirement) {
+        if (!form.name || !form.phone || !form.city || !form.requirement) {
             Alert.alert('Missing Fields', 'Please fill all required fields.');
             return;
         }
 
         setLoading(true);
         try {
-            await submitEnquiry({ ...form, city: selectedCity });
+            await createEnquiry(form);
             Alert.alert(
                 'Enquiry Submitted! 🎉',
                 'We have received your property requirement. Our team will contact you soon.',
@@ -50,8 +63,6 @@ const EnquiryFormScreen = ({ navigation }) => {
             setLoading(false);
         }
     };
-
-    const validCities = cities.filter(c => c !== 'All Cities');
 
     return (
         <View style={styles.container}>
@@ -111,22 +122,22 @@ const EnquiryFormScreen = ({ navigation }) => {
                     />
                 </View>
 
-                <Text style={styles.label}>Preferred City *</Text>
-                <View style={styles.cityContainer}>
-                    {validCities.map(city => (
+                <Text style={styles.label}>District of Interest *</Text>
+                <View style={styles.chipGrid}>
+                    {districts.map(district => (
                         <TouchableOpacity
-                            key={city}
+                            key={district.name || district}
                             style={[
-                                styles.cityChip,
-                                selectedCity === city && styles.cityChipActive,
+                                styles.chip,
+                                (form.city === (district.name || district)) && styles.chipActive,
                             ]}
-                            onPress={() => setSelectedCity(city)}>
+                            onPress={() => updateField('city', district.name || district)}>
                             <Text
                                 style={[
-                                    styles.cityChipText,
-                                    selectedCity === city && styles.cityChipTextActive,
+                                    styles.chipText,
+                                    (form.city === (district.name || district)) && styles.chipTextActive,
                                 ]}>
-                                {city}
+                                {district.name || district}
                             </Text>
                         </TouchableOpacity>
                     ))}

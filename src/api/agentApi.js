@@ -26,3 +26,37 @@ export const updateAgentProfile = async (formData) => {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
 };
+
+// POST /api/v1/agents/:franchiseId/agents (Add agent to specific franchise)
+export const addAgentToFranchise = async (franchiseId, formData) => {
+    return apiClient.post(`/agents/${franchiseId}/agents`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+};
+
+// GET /api/v1/agents/:franchiseId/agents (Get agents for a specific franchise)
+export const getAgentsByFranchise = async (franchiseId) => {
+    return apiClient.get(`/agents/${franchiseId}/agents`);
+};
+
+// PATCH /api/v1/agents/:agentId/toggle-status
+export const toggleAgentStatus = async (id) => {
+    return apiClient.patch(`/agents/${id}/toggle-status`);
+};
+
+// DELETE /api/v1/agents/:id
+export const deleteAgent = async (id) => {
+    return apiClient.delete(`/agents/${id}`);
+};
+
+// PUT /api/v1/agents/:franchiseId/agents/:agentId
+export const updateAgentInFranchise = async (franchiseId, agentId, formData) => {
+    return apiClient.put(`/agents/${franchiseId}/agents/${agentId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+};
+
+// DELETE /api/v1/agents/:franchiseId/agents/:agentId
+export const deleteAgentInFranchise = async (franchiseId, agentId) => {
+    return apiClient.delete(`/agents/${franchiseId}/agents/${agentId}`);
+};

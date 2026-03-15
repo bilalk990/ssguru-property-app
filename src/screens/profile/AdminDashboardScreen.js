@@ -117,6 +117,22 @@ const AdminDashboardScreen = ({ navigation }) => {
                             <Text style={styles.toolText}>Manage Franchises</Text>
                             <Icon name="chevron-forward" size={18} color={Colors.textLight} />
                         </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.toolItem}
+                            onPress={() => navigation.navigate('LocationManager')}
+                        >
+                            <Icon name="location-outline" size={22} color={Colors.textPrimary} />
+                            <Text style={styles.toolText}>Manage Locations</Text>
+                            <Icon name="chevron-forward" size={18} color={Colors.textLight} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.toolItem}
+                            onPress={() => navigation.navigate('StreamManager')}
+                        >
+                            <Icon name="videocam-outline" size={22} color={Colors.textPrimary} />
+                            <Text style={styles.toolText}>Manage Live Tour</Text>
+                            <Icon name="chevron-forward" size={18} color={Colors.textLight} />
+                        </TouchableOpacity>
                     </View>
                 </ScrollView>
             )}

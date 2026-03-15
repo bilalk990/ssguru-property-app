@@ -24,6 +24,10 @@ import AdminDashboardScreen from '../screens/profile/AdminDashboardScreen';
 import NotificationScreen from '../screens/profile/NotificationScreen';
 import ManagementListScreen from '../screens/profile/ManagementListScreen';
 import LeadsScreen from '../screens/agent/LeadsScreen';
+import EditProfileScreen from '../screens/profile/EditProfileScreen';
+import LocationManagerScreen from '../screens/profile/LocationManagerScreen';
+import StreamManagerScreen from '../screens/profile/StreamManagerScreen';
+import FranchiseDashboardScreen from '../screens/profile/FranchiseDashboardScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
@@ -174,6 +178,10 @@ const AppNavigator = () => {
             <Stack.Screen name="Notification" component={NotificationScreen} />
             <Stack.Screen name="ManagementList" component={ManagementListScreen} />
             <Stack.Screen name="Leads" component={LeadsScreen} />
+            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+            <Stack.Screen name="LocationManager" component={LocationManagerScreen} />
+            <Stack.Screen name="StreamManager" component={StreamManagerScreen} />
+            <Stack.Screen name="FranchiseDashboard" component={FranchiseDashboardScreen} />
         </Stack.Navigator>
     );
 };

@@ -25,7 +25,7 @@ const { width } = Dimensions.get('window');
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('User'); // 'User' or 'Agent'
+    const [role, setRole] = useState('user'); // 'user' or 'agent'
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -92,18 +92,18 @@ const LoginScreen = ({ navigation }) => {
                 {/* Role Selection */}
                 <View style={styles.roleContainer}>
                     <TouchableOpacity
-                        style={[styles.roleChip, role === 'User' && styles.roleChipActive]}
-                        onPress={() => setRole('User')}
+                        style={[styles.roleChip, role === 'user' && styles.roleChipActive]}
+                        onPress={() => setRole('user')}
                     >
-                        <Icon name="person-outline" size={18} color={role === 'User' ? Colors.textWhite : Colors.textSecondary} />
-                        <Text style={[styles.roleText, role === 'User' && styles.roleTextActive]}>User</Text>
+                        <Icon name="person-outline" size={18} color={role === 'user' ? Colors.textWhite : Colors.textSecondary} />
+                        <Text style={[styles.roleText, role === 'user' && styles.roleTextActive]}>User</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.roleChip, role === 'Agent' && styles.roleChipActive]}
-                        onPress={() => setRole('Agent')}
+                        style={[styles.roleChip, role === 'agent' && styles.roleChipActive]}
+                        onPress={() => setRole('agent')}
                     >
-                        <Icon name="business-outline" size={18} color={role === 'Agent' ? Colors.textWhite : Colors.textSecondary} />
-                        <Text style={[styles.roleText, role === 'Agent' && styles.roleTextActive]}>Agent</Text>
+                        <Icon name="business-outline" size={18} color={role === 'agent' ? Colors.textWhite : Colors.textSecondary} />
+                        <Text style={[styles.roleText, role === 'agent' && styles.roleTextActive]}>Agent</Text>
                     </TouchableOpacity>
                 </View>
 

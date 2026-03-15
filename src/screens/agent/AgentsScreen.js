@@ -44,7 +44,7 @@ const AgentsScreen = ({ navigation }) => {
     const renderAgent = ({ item }) => (
         <TouchableOpacity
             style={styles.agentCard}
-            onPress={() => navigation.navigate('PropertyDetail', { agentId: item.id || item._id })}
+            onPress={() => navigation.navigate('BuyProperty', { agentId: item.id || item._id })}
         >
             <Image
                 source={{ uri: item.avatar || 'https://i.pravatar.cc/150' }}
@@ -55,7 +55,7 @@ const AgentsScreen = ({ navigation }) => {
                 <Text style={styles.role}>{item.role || 'Elite Property Consultant'}</Text>
                 <View style={styles.statsRow}>
                     <Icon name="business-outline" size={14} color={Colors.primary} />
-                    <Text style={styles.statsText}>{item.propertiesCount || item.properties?.length || 0} Properties</Text>
+                    <Text style={styles.statsText}>{item.propertiesCount || item.properties?.length || 0} Listings</Text>
                 </View>
             </View>
             <TouchableOpacity

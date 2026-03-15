@@ -25,7 +25,9 @@ const ProfileScreen = ({ navigation }) => {
         setLoading(true);
         try {
             const response = await getMe();
-            setUser(response.data?.user || response.data);
+            const data = response.data?.user || response.data;
+            setUser(data);
+            if (data) await AsyncStorage.setItem('userData', JSON.stringify(data));
         } catch (error) {
             console.error('Profile Fetch Error:', error);
             // If 401, handle logout
@@ -45,8 +47,8 @@ const ProfileScreen = ({ navigation }) => {
                 text: 'Logout',
                 style: 'destructive',
                 onPress: async () => {
-                    await AsyncStorage.removeItem('access_token');
-                    await AsyncStorage.removeItem('user_data');
+                    await AsyncStorage.removeItem('authToken');
+                    await AsyncStorage.removeItem('userData');
                     // Reset to root-level Splash screen
                     navigation.dispatch(
                         CommonActions.reset({
@@ -76,41 +78,31 @@ const ProfileScreen = ({ navigation }) => {
             subtitle: 'Platform analytics & stats',
             onPress: () => navigation.navigate('AdminDashboard'),
         }] : []),
+        ...(userData.role === 'franchise' ? [{
+            icon: 'grid-outline',
+            title: 'Franchise Dashboard',
+            subtitle: 'Success tracking',
+            onPress: () => navigation.navigate('FranchiseDashboard'),
+        }] : []),
+        ...(userData.role === 'admin' ? [
+            {
+                icon: 'location-outline',
+                title: 'Location Manager',
+                subtitle: 'Districts & Areas',
+                onPress: () => navigation.navigate('LocationManager'),
+            },
+            {
+                icon: 'videocam-outline',
+                title: 'Live Tour Manager',
+                subtitle: 'Control stream status',
+                onPress: () => navigation.navigate('StreamManager'),
+            }
+        ] : []),
         {
             icon: 'business-outline',
             title: 'My Properties',
             subtitle: `${userData.propertiesListed || 0} listings`,
             onPress: () => navigation.navigate('MyProperties'),
-        },
-        {
-            icon: 'add-circle-outline',
-            title: 'Post Requirement',
-            subtitle: 'Tell us what you need',
-            onPress: () => navigation.navigate('PostRequirement'),
-        },
-        {
-            icon: 'people-outline',
-            title: 'Our Agents',
-            subtitle: 'Meet our property experts',
-            onPress: () => navigation.navigate('Agents'),
-        },
-        {
-            icon: 'images-outline',
-            title: 'Gallery',
-            subtitle: 'Property showcases',
-            onPress: () => navigation.navigate('Gallery'),
-        },
-        {
-            icon: 'briefcase-outline',
-            title: 'Franchise Partner',
-            subtitle: 'Business opportunities',
-            onPress: () => navigation.navigate('Franchise'),
-        },
-        {
-            icon: 'notifications-outline',
-            title: 'Notifications',
-            subtitle: 'Alerts & updates',
-            onPress: () => navigation.navigate('Notification'),
         },
         ...((userData.role === 'admin' || userData.role === 'agent') ? [{
             icon: 'flash-outline',
@@ -118,6 +110,18 @@ const ProfileScreen = ({ navigation }) => {
             subtitle: 'Enquiries & Requirements',
             onPress: () => navigation.navigate('Leads'),
         }] : []),
+        {
+            icon: 'add-circle-outline',
+            title: 'Post Requirement',
+            subtitle: 'Tell us what you need',
+            onPress: () => navigation.navigate('PostRequirement'),
+        },
+        {
+            icon: 'notifications-outline',
+            title: 'Notifications',
+            subtitle: 'Alerts & updates',
+            onPress: () => navigation.navigate('Notification'),
+        },
         {
             icon: 'shield-checkmark-outline',
             title: 'Support & Legal',
@@ -144,7 +148,7 @@ const ProfileScreen = ({ navigation }) => {
                         <Text style={styles.userPhone}>{userData.email || userData.phone || 'No contact info'}</Text>
                         <TouchableOpacity
                             style={styles.editProfileBtn}
-                            onPress={() => Alert.alert('Edit Profile', 'Soon: Update your profile info here.')}
+                            onPress={() => navigation.navigate('EditProfile')}
                         >
                             <Icon name="pencil" size={14} color={Colors.textWhite} />
                         </TouchableOpacity>

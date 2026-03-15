@@ -24,9 +24,10 @@ const { width } = Dimensions.get('window');
 
 const SignupScreen = ({ navigation }) => {
     const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('User');
+    const [role, setRole] = useState('user'); // Map to 'user' or 'agent'
     const [avatar, setAvatar] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +41,7 @@ const SignupScreen = ({ navigation }) => {
     };
 
     const handleSignup = async () => {
-        if (!name || !email || !password) {
+        if (!name || !phone || !email || !password) {
             Alert.alert('Fields Required', 'Please fill in all mandatory fields.');
             return;
         }
@@ -49,9 +50,10 @@ const SignupScreen = ({ navigation }) => {
         try {
             const formData = new FormData();
             formData.append('name', name);
+            formData.append('phone', phone);
             formData.append('email', email);
             formData.append('password', password);
-            formData.append('role', role); // This might needs mapping to backend roles
+            formData.append('role', role);
 
             if (avatar) {
                 formData.append('avatar', {
@@ -116,16 +118,16 @@ const SignupScreen = ({ navigation }) => {
                 {/* Role Selection */}
                 <View style={styles.roleContainer}>
                     <TouchableOpacity
-                        style={[styles.roleChip, role === 'User' && styles.roleChipActive]}
-                        onPress={() => setRole('User')}
+                        style={[styles.roleChip, role === 'user' && styles.roleChipActive]}
+                        onPress={() => setRole('user')}
                     >
-                        <Text style={[styles.roleText, role === 'User' && styles.roleTextActive]}>I'm a Buyer</Text>
+                        <Text style={[styles.roleText, role === 'user' && styles.roleTextActive]}>I'm a Buyer</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.roleChip, role === 'Agent' && styles.roleChipActive]}
-                        onPress={() => setRole('Agent')}
+                        style={[styles.roleChip, role === 'agent' && styles.roleChipActive]}
+                        onPress={() => setRole('agent')}
                     >
-                        <Text style={[styles.roleText, role === 'Agent' && styles.roleTextActive]}>I'm an Agent</Text>
+                        <Text style={[styles.roleText, role === 'agent' && styles.roleTextActive]}>I'm an Agent</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -140,6 +142,19 @@ const SignupScreen = ({ navigation }) => {
                             placeholderTextColor={Colors.textLight}
                             value={name}
                             onChangeText={setName}
+                        />
+                    </View>
+
+                    <Text style={styles.label}>Phone Number</Text>
+                    <View style={styles.inputWrapper}>
+                        <Icon name="call-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="+92 300 0000000"
+                            placeholderTextColor={Colors.textLight}
+                            keyboardType="phone-pad"
+                            value={phone}
+                            onChangeText={setPhone}
                         />
                     </View>
 

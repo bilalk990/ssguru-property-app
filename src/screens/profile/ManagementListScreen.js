@@ -8,25 +8,50 @@ import {
     StatusBar,
     ActivityIndicator,
     Alert,
-    Image
+    Image,
+    Modal,
+    TextInput,
+    ScrollView
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import * as ImagePicker from 'react-native-image-picker';
 import Colors from '../../constants/colors';
-import { getUsers, deleteUser } from '../../api/userApi';
-import { getAgents, toggleAgentStatus, deleteAgent } from '../../api/agentApi';
-import { getFranchises, toggleFranchiseStatus, deleteFranchise } from '../../api/franchiseApi';
+import { getUsers, deleteUser, updateUser } from '../../api/userApi';
+import { getAgents, toggleAgentStatus, deleteAgent, getAgentsByFranchise, updateAgent, updateAgentInFranchise, deleteAgentInFranchise } from '../../api/agentApi';
+import { getFranchises, toggleFranchiseStatus, deleteFranchise, createFranchise, updateFranchise } from '../../api/franchiseApi';
+import useAuthStore from '../../store/authStore';
 
 const ManagementListScreen = ({ navigation, route }) => {
     const { mode } = route.params; // 'users', 'agents', 'franchises'
+    const { user } = useAuthStore();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
+
+    // Form State
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        image: null
+    });
 
     const fetchData = async () => {
         setLoading(true);
         try {
             let res;
             if (mode === 'users') res = await getUsers();
-            else if (mode === 'agents') res = await getAgents();
+            else if (mode === 'agents') {
+                if (user?.role === 'franchise') {
+                    res = await getAgentsByFranchise(user.id || user._id);
+                } else {
+                    res = await getAgents();
+                }
+            }
             else res = await getFranchises();
 
             setData(res.data?.users || res.data?.agents || res.data?.franchises || res.data || []);
@@ -39,7 +64,94 @@ const ManagementListScreen = ({ navigation, route }) => {
 
     useEffect(() => {
         fetchData();
-    }, [mode]);
+    }, [mode, user]);
+
+    const handlePickImage = () => {
+        ImagePicker.launchImageLibrary({ mediaType: 'photo' }, (res) => {
+            if (res.assets && res.assets[0]) {
+                setFormData({ ...formData, image: res.assets[0] });
+            }
+        });
+    };
+
+    const handleCreate = async () => {
+        if (!formData.name) return Alert.alert('Error', 'Name is required');
+        setSubmitting(true);
+        try {
+            const fd = new FormData();
+            fd.append('name', formData.name);
+            if (formData.email) fd.append('email', formData.email);
+            if (formData.phone) fd.append('phone', formData.phone);
+            if (formData.address) fd.append('address', formData.address);
+            if (formData.image) {
+                fd.append('image', {
+                    uri: formData.image.uri,
+                    type: formData.image.type,
+                    name: formData.image.fileName
+                });
+            }
+
+            await createFranchise(fd);
+            Alert.alert('Success', 'Franchise created successfully');
+            setShowCreateModal(false);
+            setFormData({ name: '', email: '', phone: '', address: '', image: null });
+            fetchData();
+        } catch (e) {
+            Alert.alert('Error', e.response?.data?.message || 'Failed to create franchise');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleEdit = (item) => {
+        setEditingItem(item);
+        setFormData({
+            name: item.name || '',
+            email: item.email || '',
+            phone: item.phone || '',
+            address: item.address || '',
+            image: null
+        });
+        setShowEditModal(true);
+    };
+
+    const handleUpdate = async () => {
+        if (!formData.name) return Alert.alert('Error', 'Name is required');
+        setSubmitting(true);
+        try {
+            const id = editingItem.id || editingItem._id;
+            let res;
+            if (mode === 'users') {
+                res = await updateUser(id, { name: formData.name, email: formData.email });
+            } else if (mode === 'agents') {
+                const fd = new FormData();
+                fd.append('name', formData.name);
+                if (formData.image) {
+                    fd.append('image', {
+                        uri: formData.image.uri,
+                        type: formData.image.type,
+                        name: formData.image.fileName
+                    });
+                }
+                if (user?.role === 'franchise') {
+                    res = await updateAgentInFranchise(user.id || user._id, id, fd);
+                } else {
+                    res = await updateAgent(id, { name: formData.name });
+                }
+            } else {
+                res = await updateFranchise(id, { name: formData.name });
+            }
+
+            Alert.alert('Success', 'Updated successfully');
+            setShowEditModal(false);
+            setEditingItem(null);
+            fetchData();
+        } catch (e) {
+            Alert.alert('Error', 'Failed to update item.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     const handleToggle = async (item) => {
         try {
@@ -60,7 +172,10 @@ const ManagementListScreen = ({ navigation, route }) => {
                 onPress: async () => {
                     try {
                         if (mode === 'users') await deleteUser(id);
-                        else if (mode === 'agents') await deleteAgent(id);
+                        else if (mode === 'agents') {
+                            if (user?.role === 'franchise') await deleteAgentInFranchise(user.id || user._id, id);
+                            else await deleteAgent(id);
+                        }
                         else await deleteFranchise(id);
                         setData(prev => prev.filter(i => (i.id || i._id) !== id));
                     } catch (e) {
@@ -79,13 +194,16 @@ const ManagementListScreen = ({ navigation, route }) => {
             />
             <View style={styles.content}>
                 <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.subtitle}>{item.email || item.phone || 'No contact'}</Text>
+                <Text style={styles.subtitle}>{item.email || item.phone || item.address || 'No contact'}</Text>
                 <View style={styles.statusRow}>
                     <View style={[styles.statusBadge, { backgroundColor: item.isActive ? Colors.success + '15' : Colors.error + '15' }]}>
                         <Text style={[styles.statusText, { color: item.isActive ? Colors.success : Colors.error }]}>
                             {item.isActive ? 'Active' : 'Blocked'}
                         </Text>
                     </View>
+                    <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
+                        <Text style={styles.editText}>Edit</Text>
+                    </TouchableOpacity>
                     {mode !== 'users' && (
                         <TouchableOpacity onPress={() => handleToggle(item)} style={styles.toggleBtn}>
                             <Text style={styles.toggleText}>Toggle</Text>
@@ -107,7 +225,13 @@ const ManagementListScreen = ({ navigation, route }) => {
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Manage {mode.charAt(0).toUpperCase() + mode.slice(1)}</Text>
-                <View style={{ width: 44 }} />
+                {mode === 'franchises' && user?.role === 'admin' ? (
+                    <TouchableOpacity onPress={() => setShowCreateModal(true)} style={styles.addBtn}>
+                        <Icon name="add" size={24} color={Colors.primary} />
+                    </TouchableOpacity>
+                ) : (
+                    <View style={{ width: 44 }} />
+                )}
             </View>
 
             {loading ? (
@@ -129,6 +253,116 @@ const ManagementListScreen = ({ navigation, route }) => {
                     }
                 />
             )}
+
+            {/* Create Modal (Franchise Only) */}
+            <Modal visible={showCreateModal} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Add New Franchise</Text>
+                            <TouchableOpacity onPress={() => setShowCreateModal(false)}>
+                                <Icon name="close" size={24} color={Colors.textPrimary} />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            <TouchableOpacity style={styles.imagePlaceholder} onPress={handlePickImage}>
+                                {formData.image ? (
+                                    <Image source={{ uri: formData.image.uri }} style={styles.pickedImage} />
+                                ) : (
+                                    <Icon name="camera" size={30} color={Colors.textLight} />
+                                )}
+                            </TouchableOpacity>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Branch Name"
+                                value={formData.name}
+                                onChangeText={t => setFormData({ ...formData, name: t })}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Email Address"
+                                value={formData.email}
+                                onChangeText={t => setFormData({ ...formData, email: t })}
+                                keyboardType="email-address"
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Phone Number"
+                                value={formData.phone}
+                                onChangeText={t => setFormData({ ...formData, phone: t })}
+                                keyboardType="phone-pad"
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Address"
+                                value={formData.address}
+                                onChangeText={t => setFormData({ ...formData, address: t })}
+                            />
+                            <TouchableOpacity
+                                style={[styles.submitBtn, submitting && { opacity: 0.7 }]}
+                                onPress={handleCreate}
+                                disabled={submitting}
+                            >
+                                {submitting ? (
+                                    <ActivityIndicator color={Colors.textWhite} />
+                                ) : (
+                                    <Text style={styles.submitBtnText}>Create Franchise</Text>
+                                )}
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Edit Modal */}
+            <Modal visible={showEditModal} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Edit {mode.slice(0, -1)}</Text>
+                            <TouchableOpacity onPress={() => setShowEditModal(false)}>
+                                <Icon name="close" size={24} color={Colors.textPrimary} />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            {mode !== 'users' && (
+                                <TouchableOpacity style={styles.imagePlaceholder} onPress={handlePickImage}>
+                                    {formData.image ? (
+                                        <Image source={{ uri: formData.image.uri }} style={styles.pickedImage} />
+                                    ) : (
+                                        <Icon name="camera" size={30} color={Colors.textLight} />
+                                    )}
+                                </TouchableOpacity>
+                            )}
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Name"
+                                value={formData.name}
+                                onChangeText={t => setFormData({ ...formData, name: t })}
+                            />
+                            {mode === 'users' && (
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Email"
+                                    value={formData.email}
+                                    onChangeText={t => setFormData({ ...formData, email: t })}
+                                />
+                            )}
+                            <TouchableOpacity
+                                style={[styles.submitBtn, submitting && { opacity: 0.7 }]}
+                                onPress={handleUpdate}
+                                disabled={submitting}
+                            >
+                                {submitting ? (
+                                    <ActivityIndicator color={Colors.textWhite} />
+                                ) : (
+                                    <Text style={styles.submitBtnText}>Update {mode.slice(0, -1)}</Text>
+                                )}
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -147,6 +381,7 @@ const styles = StyleSheet.create({
         borderBottomColor: Colors.border
     },
     backBtn: { padding: 8 },
+    addBtn: { padding: 8 },
     headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
     list: { padding: 16 },
     card: {
@@ -165,12 +400,23 @@ const styles = StyleSheet.create({
     statusRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 10 },
     statusBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
     statusText: { fontSize: 10, fontWeight: '700' },
-    toggleBtn: { backgroundColor: Colors.primarySoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
-    toggleText: { fontSize: 10, color: Colors.primary, fontWeight: '700' },
+    editBtn: { backgroundColor: Colors.primarySoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
+    editText: { fontSize: 10, color: Colors.primary, fontWeight: '700' },
+    toggleBtn: { backgroundColor: Colors.accentSoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
+    toggleText: { fontSize: 10, color: Colors.accent, fontWeight: '700' },
     deleteBtn: { padding: 10 },
     centered: { flex: 1, justifyContent: 'center' },
     empty: { alignItems: 'center', marginTop: 50 },
-    emptyText: { color: Colors.textLight }
+    emptyText: { color: Colors.textLight },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+    modalContent: { backgroundColor: Colors.background, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '90%' },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+    modalTitle: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary },
+    imagePlaceholder: { width: 100, height: 100, borderRadius: 50, backgroundColor: Colors.backgroundSecondary, alignSelf: 'center', justifyContent: 'center', alignItems: 'center', marginBottom: 20, overflow: 'hidden' },
+    pickedImage: { width: '100%', height: '100%' },
+    input: { backgroundColor: Colors.backgroundSecondary, borderRadius: 12, padding: 15, marginBottom: 15, fontSize: 14, color: Colors.textPrimary },
+    submitBtn: { backgroundColor: Colors.primary, borderRadius: 14, padding: 18, alignItems: 'center', marginTop: 10 },
+    submitBtnText: { color: Colors.textWhite, fontSize: 16, fontWeight: '700' }
 });
 
 export default ManagementListScreen;

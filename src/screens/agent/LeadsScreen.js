@@ -7,17 +7,19 @@ import {
     TouchableOpacity,
     StatusBar,
     ActivityIndicator,
-    Linking
+    Linking,
+    Alert
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
-import { getEnquiries } from '../../api/enquiryApi';
+import { getEnquiries, updateEnquiry } from '../../api/enquiryApi';
 import { getRequirements } from '../../api/requirementApi';
 
 const LeadsScreen = ({ navigation }) => {
     const [tab, setTab] = useState('enquiries');
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [updatingId, setUpdatingId] = useState(null);
 
     const fetchData = async () => {
         setLoading(true);
@@ -39,17 +41,49 @@ const LeadsScreen = ({ navigation }) => {
         Linking.openURL(`tel:${phone}`);
     };
 
+    const handleStatusUpdate = async (id, status) => {
+        setUpdatingId(id);
+        try {
+            await updateEnquiry(id, status);
+            setData(prev => prev.map(item => (item.id || item._id) === id ? { ...item, status } : item));
+        } catch (e) {
+            Alert.alert('Error', 'Failed to update status');
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
     const renderItem = ({ item }) => (
         <View style={styles.leadCard}>
             <View style={styles.leadHeader}>
                 <Text style={styles.leadName}>{item.name}</Text>
                 <View style={[styles.badge, { backgroundColor: tab === 'enquiries' ? Colors.primarySoft : Colors.accentSoft }]}>
                     <Text style={[styles.badgeText, { color: tab === 'enquiries' ? Colors.primary : Colors.accent }]}>
-                        {tab === 'enquiries' ? 'Enquiry' : 'Requirement'}
+                        {tab === 'enquiries' ? (item.status || 'New') : 'Requirement'}
                     </Text>
                 </View>
             </View>
             <Text style={styles.leadDetails}>{item.message || item.details || item.requirement}</Text>
+
+            {tab === 'enquiries' && (
+                <View style={styles.statusActions}>
+                    {['New', 'Contacted', 'Resolved'].map(s => (
+                        <TouchableOpacity
+                            key={s}
+                            style={[
+                                styles.statusChip,
+                                item.status === s && styles.activeStatusChip,
+                                updatingId === (item.id || item._id) && { opacity: 0.5 }
+                            ]}
+                            disabled={updatingId === (item.id || item._id)}
+                            onPress={() => handleStatusUpdate(item.id || item._id, s)}
+                        >
+                            <Text style={[styles.statusChipText, item.status === s && styles.activeStatusChipText]}>{s}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
+
             <View style={styles.leadFooter}>
                 <TouchableOpacity onPress={() => handleCall(item.phone)} style={styles.callBtn}>
                     <Icon name="call" size={16} color={Colors.textWhite} />
@@ -155,6 +189,11 @@ const styles = StyleSheet.create({
     badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
     badgeText: { fontSize: 10, fontWeight: '700' },
     leadDetails: { fontSize: 14, color: Colors.textSecondary, lineHeight: 20 },
+    statusActions: { flexDirection: 'row', gap: 8, marginTop: 12, borderTopWidth: 1, borderTopColor: Colors.border, paddingTop: 12 },
+    statusChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: Colors.backgroundSecondary, borderWidth: 1, borderColor: Colors.border },
+    activeStatusChip: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+    statusChipText: { fontSize: 11, color: Colors.textSecondary, fontWeight: '600' },
+    activeStatusChipText: { color: Colors.textWhite },
     leadFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
     callBtn: {
         flexDirection: 'row',

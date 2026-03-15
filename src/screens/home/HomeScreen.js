@@ -21,7 +21,7 @@ import SearchBar from '../../components/SearchBar';
 import PropertyCard from '../../components/PropertyCard';
 import { getProperties } from '../../api/propertyApi';
 import { getAgents } from '../../api/agentApi';
-import { getCurrentStream } from '../../api/streamApi';
+import { propertyTypes } from '../../constants/appConstants';
 
 const { width } = Dimensions.get('window');
 
@@ -337,6 +337,50 @@ const HomeScreen = ({ navigation }) => {
                 )}
 
             </Animated.ScrollView>
+        </View>
+    );
+
+    const AgenciesSection = () => (
+        <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Agencies</Text>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
+                {franchises.map(item => (
+                    <TouchableOpacity
+                        key={item.id || item._id}
+                        style={styles.agencyCard}
+                        onPress={() => navigation.navigate('BuyTab', { franchiseId: item.id || item._id })}
+                    >
+                        <Image source={{ uri: item.image || 'https://via.placeholder.com/100' }} style={styles.agencyImage} />
+                        <Text style={styles.agencyName} numberOfLines={1}>{item.name}</Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    );
+
+    const AgentsSection = () => (
+        <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Elite Agents</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Agents')}>
+                    <Text style={styles.seeAll}>See All</Text>
+                </TouchableOpacity>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
+                {topAgents.map(item => (
+                    <TouchableOpacity
+                        key={item.id || item._id}
+                        style={styles.agentCard}
+                        onPress={() => navigation.navigate('BuyTab', { agentId: item.id || item._id })}
+                    >
+                        <Image source={{ uri: item.avatar || 'https://i.pravatar.cc/150' }} style={styles.agentImage} />
+                        <Text style={styles.agentName} numberOfLines={1}>{item.name}</Text>
+                        <Text style={styles.agentRole}>Elite Agent</Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
         </View>
     );
 };

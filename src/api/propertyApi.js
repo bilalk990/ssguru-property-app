@@ -6,8 +6,9 @@ import apiClient from './apiClient';
  */
 
 // GET /api/v1/properties
-export const getProperties = async (filters = {}) => {
-    return apiClient.get('/properties', { params: filters });
+export const getProperties = async (params = {}) => {
+    // Postman: Supports search, city, type, minPrice, maxPrice, agentId, franchiseId
+    return apiClient.get('/properties', { params });
 };
 
 // GET /api/v1/properties/:id

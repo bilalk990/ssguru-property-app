@@ -17,7 +17,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import CustomButton from '../../components/CustomButton';
 import { addProperty, updateProperty } from '../../api/propertyApi';
 import { getDistricts, getAreas } from '../../api/districtApi';
-import { propertyTypes } from '../../constants/dummyData';
+import { propertyTypes } from '../../constants/appConstants';
 
 const AddPropertyScreen = ({ navigation, route }) => {
     const editMode = route.params?.editMode || false;
@@ -45,36 +45,23 @@ const AddPropertyScreen = ({ navigation, route }) => {
 
     // Dynamic Location States
     const [districts, setDistricts] = useState([]);
-    const [areas, setAreas] = useState([]);
-    const [locLoading, setLocLoading] = useState(false);
+    const [areas, setAreas] = useState([]); // This state is still here but not used in the provided diff for step 3. Keeping it for now.
+    const [locLoading, setLocLoading] = useState(false); // This state is still here but not used in the provided diff for step 3. Keeping it for now.
 
     useEffect(() => {
-        const fetchMetadata = async () => {
+        const loadInitialData = async () => {
             try {
                 const res = await getDistricts();
                 setDistricts(res.data?.districts || res.data || []);
             } catch (e) {
-                console.error('Fetch Districts Error:', e);
+                console.error('AddProperty Init Error:', e);
             }
         };
-        fetchMetadata();
+        loadInitialData();
     }, []);
 
-    const handleDistrictChange = async (districtId, districtName) => {
-        updateField('city', districtName);
-        setLocLoading(true);
-        try {
-            const res = await getAreas(); // Collection has a generic getAreas, usually filtered by district on server or client
-            const allAreas = res.data?.areas || res.data || [];
-            // Filter locally if backend doesn't support districtId param yet
-            const filtered = allAreas.filter(a => a.districtId === districtId || a.district === districtName);
-            setAreas(filtered);
-        } catch (e) {
-            console.error('Fetch Areas Error:', e);
-        } finally {
-            setLocLoading(false);
-        }
-    };
+    // handleDistrictChange and related logic removed as per instruction implying removal of area selection based on district.
+    // If area selection is still needed, this function would need to be re-added and adapted.
 
     const updateField = (field, value) => {
         setForm(prev => ({ ...prev, [field]: value }));

@@ -15,16 +15,26 @@ import SearchBar from '../../components/SearchBar';
 import PropertyCard from '../../components/PropertyCard';
 import Loader from '../../components/Loader';
 import { getProperties } from '../../api/propertyApi';
-import { cities, propertyTypes, priceRanges } from '../../constants/dummyData';
+import { getDistricts } from '../../api/districtApi';
+import { propertyTypes, priceRanges } from '../../constants/appConstants';
 
-const BuyPropertyScreen = ({ navigation }) => {
+const BuyPropertyScreen = ({ navigation, route }) => {
+    // Check for initial filters passed from Agent/Franchise profile clicks
+    const initialAgentId = route.params?.agentId || null;
+    const initialFranchiseId = route.params?.franchiseId || null;
+
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [showFilter, setShowFilter] = useState(false);
     const [selectedCity, setSelectedCity] = useState('All Cities');
+    const [districts, setDistricts] = useState(['All Cities']);
     const [selectedType, setSelectedType] = useState('All Types');
     const [selectedPrice, setSelectedPrice] = useState(priceRanges[0]);
+
+    // Role-based filters (Internal state to allow clearing)
+    const [activeAgentId, setActiveAgentId] = useState(initialAgentId);
+    const [activeFranchiseId, setActiveFranchiseId] = useState(initialFranchiseId);
 
     const fetchProperties = useCallback(async () => {
         setLoading(true);
@@ -35,6 +45,8 @@ const BuyPropertyScreen = ({ navigation }) => {
                 type: selectedType === 'All Types' ? undefined : selectedType,
                 minPrice: selectedPrice.min || undefined,
                 maxPrice: (selectedPrice.max && selectedPrice.max !== Infinity) ? selectedPrice.max : undefined,
+                agentId: activeAgentId || undefined,
+                franchiseId: activeFranchiseId || undefined,
             };
             const response = await getProperties(params);
             const listings = response.data?.properties || response.data || [];
@@ -44,23 +56,45 @@ const BuyPropertyScreen = ({ navigation }) => {
         } finally {
             setLoading(false);
         }
-    }, [search, selectedCity, selectedType, selectedPrice]);
+    }, [search, selectedCity, selectedType, selectedPrice, activeAgentId, activeFranchiseId]);
+
+    const fetchDistricts = useCallback(async () => {
+        try {
+            const response = await getDistricts();
+            const list = response.data?.districts || response.data || [];
+            const names = ['All Cities', ...list.map(d => d.name)];
+            setDistricts(names);
+        } catch (error) {
+            console.error('Districts Fetch Error:', error);
+        }
+    }, []);
 
     useEffect(() => {
         fetchProperties();
-    }, [fetchProperties]);
+        fetchDistricts();
+    }, [fetchProperties, fetchDistricts]);
+
+    useEffect(() => {
+        // Update local state if route params change
+        if (route.params?.agentId) setActiveAgentId(route.params.agentId);
+        if (route.params?.franchiseId) setActiveFranchiseId(route.params.franchiseId);
+    }, [route.params]);
 
     const clearFilters = () => {
         setSelectedCity('All Cities');
         setSelectedType('All Types');
         setSelectedPrice(priceRanges[0]);
         setSearch('');
+        setActiveAgentId(null);
+        setActiveFranchiseId(null);
     };
 
     const hasActiveFilters =
         selectedCity !== 'All Cities' ||
         selectedType !== 'All Types' ||
-        selectedPrice.label !== 'All Prices';
+        selectedPrice.label !== 'All Prices' ||
+        activeAgentId ||
+        activeFranchiseId;
 
     const renderFilterModal = () => (
         <Modal
@@ -83,7 +117,7 @@ const BuyPropertyScreen = ({ navigation }) => {
                     {/* City Filter */}
                     <Text style={styles.filterLabel}>City</Text>
                     <View style={styles.chipContainer}>
-                        {cities.map(city => (
+                        {districts.map(city => (
                             <TouchableOpacity
                                 key={city}
                                 style={[
@@ -198,6 +232,19 @@ const BuyPropertyScreen = ({ navigation }) => {
                             <TouchableOpacity
                                 onPress={() => setSelectedPrice(priceRanges[0])}>
                                 <Icon name="close-circle" size={14} color={Colors.primary} />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                    {(activeAgentId || activeFranchiseId) && (
+                        <View style={[styles.activeChip, { backgroundColor: Colors.accentSoft }]}>
+                            <Icon name="person" size={12} color={Colors.accent} />
+                            <Text style={[styles.activeChipText, { color: Colors.accent }]}>Profile Only</Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setActiveAgentId(null);
+                                    setActiveFranchiseId(null);
+                                }}>
+                                <Icon name="close-circle" size={14} color={Colors.accent} />
                             </TouchableOpacity>
                         </View>
                     )}
