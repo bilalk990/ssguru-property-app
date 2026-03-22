@@ -40,7 +40,10 @@ export const toggleFranchiseStatus = async (id) => {
 // Application / Lead (Redirects to Enquiries for brand-level applications)
 export const applyForFranchise = async (data) => {
     return apiClient.post('/enquiries', {
-        ...data,
-        message: `Franchise Application: ${data.message || 'Interested in partnership'}`,
+        name: data.name || 'Interested Partner',
+        contact: data.phone || data.contact || '0000000000',
+        email: data.email || `${(data.phone || data.contact || '0000000000')}@noemail.com`,
+        city: data.city || 'General',
+        message: data.message || 'Franchise Application: Interested in partnership',
     });
 };

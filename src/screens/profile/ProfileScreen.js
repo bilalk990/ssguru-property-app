@@ -31,7 +31,7 @@ const ProfileScreen = ({ navigation }) => {
 
             if (userId) {
                 const response = await getMe(userId);
-                const data = response.data?.user || response.data;
+                const data = response.data?.data || response.data?.user || response.data;
                 setUser(data);
                 if (data) await AsyncStorage.setItem('userData', JSON.stringify(data));
             } else {

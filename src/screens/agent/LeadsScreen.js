@@ -25,7 +25,7 @@ const LeadsScreen = ({ navigation }) => {
         setLoading(true);
         try {
             const res = tab === 'enquiries' ? await getEnquiries() : await getRequirements();
-            setData(res.data?.enquiries || res.data?.requirements || res.data || []);
+            setData(res.data?.data || res.data?.enquiries || res.data?.requirements || res.data || []);
         } catch (e) {
             console.error('Fetch Leads Error:', e);
         } finally {

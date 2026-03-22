@@ -129,7 +129,7 @@ const HomeScreen = ({ navigation }) => {
             setProperties(listings);
             setAgents(topAgents);
             setFranchises(topFranchises);
-            setIsLive(!!streamRes.data?.url);
+            setIsLive(!!(streamRes.data?.youtubeUrl && streamRes.data?.isActive));
         } catch (error) {
             console.error('Home Data Error:', error);
         } finally {

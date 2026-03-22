@@ -18,7 +18,13 @@ const AboutContactScreen = ({ navigation }) => {
         }
         setLoading(true);
         try {
-            await submitEnquiry(form);
+            await submitEnquiry({
+                name: form.name,
+                contact: form.phone,
+                email: `${form.phone}@noemail.com`,
+                city: 'General',
+                message: form.details,
+            });
             Alert.alert('Success', 'Your requirement has been submitted. Our team will contact you soon.');
             setForm({ name: '', phone: '', details: '' });
         } catch (e) {

@@ -20,7 +20,7 @@ const NotificationScreen = ({ navigation }) => {
     const fetchNotifications = async () => {
         try {
             const res = await getNotifications();
-            setNotifications(res.data?.notifications || res.data || []);
+            setNotifications(res.data?.data || res.data?.notifications || res.data || []);
         } catch (e) {
             console.error('Fetch Notifications Error:', e);
         } finally {

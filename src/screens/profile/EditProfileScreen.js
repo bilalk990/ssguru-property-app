@@ -40,7 +40,7 @@ const EditProfileScreen = ({ navigation }) => {
 
                 if (userId) {
                     const res = await getMe(userId);
-                    const user = res.data?.user || res.data;
+                    const user = res.data?.data || res.data?.user || res.data;
                     if (user) {
                         setName(user.name || '');
                         setPhone(user.phone || '');

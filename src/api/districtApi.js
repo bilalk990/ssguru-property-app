@@ -24,7 +24,7 @@ export const getAreaById = async (id) => {
 };
 
 export const createArea = async (name, districtId) => {
-    return apiClient.post('/areas', { name, districtId });
+    return apiClient.post('/areas', { name, district: districtId });
 };
 
 export const updateArea = async (id, name) => {

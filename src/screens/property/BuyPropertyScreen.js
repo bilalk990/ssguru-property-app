@@ -61,7 +61,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
     const fetchDistricts = useCallback(async () => {
         try {
             const response = await getDistricts();
-            const list = response.data?.districts || response.data || [];
+            const list = response.data?.data || response.data?.districts || response.data || [];
             const names = ['All Cities', ...list.map(d => d.name)];
             setDistricts(names);
         } catch (error) {

@@ -7,7 +7,7 @@ import apiClient from './apiClient';
 
 // POST /api/v1/stream/set
 export const setStream = async (url) => {
-    return apiClient.post('/stream/set', { url });
+    return apiClient.post('/stream/set', { youtubeUrl: url, isActive: true });
 };
 
 // GET /api/v1/stream/current

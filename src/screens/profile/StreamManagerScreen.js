@@ -26,8 +26,8 @@ const StreamManagerScreen = ({ navigation }) => {
         setLoading(true);
         try {
             const res = await getCurrentStream();
-            setCurrentStream(res.data?.url || null);
-            if (res.data?.url) setUrl(res.data.url);
+            setCurrentStream(res.data?.youtubeUrl || null);
+            if (res.data?.youtubeUrl) setUrl(res.data.youtubeUrl);
         } catch (error) {
             console.error('Fetch Stream Error:', error);
         } finally {

@@ -21,7 +21,8 @@ const EnquiryFormScreen = ({ navigation }) => {
     const [form, setForm] = useState({
         name: '',
         phone: '',
-        city: '', // This will now store the selected district
+        email: '',
+        city: '',
         requirement: '',
     });
     const [districts, setDistricts] = useState([]);
@@ -31,7 +32,7 @@ const EnquiryFormScreen = ({ navigation }) => {
         const fetchDistricts = async () => {
             try {
                 const res = await getDistricts();
-                setDistricts(res.data?.districts || res.data || []);
+                setDistricts(res.data?.data || res.data?.districts || res.data || []);
             } catch (e) {
                 console.error(e);
             }
@@ -51,7 +52,13 @@ const EnquiryFormScreen = ({ navigation }) => {
 
         setLoading(true);
         try {
-            await createEnquiry(form);
+            await createEnquiry({
+                name: form.name,
+                contact: form.phone,
+                email: form.email || `${form.phone}@noemail.com`,
+                city: form.city,
+                message: form.requirement,
+            });
             Alert.alert(
                 'Enquiry Submitted! 🎉',
                 'We have received your property requirement. Our team will contact you soon.',
@@ -121,6 +128,17 @@ const EnquiryFormScreen = ({ navigation }) => {
                         onChangeText={v => updateField('phone', v)}
                     />
                 </View>
+
+                <Text style={styles.label}>Email Address (Optional)</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter your email"
+                    placeholderTextColor={Colors.textLight}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    value={form.email}
+                    onChangeText={v => updateField('email', v)}
+                />
 
                 <Text style={styles.label}>District of Interest *</Text>
                 <View style={styles.cityContainer}>

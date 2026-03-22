@@ -10,7 +10,12 @@ import {
     Alert,
     TouchableOpacity,
     ScrollView,
+    Dimensions,
 } from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+// 6 boxes + 5 gaps, fit within screen with 48px horizontal padding
+const BOX_SIZE = Math.min(48, Math.floor((SCREEN_WIDTH - 48 - 5 * 10) / 6));
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
@@ -258,18 +263,20 @@ const styles = StyleSheet.create({
     otpContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        gap: 14,
+        alignItems: 'center',
+        gap: 10,
         marginBottom: 30,
+        paddingHorizontal: 24,
     },
     otpInput: {
-        width: 60,
-        height: 60,
-        borderRadius: 16,
+        width: BOX_SIZE,
+        height: BOX_SIZE,
+        borderRadius: 12,
         borderWidth: 2,
         borderColor: Colors.border,
         backgroundColor: Colors.surfaceSecondary,
         textAlign: 'center',
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: '700',
         color: Colors.textPrimary,
     },

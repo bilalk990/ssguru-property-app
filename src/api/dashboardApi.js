@@ -10,7 +10,7 @@ export const getAdminStats = async () => {
     return apiClient.get('/speradmindashboard');
 };
 
-// GET /api/v1/franchise/stats/:franchiseId
+// GET /api/v1/franchisedashboard/stats/:franchiseId
 export const getFranchiseStats = async (franchiseId) => {
-    return apiClient.get(`/franchise/stats/${franchiseId}`);
+    return apiClient.get(`/franchisedashboard/stats/${franchiseId}`);
 };

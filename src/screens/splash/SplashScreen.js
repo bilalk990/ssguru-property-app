@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Image, StyleSheet, StatusBar, Dimensions, Animated, Platform } from 'react-native';
+import { View, Text, Image, StyleSheet, StatusBar, Dimensions, Animated, Platform } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Colors from '../../constants/colors';
 import authStore from '../../store/authStore';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const SplashScreen = ({ navigation }) => {
     const scaleAnim = useRef(new Animated.Value(0.6)).current;
@@ -89,11 +89,6 @@ const SplashScreen = ({ navigation }) => {
     );
 };
 
-// Simple text component for version label in splash
-const Text = ({ children, style }) => (
-    <Animated.Text style={style}>{children}</Animated.Text>
-);
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -121,7 +116,6 @@ const styles = StyleSheet.create({
     logo: {
         width: '100%',
         height: '100%',
-        tintColor: '#FFFFFF', // Optional: Make logo white for dark splash
     },
     footer: {
         position: 'absolute',
@@ -155,4 +149,3 @@ const styles = StyleSheet.create({
 });
 
 export default SplashScreen;
-

@@ -24,8 +24,8 @@ const LiveTourScreen = ({ navigation }) => {
         const fetchStream = async () => {
             try {
                 const res = await getCurrentStream();
-                if (res.data?.url) {
-                    setStreamUrl(res.data.url);
+                if (res.data?.youtubeUrl) {
+                    setStreamUrl(res.data.youtubeUrl);
                 } else {
                     Alert.alert("Notice", "No live tour is active at the moment.", [
                         { text: "Go Back", onPress: () => navigation.goBack() }

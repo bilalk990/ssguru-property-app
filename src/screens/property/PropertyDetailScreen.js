@@ -50,9 +50,11 @@ const PropertyDetailScreen = ({ route, navigation }) => {
         // Log enquiry to backend first
         try {
             await createEnquiry({
-                propertyId: property.id || property._id,
+                name: 'App User',
+                contact: property.agentPhone || '0000000000',
+                email: 'app@noemail.com',
+                city: property.city || 'General',
                 message: `WhatsApp interest: ${property.title}`,
-                name: 'App User', // Should ideally be current user name
             });
         } catch (e) {
             console.warn('Silent enquiry log failed', e);

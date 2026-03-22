@@ -63,7 +63,7 @@ const ManagementListScreen = ({ navigation, route }) => {
             }
             else res = await getFranchises();
 
-            setData(res.data?.users || res.data?.agents || res.data?.franchises || res.data || []);
+            setData(res.data?.data?.users || res.data?.data?.agents || res.data?.data?.franchises || res.data?.data || res.data?.users || res.data?.agents || res.data?.franchises || res.data || []);
         } catch (e) {
             console.error('Fetch Management Error:', e);
         } finally {

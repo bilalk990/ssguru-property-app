@@ -42,7 +42,13 @@ const FranchiseDashboardScreen = ({ navigation }) => {
                 setFranchiseId(fid);
 
                 const res = await getFranchiseStats(fid);
-                setStats(res.data);
+                const statsData = res.data?.data || res.data;
+                setStats({
+                    totalProperties: statsData?.propertyCount || statsData?.totalProperties || 0,
+                    totalAgents: statsData?.agentCount || statsData?.totalAgents || 0,
+                    totalEnquiries: statsData?.totalEnquiries || 0,
+                    totalSalesValue: statsData?.totalSalesValue || '0',
+                });
             } catch (error) {
                 console.error('Fetch Franchise Stats Error:', error);
             } finally {

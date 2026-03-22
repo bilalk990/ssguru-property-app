@@ -33,8 +33,8 @@ const LocationManagerScreen = ({ navigation }) => {
         setLoading(true);
         try {
             const [dRes, aRes] = await Promise.all([getDistricts(), getAreas()]);
-            setDistricts(dRes.data || []);
-            setAreas(aRes.data || []);
+            setDistricts(dRes.data?.data || dRes.data || []);
+            setAreas(aRes.data?.data || aRes.data || []);
         } catch (error) {
             console.error('Fetch Location Data Error:', error);
         } finally {

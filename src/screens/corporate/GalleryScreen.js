@@ -25,7 +25,7 @@ const GalleryScreen = ({ navigation }) => {
         const fetchGallery = async () => {
             try {
                 const res = await getProperties({ featured: true });
-                const props = res.data?.properties || res.data || [];
+                const props = res.data?.data || res.data?.properties || res.data || [];
                 // Extract images from properties
                 const galleryItems = props.map(p => ({
                     id: p.id || p._id,

@@ -39,8 +39,9 @@ const PostRequirementScreen = ({ navigation }) => {
         setLoading(true);
         try {
             await addRequirement({
-                ...form,
-                details: `${form.details}\nBudget: ${form.budget}\nLocation: ${form.location}`
+                name: form.name,
+                phone: form.phone,
+                requirement: `${form.details}${form.budget ? '\nBudget: ' + form.budget : ''}${form.location ? '\nLocation: ' + form.location : ''}`,
             });
             Alert.alert(
                 'Submitted Successfully! ✅',
