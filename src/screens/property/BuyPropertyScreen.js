@@ -1,0 +1,515 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    FlatList,
+    TouchableOpacity,
+    Platform,
+    Modal,
+    StatusBar,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Colors from '../../constants/colors';
+import SearchBar from '../../components/SearchBar';
+import PropertyCard from '../../components/PropertyCard';
+import Loader from '../../components/Loader';
+import { getProperties } from '../../api/propertyApi';
+import { getDistricts } from '../../api/districtApi';
+import { propertyTypes, priceRanges } from '../../constants/appConstants';
+
+const BuyPropertyScreen = ({ navigation, route }) => {
+    // Check for initial filters passed from Agent/Franchise profile clicks
+    const initialAgentId = route.params?.agentId || null;
+    const initialFranchiseId = route.params?.franchiseId || null;
+
+    const [properties, setProperties] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [showFilter, setShowFilter] = useState(false);
+    const [selectedCity, setSelectedCity] = useState('All Cities');
+    const [districts, setDistricts] = useState(['All Cities']);
+    const [selectedType, setSelectedType] = useState('All Types');
+    const [selectedPrice, setSelectedPrice] = useState(priceRanges[0]);
+
+    // Role-based filters (Internal state to allow clearing)
+    const [activeAgentId, setActiveAgentId] = useState(initialAgentId);
+    const [activeFranchiseId, setActiveFranchiseId] = useState(initialFranchiseId);
+
+    const fetchProperties = useCallback(async () => {
+        setLoading(true);
+        try {
+            const params = {
+                search,
+                city: selectedCity === 'All Cities' ? undefined : selectedCity,
+                type: selectedType === 'All Types' ? undefined : selectedType,
+                minPrice: selectedPrice.min || undefined,
+                maxPrice: (selectedPrice.max && selectedPrice.max !== Infinity) ? selectedPrice.max : undefined,
+                agentId: activeAgentId || undefined,
+                franchiseId: activeFranchiseId || undefined,
+            };
+            const response = await getProperties(params);
+            const listings = response.data?.properties || response.data || [];
+            setProperties(listings);
+        } catch (error) {
+            console.error('Error fetching properties:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [search, selectedCity, selectedType, selectedPrice, activeAgentId, activeFranchiseId]);
+
+    const fetchDistricts = useCallback(async () => {
+        try {
+            const response = await getDistricts();
+            const list = response.data?.districts || response.data || [];
+            const names = ['All Cities', ...list.map(d => d.name)];
+            setDistricts(names);
+        } catch (error) {
+            console.error('Districts Fetch Error:', error);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchProperties();
+        fetchDistricts();
+    }, [fetchProperties, fetchDistricts]);
+
+    useEffect(() => {
+        // Update local state if route params change
+        if (route.params?.agentId) setActiveAgentId(route.params.agentId);
+        if (route.params?.franchiseId) setActiveFranchiseId(route.params.franchiseId);
+    }, [route.params]);
+
+    const clearFilters = () => {
+        setSelectedCity('All Cities');
+        setSelectedType('All Types');
+        setSelectedPrice(priceRanges[0]);
+        setSearch('');
+        setActiveAgentId(null);
+        setActiveFranchiseId(null);
+    };
+
+    const hasActiveFilters =
+        selectedCity !== 'All Cities' ||
+        selectedType !== 'All Types' ||
+        selectedPrice.label !== 'All Prices' ||
+        activeAgentId ||
+        activeFranchiseId;
+
+    const renderFilterModal = () => (
+        <Modal
+            visible={showFilter}
+            animationType="slide"
+            transparent
+            onRequestClose={() => setShowFilter(false)}>
+            <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                        <View style={styles.modalTitleRow}>
+                            <Icon name="options" size={20} color={Colors.primary} />
+                            <Text style={styles.modalTitle}> Filters</Text>
+                        </View>
+                        <TouchableOpacity onPress={() => setShowFilter(false)} style={styles.closeIconWrapper}>
+                            <Icon name="close" size={24} color={Colors.textSecondary} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* City Filter */}
+                    <Text style={styles.filterLabel}>City</Text>
+                    <View style={styles.chipContainer}>
+                        {districts.map(city => (
+                            <TouchableOpacity
+                                key={city}
+                                style={[
+                                    styles.chip,
+                                    selectedCity === city && styles.chipActive,
+                                ]}
+                                onPress={() => setSelectedCity(city)}>
+                                <Text
+                                    style={[
+                                        styles.chipText,
+                                        selectedCity === city && styles.chipTextActive,
+                                    ]}>
+                                    {city}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    {/* Property Type */}
+                    <Text style={styles.filterLabel}>Property Type</Text>
+                    <View style={styles.chipContainer}>
+                        {propertyTypes.map(type => (
+                            <TouchableOpacity
+                                key={type}
+                                style={[
+                                    styles.chip,
+                                    selectedType === type && styles.chipActive,
+                                ]}
+                                onPress={() => setSelectedType(type)}>
+                                <Text
+                                    style={[
+                                        styles.chipText,
+                                        selectedType === type && styles.chipTextActive,
+                                    ]}>
+                                    {type}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    {/* Price Range */}
+                    <Text style={styles.filterLabel}>Price Range</Text>
+                    <View style={styles.chipContainer}>
+                        {priceRanges.map(range => (
+                            <TouchableOpacity
+                                key={range.label}
+                                style={[
+                                    styles.chip,
+                                    selectedPrice.label === range.label && styles.chipActive,
+                                ]}
+                                onPress={() => setSelectedPrice(range)}>
+                                <Text
+                                    style={[
+                                        styles.chipText,
+                                        selectedPrice.label === range.label &&
+                                        styles.chipTextActive,
+                                    ]}>
+                                    {range.label}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    {/* Actions */}
+                    <View style={styles.modalActions}>
+                        <TouchableOpacity
+                            style={styles.clearButton}
+                            onPress={clearFilters}>
+                            <Text style={styles.clearButtonText}>Clear All</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.applyButton}
+                            onPress={() => setShowFilter(false)}>
+                            <Text style={styles.applyButtonText}>Apply Filters</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </Modal>
+    );
+
+    const renderHeader = () => (
+        <View style={styles.listHeader}>
+            {hasActiveFilters && (
+                <View style={styles.activeFilters}>
+                    {selectedCity !== 'All Cities' && (
+                        <View style={styles.activeChip}>
+                            <Icon name="location" size={12} color={Colors.primary} />
+                            <Text style={styles.activeChipText}>{selectedCity}</Text>
+                            <TouchableOpacity
+                                onPress={() => setSelectedCity('All Cities')}>
+                                <Icon name="close-circle" size={14} color={Colors.primary} />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                    {selectedType !== 'All Types' && (
+                        <View style={styles.activeChip}>
+                            <Icon name="business" size={12} color={Colors.primary} />
+                            <Text style={styles.activeChipText}>{selectedType}</Text>
+                            <TouchableOpacity
+                                onPress={() => setSelectedType('All Types')}>
+                                <Icon name="close-circle" size={14} color={Colors.primary} />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                    {selectedPrice.label !== 'All Prices' && (
+                        <View style={styles.activeChip}>
+                            <Icon name="cash" size={12} color={Colors.primary} />
+                            <Text style={styles.activeChipText}>
+                                {selectedPrice.label}
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => setSelectedPrice(priceRanges[0])}>
+                                <Icon name="close-circle" size={14} color={Colors.primary} />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                    {(activeAgentId || activeFranchiseId) && (
+                        <View style={[styles.activeChip, { backgroundColor: Colors.accentSoft }]}>
+                            <Icon name="person" size={12} color={Colors.accent} />
+                            <Text style={[styles.activeChipText, { color: Colors.accent }]}>Profile Only</Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setActiveAgentId(null);
+                                    setActiveFranchiseId(null);
+                                }}>
+                                <Icon name="close-circle" size={14} color={Colors.accent} />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
+            )}
+            <Text style={styles.resultCount}>
+                {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
+            </Text>
+        </View>
+    );
+
+    return (
+        <View style={styles.container}>
+            <StatusBar backgroundColor={Colors.background} barStyle="dark-content" />
+
+            {/* Top Bar */}
+            <View style={styles.topBar}>
+                <View style={styles.screenHeaderTitle}>
+                    <Icon name="business" size={24} color={Colors.primary} />
+                    <Text style={styles.screenTitle}>Properties</Text>
+                </View>
+                <SearchBar
+                    value={search}
+                    onChangeText={setSearch}
+                    onFilterPress={() => setShowFilter(true)}
+                    style={styles.searchBar}
+                />
+            </View>
+
+            {/* Property List */}
+            {loading ? (
+                <Loader message="Finding properties..." fullScreen={false} />
+            ) : (
+                <FlatList
+                    data={properties}
+                    renderItem={({ item }) => (
+                        <PropertyCard
+                            property={item}
+                            onPress={() =>
+                                navigation.navigate('PropertyDetail', { property: item })
+                            }
+                        />
+                    )}
+                    keyExtractor={item => item.id.toString()}
+                    contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
+                    showsVerticalScrollIndicator={false}
+                    ListHeaderComponent={renderHeader}
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <View style={styles.emptyIconWrapper}>
+                                <Icon name="search-outline" size={50} color={Colors.textLight} />
+                            </View>
+                            <Text style={styles.emptyTitle}>No properties found</Text>
+                            <Text style={styles.emptyText}>
+                                Try adjusting your search or filters
+                            </Text>
+                            <TouchableOpacity onPress={clearFilters}>
+                                <Text style={styles.clearFiltersText}>Clear all filters</Text>
+                            </TouchableOpacity>
+                        </View>
+                    }
+                />
+            )}
+
+            {renderFilterModal()}
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: Colors.backgroundSecondary,
+    },
+    topBar: {
+        backgroundColor: Colors.background,
+        paddingHorizontal: 16,
+        paddingTop: Platform.OS === 'ios' ? 60 : 16,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.border,
+    },
+    screenHeaderTitle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 14,
+    },
+    screenTitle: {
+        fontSize: 24,
+        fontWeight: '800',
+        color: Colors.textPrimary,
+    },
+    searchBar: {
+        marginBottom: 0,
+    },
+    listContent: {
+        padding: 16,
+    },
+    listHeader: {
+        marginBottom: 8,
+    },
+    activeFilters: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginBottom: 12,
+    },
+    activeChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: Colors.primarySoft,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        gap: 6,
+    },
+    activeChipText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: Colors.primary,
+    },
+    removeChip: {
+        fontSize: 14,
+        color: Colors.primary,
+        fontWeight: '700',
+    },
+    resultCount: {
+        fontSize: 13,
+        color: Colors.textSecondary,
+        fontWeight: '500',
+        marginBottom: 8,
+    },
+    // Filter Modal
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: Colors.overlay,
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: Colors.background,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 20,
+        maxHeight: '80%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    modalTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '800',
+        color: Colors.textPrimary,
+    },
+    closeIconWrapper: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: Colors.backgroundSecondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    filterLabel: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: Colors.textPrimary,
+        marginBottom: 10,
+        marginTop: 6,
+    },
+    chipContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginBottom: 16,
+    },
+    chip: {
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: Colors.backgroundSecondary,
+        borderWidth: 1,
+        borderColor: Colors.border,
+    },
+    chipActive: {
+        backgroundColor: Colors.primary,
+        borderColor: Colors.primary,
+    },
+    chipText: {
+        fontSize: 13,
+        color: Colors.textSecondary,
+        fontWeight: '500',
+    },
+    chipTextActive: {
+        color: Colors.textWhite,
+        fontWeight: '600',
+    },
+    modalActions: {
+        flexDirection: 'row',
+        gap: 12,
+        marginTop: 10,
+    },
+    clearButton: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 14,
+        borderWidth: 2,
+        borderColor: Colors.border,
+        alignItems: 'center',
+    },
+    clearButtonText: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: Colors.textSecondary,
+    },
+    applyButton: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 14,
+        backgroundColor: Colors.primary,
+        alignItems: 'center',
+        elevation: 2,
+    },
+    applyButtonText: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: Colors.textWhite,
+    },
+    // Empty State
+    emptyContainer: {
+        alignItems: 'center',
+        paddingVertical: 60,
+    },
+    emptyIconWrapper: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: Colors.surfaceSecondary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    emptyTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: Colors.textPrimary,
+        marginBottom: 8,
+    },
+    emptyText: {
+        fontSize: 14,
+        color: Colors.textSecondary,
+        marginBottom: 16,
+    },
+    clearFiltersText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: Colors.primary,
+    },
+});
+
+export default BuyPropertyScreen;

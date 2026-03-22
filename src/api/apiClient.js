@@ -1,0 +1,62 @@
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Base URL - Railway production server
+const BASE_URL = 'https://sspropertyguru-production.up.railway.app/api/v1';
+
+const apiClient = axios.create({
+    baseURL: BASE_URL,
+    timeout: 60000, // Increased to 60 seconds for slow connections
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
+});
+
+// Request Interceptor: Attach Token
+apiClient.interceptors.request.use(
+    async (config) => {
+        const token = await AsyncStorage.getItem('authToken');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
+// Response Interceptor: Handle Global Errors
+apiClient.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        // Log detailed error for debugging
+        console.log('=== API ERROR DEBUG ===');
+        console.log('Error Code:', error.code);
+        console.log('Error Message:', error.message);
+        console.log('Response Status:', error.response?.status);
+        console.log('Response Data:', error.response?.data);
+        console.log('Request URL:', error.config?.url);
+        console.log('Request Method:', error.config?.method);
+        console.log('======================');
+
+        if (error.code === 'ECONNABORTED') {
+            console.error('API Timeout:', error);
+            error.message = 'Request timeout. Please check your connection and try again.';
+        }
+        
+        if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+            console.error('Network Error:', error);
+            error.message = 'Network Error. Please check your internet connection.';
+        }
+
+        if (error.response?.status === 401) {
+            // Token expired - clear storage and redirect to login
+            await AsyncStorage.removeItem('authToken');
+            await AsyncStorage.removeItem('userData');
+        }
+        
+        return Promise.reject(error);
+    },
+);
+
+export default apiClient;

@@ -1,0 +1,73 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build Release APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          echo "Running assembleRelease..."
+          # Run assembleRelease and output to build_full_log.txt, but do not exit immediately on failure
+          ./gradlew assembleRelease --no-daemon --console=plain > build_full_log.txt 2>&1 || BUILD_FAILED=true
+          
+          if [ "$BUILD_FAILED" = "true" ]; then
+            echo "### 🚨 Android Build Failed" >> $GITHUB_STEP_SUMMARY
+            echo '```log' >> $GITHUB_STEP_SUMMARY
+            # Extract the actual failure line and the lines around it
+            tail -n 250 build_full_log.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "Build failed. Check the Step Summary for details."
+            exit 1
+          fi
+          
+          echo "### ✅ Android Build Succeeded" >> $GITHUB_STEP_SUMMARY
+          echo "Searching for APKs..."
+          find . -name "*.apk"
+          
+          echo "Output directory structure:"
+          ls -R app/build/outputs || echo "Outputs dir not found at expected path"
+
+      - name: Upload APK Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ss-property-guru-apk
+          path: "android/app/build/outputs/apk/release/*.apk"
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Logs on Failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-diagnostics
+          path: |
+            android/build_full_log.txt
+            android/app/build/outputs/
+          retention-days: 7

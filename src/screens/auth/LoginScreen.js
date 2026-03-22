@@ -1,0 +1,350 @@
+import React, { useState } from 'react';
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    Image,
+    StatusBar,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Alert,
+    Dimensions,
+    TouchableOpacity,
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Colors from '../../constants/colors';
+import CustomButton from '../../components/CustomButton';
+import { signin } from '../../api/authApi';
+import authStore from '../../store/authStore';
+
+const { width } = Dimensions.get('window');
+
+const LoginScreen = ({ navigation }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert('Fields Required', 'Please enter both email and password.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await signin(email.trim().toLowerCase(), password);
+            if (response.data && response.data.token) {
+                // Use the authStore to save data consistently
+                await authStore.saveAuthData(response.data.token, response.data);
+                navigation.replace('MainApp');
+            } else {
+                Alert.alert('Login Failed', response.data?.message || 'Invalid credentials or server error.');
+            }
+        } catch (error) {
+            console.log('Login Error:', error);
+            const message = error.response?.data?.message || 'Failed to sign in. Please check your credentials and connection.';
+            Alert.alert('Error', message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+            <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled">
+
+                {/* Modern Decorative Background */}
+                <View style={styles.topDecoration}>
+                    <LinearGradient
+                        colors={[Colors.primarySoft, Colors.background]}
+                        style={styles.decorCircle}
+                    />
+                    <LinearGradient
+                        colors={[Colors.accentSoft, Colors.background]}
+                        style={styles.decorCircleSmall}
+                    />
+                </View>
+
+                {/* Header Content */}
+                <View style={styles.header}>
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('../../assets/logo.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
+                    </View>
+                    <Text style={styles.title}>Welcome Back</Text>
+                    <Text style={styles.subtitle}>Enter your credentials to manage your properties</Text>
+                </View>
+
+
+                {/* Input Card */}
+                <View style={styles.card}>
+                    <Text style={styles.label}>Email Address</Text>
+                    <View style={styles.inputWrapper}>
+                        <Icon name="mail-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="yourname@gmail.com"
+                            placeholderTextColor={Colors.textLight}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            value={email}
+                            onChangeText={setEmail}
+                        />
+                    </View>
+
+                    <Text style={styles.label}>Password</Text>
+                    <View style={styles.inputWrapper}>
+                        <Icon name="lock-closed-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="••••••••"
+                            placeholderTextColor={Colors.textLight}
+                            secureTextEntry={!showPassword}
+                            value={password}
+                            onChangeText={setPassword}
+                        />
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                            <Icon name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={Colors.textLight} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('OTP', { email, mode: 'forgot' })}
+                        style={styles.forgotBtn}
+                    >
+                        <Text style={styles.forgotText}>Forgot Password?</Text>
+                    </TouchableOpacity>
+
+                    <CustomButton
+                        title="Sign In"
+                        onPress={handleLogin}
+                        loading={loading}
+                        size="large"
+                        style={styles.button}
+                        icon="log-in-outline"
+                    />
+
+                    <View style={styles.signupContainer}>
+                        <Text style={styles.noAccountText}>Don't have an account? </Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                            <Text style={styles.signupLink}>Sign Up</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Footer */}
+                <View style={styles.footer}>
+                    <Text style={styles.footerText}>
+                        By signing in, you agree to our{' '}
+                        <Text style={styles.link}>Terms</Text> and{' '}
+                        <Text style={styles.link}>Privacy Policy</Text>
+                    </Text>
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: Colors.background,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingHorizontal: 24,
+        paddingTop: Platform.OS === 'ios' ? 40 : 20,
+    },
+    topDecoration: {
+        position: 'absolute',
+        top: -100,
+        right: -100,
+        zIndex: -1,
+    },
+    decorCircle: {
+        width: 300,
+        height: 300,
+        borderRadius: 150,
+        opacity: 0.6,
+    },
+    decorCircleSmall: {
+        width: 150,
+        height: 150,
+        borderRadius: 75,
+        position: 'absolute',
+        bottom: 50,
+        left: -50,
+        opacity: 0.4,
+    },
+    header: {
+        alignItems: 'center',
+        marginTop: 60,
+        marginBottom: 40,
+    },
+    logoContainer: {
+        width: 100,
+        height: 100,
+        borderRadius: 24,
+        padding: 20,
+        backgroundColor: Colors.surface,
+        elevation: 10,
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        marginBottom: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    logo: {
+        width: '100%',
+        height: '100%',
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: '800',
+        color: Colors.textPrimary,
+        letterSpacing: -0.5,
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 15,
+        color: Colors.textSecondary,
+        textAlign: 'center',
+        paddingHorizontal: 20,
+        lineHeight: 22,
+    },
+    card: {
+        backgroundColor: Colors.surface,
+        borderRadius: 28,
+        padding: 24,
+        elevation: 4,
+        shadowColor: Colors.shadowDark,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.05,
+        shadowRadius: 24,
+    },
+    label: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: Colors.textPrimary,
+        marginBottom: 12,
+        marginLeft: 4,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: Colors.surfaceSecondary,
+        borderRadius: 18,
+        height: 64,
+        paddingHorizontal: 16,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.02)',
+    },
+    inputIcon: {
+        marginRight: 12,
+    },
+    input: {
+        flex: 1,
+        fontSize: 16,
+        color: Colors.textPrimary,
+        fontWeight: '600',
+    },
+    forgotBtn: {
+        alignSelf: 'trailing',
+        marginBottom: 25,
+        marginTop: -10,
+    },
+    forgotText: {
+        color: Colors.primary,
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    button: {
+        marginTop: 10,
+    },
+    signupContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 25,
+    },
+    noAccountText: {
+        color: Colors.textSecondary,
+        fontSize: 14,
+    },
+    signupLink: {
+        color: Colors.primary,
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    footer: {
+        marginTop: 40,
+        marginBottom: 40,
+        paddingHorizontal: 40,
+    },
+    footerText: {
+        fontSize: 12,
+        color: Colors.textLight,
+        textAlign: 'center',
+        lineHeight: 18,
+    },
+    link: {
+        color: Colors.primary,
+        fontWeight: '700',
+    },
+    // Role Styles
+    roleContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 15,
+        marginBottom: 25,
+    },
+    roleChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingHorizontal: 25,
+        paddingVertical: 12,
+        borderRadius: 20,
+        backgroundColor: Colors.surfaceSecondary,
+        borderWidth: 1,
+        borderColor: Colors.border,
+    },
+    roleChipActive: {
+        backgroundColor: Colors.primary,
+        borderColor: Colors.primary,
+        elevation: 4,
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+    },
+    roleText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: Colors.textSecondary,
+    },
+    roleTextActive: {
+        color: Colors.textWhite,
+    },
+});
+
+export default LoginScreen;
+
