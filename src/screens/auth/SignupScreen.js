@@ -98,12 +98,10 @@ const SignupScreen = ({ navigation }) => {
 
             if (avatar) {
                 // Use FormData if avatar is present
-                // IMPORTANT: Do NOT set 'Content-Type': 'multipart/form-data' explicitly in config.
-                // Let Axios automatically append the boundary string, otherwise backend's multer crashes (500).
                 const formData = new FormData();
                 formData.append('name', trimmedName);
                 formData.append('email', trimmedEmail);
-                formData.append('contact', trimmedPhone); // Backend MUST have 'contact', not 'phone'
+                formData.append('contact', trimmedPhone);
                 formData.append('role', role);
                 formData.append('password', trimmedPassword);
 
@@ -115,17 +113,22 @@ const SignupScreen = ({ navigation }) => {
                 });
 
                 requestData = formData;
+                console.log('[SIGNUP] Sending FormData with avatar');
             } else {
-                // If no avatar, send clean JSON. Backend route natively supports this via express.json().
+                // If no avatar, send clean JSON
                 requestData = {
                     name: trimmedName,
                     email: trimmedEmail,
-                    contact: trimmedPhone, // Backend MUST have 'contact'
+                    contact: trimmedPhone,
                     role: role,
                     password: trimmedPassword
                 };
+                console.log('[SIGNUP] Sending JSON data:', requestData);
             }
 
+            console.log('[SIGNUP] Request data type:', typeof requestData);
+            console.log('[SIGNUP] Request data instanceof FormData:', requestData instanceof FormData);
+            
             const response = await signup(requestData);
 
             if (response.data) {

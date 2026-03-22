@@ -20,6 +20,19 @@ apiClient.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        // Debug logging for signup requests
+        if (config.url?.includes('/auth/signup')) {
+            console.log('=== SIGNUP REQUEST DEBUG ===');
+            console.log('URL:', config.url);
+            console.log('Method:', config.method);
+            console.log('Headers:', config.headers);
+            console.log('Data type:', typeof config.data);
+            console.log('Data instanceof FormData:', config.data instanceof FormData);
+            console.log('Data:', config.data);
+            console.log('===========================');
+        }
+        
         return config;
     },
     (error) => Promise.reject(error)

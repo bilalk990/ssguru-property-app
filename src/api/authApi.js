@@ -6,13 +6,22 @@ import apiClient from './apiClient';
  */
 
 // POST /api/v1/auth/signup
-export const signup = async (formData) => {
-    const config = {};
-    if (formData instanceof FormData) {
-        // Let axios set multipart/form-data with correct boundary automatically
-        config.headers = { 'Content-Type': 'multipart/form-data' };
+export const signup = async (data) => {
+    if (data instanceof FormData) {
+        // For FormData, let axios handle Content-Type with boundary
+        return apiClient.post('/auth/signup', data, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+    } else {
+        // For JSON, send as plain object (axios will serialize)
+        // Ensure data is not null/undefined
+        if (!data || typeof data !== 'object') {
+            throw new Error('Invalid signup data');
+        }
+        return apiClient.post('/auth/signup', data, {
+            headers: { 'Content-Type': 'application/json' }
+        });
     }
-    return apiClient.post('/auth/signup', formData, config);
 };
 
 // POST /api/v1/auth/signin
