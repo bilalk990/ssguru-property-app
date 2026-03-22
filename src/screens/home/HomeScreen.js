@@ -630,6 +630,7 @@ const styles = StyleSheet.create({
         color: Colors.primary,
         fontWeight: '600',
     },
+    liveFloat: {
         position: 'absolute',
         top: 130, // Below search bar area
         right: 0,
