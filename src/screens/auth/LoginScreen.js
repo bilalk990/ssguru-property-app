@@ -37,33 +37,21 @@ const LoginScreen = ({ navigation }) => {
         setLoading(true);
         try {
             const response = await signin(email.trim().toLowerCase(), password);
-            console.log('[LOGIN] Response:', response.data);
+            console.log('[LOGIN] Full response:', JSON.stringify(response.data));
             
-            if (response.data && response.data.token) {
-                // Use the authStore to save data consistently
-                await authStore.saveAuthData(response.data.token, response.data);
-                Alert.alert('Success', 'Login successful!', [
-                    { text: 'OK', onPress: () => navigation.replace('MainApp') }
-                ]);
+            // Backend returns: { statusCode, success, data: { user, token }, message }
+            const token = response.data?.data?.token || response.data?.token;
+            const user = response.data?.data?.user || response.data?.user;
+            
+            if (token) {
+                await authStore.saveAuthData(token, { token, user });
+                navigation.replace('MainApp');
             } else {
-                Alert.alert('Login Failed', 'Invalid credentials or server error.');
+                Alert.alert('Login Failed', response.data?.message || 'Invalid credentials or server error.');
             }
         } catch (error) {
-            console.error('[LOGIN] Error:', error);
-            console.error('[LOGIN] Error response:', error.response?.data);
-            
-            let message = 'Failed to sign in. Please check your credentials.';
-            
-            if (error.response?.status === 403) {
-                message = error.response.data?.message || 'Your account is inactive. Please contact administrator.';
-            } else if (error.response?.status === 404) {
-                message = 'User not found. Please check your email.';
-            } else if (error.response?.status === 401) {
-                message = 'Invalid email or password.';
-            } else if (error.response?.data?.message) {
-                message = error.response.data.message;
-            }
-            
+            console.error('[LOGIN] Error:', error.response?.data);
+            const message = error.response?.data?.message || 'Failed to sign in. Please check your credentials.';
             Alert.alert('Login Failed', message);
         } finally {
             setLoading(false);

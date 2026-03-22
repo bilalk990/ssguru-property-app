@@ -133,7 +133,7 @@ const SignupScreen = ({ navigation }) => {
 
             if (response.data) {
                 Alert.alert('Success', 'Account created! Please check your email for OTP verification.', [
-                    { text: 'OK', onPress: () => navigation.navigate('OTP', { email, mode: 'verify' }) }
+                    { text: 'OK', onPress: () => navigation.navigate('OTP', { email: trimmedEmail, mode: 'verify' }) }
                 ]);
             }
         } catch (error) {
