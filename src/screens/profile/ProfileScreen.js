@@ -49,22 +49,20 @@ const ProfileScreen = ({ navigation }) => {
     }, [fetchProfile]);
 
     const handleApply = async () => {
-        const userDataStr = await AsyncStorage.getItem('userData');
-        const userData = userDataStr ? JSON.parse(userDataStr) : {};
-
-        Alert.prompt(
+        Alert.alert(
             "Franchise Application",
-            "Please enter your phone number to apply:",
+            "Submit your franchise application?",
             [
                 { text: "Cancel", style: "cancel" },
                 {
                     text: "Apply",
-                    onPress: async (phone) => {
-                        if (!phone) return;
+                    onPress: async () => {
                         try {
+                            const userDataStr = await AsyncStorage.getItem('userData');
+                            const userData = userDataStr ? JSON.parse(userDataStr) : {};
                             await applyForFranchise({
                                 name: userData.name || 'Interested Partner',
-                                phone: phone,
+                                phone: userData.contact || userData.phone || '',
                                 message: "Applying for a new franchise branch."
                             });
                             Alert.alert("Success", "Your franchise application has been submitted!");
@@ -254,7 +252,7 @@ const ProfileScreen = ({ navigation }) => {
                                     navigation.dispatch(
                                         CommonActions.reset({
                                             index: 0,
-                                            routes: [{ name: 'Auth' }],
+                                            routes: [{ name: 'Login' }],
                                         })
                                     );
                                 }

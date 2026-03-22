@@ -9,6 +9,7 @@ import {
     StatusBar,
     Platform,
     Image,
+    ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
@@ -24,7 +25,7 @@ const MyPropertiesScreen = ({ navigation }) => {
         setLoading(true);
         try {
             const response = await getMyProperties();
-            const listings = response.data?.properties || response.data || [];
+            const listings = response.data?.data || response.data?.properties || response.data || [];
             setProperties(listings);
         } catch (error) {
             console.error('MyProperties Fetch Error:', error);
@@ -79,7 +80,7 @@ const MyPropertiesScreen = ({ navigation }) => {
     const renderProperty = ({ item }) => (
         <View style={styles.card}>
             <Image
-                source={{ uri: item.images[0] }}
+                source={{ uri: item.images?.[0]?.url || item.images?.[0] || 'https://via.placeholder.com/300' }}
                 style={styles.image}
                 resizeMode="cover"
             />
@@ -163,7 +164,7 @@ const MyPropertiesScreen = ({ navigation }) => {
                 <FlatList
                     data={properties}
                     renderItem={renderProperty}
-                    keyExtractor={item => item.id.toString()}
+                    keyExtractor={item => (item._id || item.id || Math.random()).toString()}
                     contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={

@@ -20,10 +20,11 @@ import { getUsers, deleteUser, updateUser } from '../../api/userApi';
 import { getAgents, toggleAgentStatus, deleteAgent, getAgentsByFranchise, updateAgent, updateAgentInFranchise, deleteAgentInFranchise, addAgentToFranchise } from '../../api/agentApi';
 import { getFranchises, toggleFranchiseStatus, deleteFranchise, createFranchise, updateFranchise } from '../../api/franchiseApi';
 import useAuthStore from '../../store/authStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ManagementListScreen = ({ navigation, route }) => {
     const { mode } = route.params; // 'users', 'agents', 'franchises'
-    const { user } = useAuthStore();
+    const [user, setUser] = React.useState(null);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -39,6 +40,14 @@ const ManagementListScreen = ({ navigation, route }) => {
         address: '',
         image: null
     });
+
+    useEffect(() => {
+        const loadUser = async () => {
+            const stored = await AsyncStorage.getItem('userData');
+            if (stored) setUser(JSON.parse(stored));
+        };
+        loadUser();
+    }, []);
 
     const fetchData = async () => {
         setLoading(true);

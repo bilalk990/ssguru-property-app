@@ -122,9 +122,9 @@ const HomeScreen = ({ navigation }) => {
                 getCurrentStream().catch(() => ({ data: null }))
             ]);
 
-            const listings = propRes.data?.properties || propRes.data || [];
-            const topAgents = agentRes.data?.agents || agentRes.data || [];
-            const topFranchises = franchiseRes.data?.franchise || franchiseRes.data || [];
+            const listings = propRes.data?.data || propRes.data?.properties || propRes.data || [];
+            const topAgents = agentRes.data?.data || agentRes.data?.agents || agentRes.data || [];
+            const topFranchises = franchiseRes.data?.data || franchiseRes.data?.franchises || franchiseRes.data?.franchise || franchiseRes.data || [];
 
             setProperties(listings);
             setAgents(topAgents);
@@ -192,7 +192,7 @@ const HomeScreen = ({ navigation }) => {
                         </View>
                         <TouchableOpacity
                             style={styles.profileButton}
-                            onPress={() => navigation.navigate('ProfileTab')}>
+                            onPress={() => navigation.navigate('Profile')}>
                             <Icon name="person-circle-outline" size={28} color={Colors.textWhite} />
                         </TouchableOpacity>
                     </View>

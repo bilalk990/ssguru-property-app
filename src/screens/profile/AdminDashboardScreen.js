@@ -35,7 +35,14 @@ const AdminDashboardScreen = ({ navigation }) => {
         const fetchStats = async () => {
             try {
                 const res = await getAdminStats();
-                setStats(res.data);
+                // Backend returns { success, stats: { users, franchise, properties, ... } }
+                const raw = res.data?.stats || res.data?.data || res.data || {};
+                setStats({
+                    totalProperties: raw.properties || raw.totalProperties || 0,
+                    totalAgents: raw.users || raw.totalAgents || 0,
+                    totalEnquiries: raw.totalEnquiries || 0,
+                    totalUsers: raw.users || raw.totalUsers || 0,
+                });
             } catch (error) {
                 console.error('Fetch Stats Error:', error);
             } finally {

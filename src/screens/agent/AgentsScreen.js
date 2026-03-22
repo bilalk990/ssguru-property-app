@@ -22,7 +22,7 @@ const AgentsScreen = ({ navigation }) => {
         setLoading(true);
         try {
             const response = await getAgents();
-            const data = response.data?.agents || response.data || [];
+            const data = response.data?.data?.agents || response.data?.data || response.data?.agents || response.data || [];
             setAgents(data);
         } catch (error) {
             console.error('Agents Fetch Error:', error);
@@ -44,7 +44,7 @@ const AgentsScreen = ({ navigation }) => {
     const renderAgent = ({ item }) => (
         <TouchableOpacity
             style={styles.agentCard}
-            onPress={() => navigation.navigate('BuyProperty', { agentId: item.id || item._id })}
+            onPress={() => navigation.navigate('Projects', { agentId: item.id || item._id })}
         >
             <Image
                 source={{ uri: item.avatar || 'https://i.pravatar.cc/150' }}

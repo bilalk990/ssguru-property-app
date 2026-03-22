@@ -1,4 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, StatusBar, Alert } from 'react-native';
+import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -9,19 +11,18 @@ const FranchiseScreen = ({ navigation }) => {
         const userDataStr = await AsyncStorage.getItem('userData');
         const userData = userDataStr ? JSON.parse(userDataStr) : {};
 
-        Alert.prompt(
+        Alert.alert(
             "Franchise Application",
-            "Please enter your phone number to apply:",
+            "Submit your franchise application? Our team will contact you shortly.",
             [
                 { text: "Cancel", style: "cancel" },
                 {
                     text: "Apply",
-                    onPress: async (phone) => {
-                        if (!phone) return;
+                    onPress: async () => {
                         try {
                             await applyForFranchise({
                                 name: userData.name || 'Interested Partner',
-                                phone: phone,
+                                phone: userData.contact || userData.phone || '',
                                 message: "Applying for a new franchise branch."
                             });
                             Alert.alert("Success", "Your franchise application has been submitted!");

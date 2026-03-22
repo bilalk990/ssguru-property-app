@@ -29,8 +29,9 @@ const GalleryScreen = ({ navigation }) => {
                 // Extract images from properties
                 const galleryItems = props.map(p => ({
                     id: p.id || p._id,
-                    image: p.images?.[0] || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1000',
-                    title: p.title
+                    image: p.images?.[0]?.url || p.images?.[0] || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1000',
+                    title: p.title,
+                    property: p,
                 }));
                 setImages(galleryItems);
             } catch (e) {
@@ -45,7 +46,7 @@ const GalleryScreen = ({ navigation }) => {
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.galleryItem}
-            onPress={() => navigation.navigate('PropertyDetail', { propertyId: item.id })}
+            onPress={() => navigation.navigate('PropertyDetail', { property: item.property })}
         >
             <Image source={{ uri: item.image }} style={styles.image} />
             <Text style={styles.imageTitle} numberOfLines={1}>{item.title}</Text>
@@ -71,7 +72,7 @@ const GalleryScreen = ({ navigation }) => {
                 <FlatList
                     data={images}
                     renderItem={renderItem}
-                    keyExtractor={item => item.id.toString()}
+                    keyExtractor={item => (item.id || Math.random()).toString()}
                     numColumns={2}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}

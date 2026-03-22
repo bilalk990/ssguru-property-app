@@ -41,7 +41,7 @@ const PropertyCard = ({ property, onPress, style, horizontal = false }) => {
                 onPress={onPress}>
                 <Animated.View style={[styles.horizontalCard, style, { transform: [{ scale: scaleAnim }] }]}>
                     <Image
-                        source={{ uri: property.images[0] }}
+                        source={{ uri: property.images?.[0]?.url || property.images?.[0] || 'https://via.placeholder.com/300' }}
                         style={styles.horizontalImage}
                         resizeMode="cover"
                     />
@@ -78,7 +78,7 @@ const PropertyCard = ({ property, onPress, style, horizontal = false }) => {
             <Animated.View style={[styles.card, style, { transform: [{ scale: scaleAnim }] }]}>
                 <View style={styles.imageContainer}>
                     <Image
-                        source={{ uri: property.images[0] }}
+                        source={{ uri: property.images?.[0]?.url || property.images?.[0] || 'https://via.placeholder.com/300' }}
                         style={styles.image}
                         resizeMode="cover"
                     />

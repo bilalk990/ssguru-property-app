@@ -49,7 +49,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                 franchiseId: activeFranchiseId || undefined,
             };
             const response = await getProperties(params);
-            const listings = response.data?.properties || response.data || [];
+            const listings = response.data?.data || response.data?.properties || response.data || [];
             setProperties(listings);
         } catch (error) {
             console.error('Error fetching properties:', error);
@@ -288,7 +288,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                             }
                         />
                     )}
-                    keyExtractor={item => item.id.toString()}
+                    keyExtractor={item => (item._id || item.id || Math.random()).toString()}
                     contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
                     showsVerticalScrollIndicator={false}
                     ListHeaderComponent={renderHeader}

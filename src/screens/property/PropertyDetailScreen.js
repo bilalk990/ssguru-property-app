@@ -37,7 +37,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
         );
     }
 
-    const images = property.images || [];
+    const images = property.images?.length ? property.images : ['https://via.placeholder.com/300'];
 
     const handleCall = () => {
         Linking.openURL(`tel:${property.agentPhone || '1234567890'}`);
