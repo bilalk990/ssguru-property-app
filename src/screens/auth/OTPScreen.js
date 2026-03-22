@@ -18,11 +18,11 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { verifyOtp, resetPassword, forgotPassword } from '../../api/authApi';
 import authStore from '../../store/authStore';
 
-const OTP_LENGTH = 4;
+const OTP_LENGTH = 6;
 
 const OTPScreen = ({ route, navigation }) => {
     const { email, mode } = route.params || {}; // mode: 'verify' or 'forgot'
-    const [otp, setOtp] = useState(['', '', '', '']);
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
