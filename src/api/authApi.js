@@ -7,11 +7,12 @@ import apiClient from './apiClient';
 
 // POST /api/v1/auth/signup
 export const signup = async (formData) => {
-    return apiClient.post('/auth/signup', formData, {
-        headers: {
-            'Content-Type': formData instanceof FormData ? undefined : 'application/json'
-        }
-    });
+    const config = {};
+    if (formData instanceof FormData) {
+        // Let axios set multipart/form-data with correct boundary automatically
+        config.headers = { 'Content-Type': 'multipart/form-data' };
+    }
+    return apiClient.post('/auth/signup', formData, config);
 };
 
 // POST /api/v1/auth/signin
