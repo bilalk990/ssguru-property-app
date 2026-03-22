@@ -9,6 +9,7 @@ import {
     StatusBar,
     Dimensions,
     FlatList,
+    ScrollView,
     Platform,
     Animated,
     RefreshControl,
@@ -49,6 +50,53 @@ const ActionCard = ({ title, desc, icon, color, onPress }) => {
         </TouchableWithoutFeedback>
     );
 };
+
+const AgenciesSection = ({ franchises, navigation }) => (
+    <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Agencies</Text>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
+            {franchises.map(item => (
+                <TouchableOpacity
+                    key={item.id || item._id}
+                    style={styles.agencyCard}
+                    onPress={() => navigation.navigate('Projects', { franchiseId: item.id || item._id })}
+                >
+                    <Image source={{ uri: item.image || 'https://via.placeholder.com/100' }} style={styles.agencyImage} />
+                    <Text style={styles.agencyName} numberOfLines={1}>{item.name}</Text>
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
+    </View>
+);
+
+const AgentsSection = ({ agents, navigation }) => (
+    <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleRow}>
+                <Icon name="people" size={20} color={Colors.primary} />
+                <Text style={styles.sectionTitle}>Elite Agents</Text>
+            </View>
+            <TouchableOpacity onPress={() => navigation.navigate('Agents')}>
+                <Text style={styles.viewAllText}>View All</Text>
+            </TouchableOpacity>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
+            {agents.map(item => (
+                <TouchableOpacity
+                    key={item.id || item._id}
+                    style={styles.agentCard}
+                    onPress={() => navigation.navigate('Projects', { agentId: item.id || item._id })}
+                >
+                    <Image source={{ uri: item.avatar || 'https://i.pravatar.cc/150' }} style={styles.agentImage} />
+                    <Text style={styles.agentName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.agentRole}>Elite Agent</Text>
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
+    </View>
+);
 
 const HomeScreen = ({ navigation }) => {
     const [search, setSearch] = useState('');
@@ -243,11 +291,11 @@ const HomeScreen = ({ navigation }) => {
                             </View>
                         )}
 
-                        {/* Agencies Section (Added) */}
-                        <AgenciesSection />
+                        {/* Agencies Section */}
+                        <AgenciesSection franchises={franchises} navigation={navigation} />
 
-                        {/* Top Agents Section (Moved to component) */}
-                        <AgentsSection />
+                        {/* Top Agents Section */}
+                        <AgentsSection agents={agents} navigation={navigation} />
 
                         {/* Recent Properties */}
                         <View style={styles.section}>
@@ -317,52 +365,6 @@ const HomeScreen = ({ navigation }) => {
         </View>
     );
 
-    const AgenciesSection = () => (
-        <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Agencies</Text>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-                {franchises.map(item => (
-                    <TouchableOpacity
-                        key={item.id || item._id}
-                        style={styles.agencyCard}
-                        onPress={() => navigation.navigate('Projects', { franchiseId: item.id || item._id })}
-                    >
-                        <Image source={{ uri: item.image || 'https://via.placeholder.com/100' }} style={styles.agencyImage} />
-                        <Text style={styles.agencyName} numberOfLines={1}>{item.name}</Text>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-        </View>
-    );
-
-    const AgentsSection = () => (
-        <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-                <View style={styles.sectionTitleRow}>
-                    <Icon name="people" size={20} color={Colors.primary} />
-                    <Text style={styles.sectionTitle}>Elite Agents</Text>
-                </View>
-                <TouchableOpacity onPress={() => navigation.navigate('Agents')}>
-                    <Text style={styles.viewAllText}>View All</Text>
-                </TouchableOpacity>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-                {agents.map(item => (
-                    <TouchableOpacity
-                        key={item.id || item._id}
-                        style={styles.agentCard}
-                        onPress={() => navigation.navigate('Projects', { agentId: item.id || item._id })}
-                    >
-                        <Image source={{ uri: item.avatar || 'https://i.pravatar.cc/150' }} style={styles.agentImage} />
-                        <Text style={styles.agentName} numberOfLines={1}>{item.name}</Text>
-                        <Text style={styles.agentRole}>Elite Agent</Text>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-        </View>
-    );
 };
 
 const styles = StyleSheet.create({
@@ -583,7 +585,51 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         marginTop: 2,
     },
-    liveFloat: {
+    horizontalScroll: {
+        paddingRight: 16,
+        paddingBottom: 5,
+    },
+    agencyCard: {
+        width: 90,
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    agencyImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        marginBottom: 6,
+        backgroundColor: Colors.border,
+    },
+    agencyName: {
+        fontSize: 11,
+        fontWeight: '600',
+        color: Colors.textPrimary,
+        textAlign: 'center',
+    },
+    agentCard: {
+        width: 90,
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    agentImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        marginBottom: 6,
+        backgroundColor: Colors.border,
+    },
+    agentName: {
+        fontSize: 11,
+        fontWeight: '700',
+        color: Colors.textPrimary,
+        textAlign: 'center',
+    },
+    agentRole: {
+        fontSize: 9,
+        color: Colors.primary,
+        fontWeight: '600',
+    },
         position: 'absolute',
         top: 130, // Below search bar area
         right: 0,

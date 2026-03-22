@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Image, StyleSheet, StatusBar, Dimensions, Animated, Platform } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Colors from '../../constants/colors';
+import authStore from '../../store/authStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -11,7 +12,6 @@ const SplashScreen = ({ navigation }) => {
     const progressAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        // Immersive animations
         Animated.parallel([
             Animated.spring(scaleAnim, {
                 toValue: 1,
@@ -26,15 +26,24 @@ const SplashScreen = ({ navigation }) => {
             }),
         ]).start();
 
-        // Progress bar fills up
         Animated.timing(progressAnim, {
             toValue: 1,
             duration: 2200,
             useNativeDriver: false,
         }).start();
 
-        const timer = setTimeout(() => {
-            navigation.replace('Login');
+        const timer = setTimeout(async () => {
+            try {
+                const loggedIn = await authStore.isLoggedIn();
+                const token = await authStore.getToken();
+                if (loggedIn && token) {
+                    navigation.replace('MainApp');
+                } else {
+                    navigation.replace('Login');
+                }
+            } catch (e) {
+                navigation.replace('Login');
+            }
         }, 3000);
 
         return () => clearTimeout(timer);
