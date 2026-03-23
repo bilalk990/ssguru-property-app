@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Screens
 import SplashScreen from './src/screens/splash/SplashScreen';
@@ -13,16 +14,18 @@ const RootStack = createNativeStackNavigator();
 
 const App = () => {
   return (
-    <NavigationContainer>
-      <RootStack.Navigator
-        screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
-        <RootStack.Screen name="Splash" component={SplashScreen} />
-        <RootStack.Screen name="Login" component={LoginScreen} />
-        <RootStack.Screen name="Signup" component={SignupScreen} />
-        <RootStack.Screen name="OTP" component={OTPScreen} />
-        <RootStack.Screen name="MainApp" component={AppNavigator} />
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <RootStack.Navigator
+          screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+          <RootStack.Screen name="Splash" component={SplashScreen} />
+          <RootStack.Screen name="Login" component={LoginScreen} />
+          <RootStack.Screen name="Signup" component={SignupScreen} />
+          <RootStack.Screen name="OTP" component={OTPScreen} />
+          <RootStack.Screen name="MainApp" component={AppNavigator} />
+        </RootStack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 };
 
