@@ -26,8 +26,10 @@ import authStore from '../../store/authStore';
 const OTP_LENGTH = 6;
 
 const OTPScreen = ({ route, navigation }) => {
-    const { email, mode } = route.params || {}; // mode: 'verify' or 'forgot'
-    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const { email, mode, prefillOtp } = route.params || {}; // mode: 'verify' or 'forgot'
+    const [otp, setOtp] = useState(
+        prefillOtp ? prefillOtp.toString().split('') : ['', '', '', '', '', '']
+    );
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);

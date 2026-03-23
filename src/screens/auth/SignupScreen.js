@@ -132,9 +132,16 @@ const SignupScreen = ({ navigation }) => {
             const response = await signup(requestData);
 
             if (response.data) {
-                Alert.alert('Success', 'Account created! Please check your email for OTP verification.', [
-                    { text: 'OK', onPress: () => navigation.navigate('OTP', { email: trimmedEmail, mode: 'verify' }) }
-                ]);
+                const devOtp = response.data?.data?.devOtp;
+                Alert.alert(
+                    'Success',
+                    devOtp
+                        ? `Account created!\n\n📋 OTP (dev): ${devOtp}\n\nCheck your email for OTP verification.`
+                        : 'Account created! Please check your email for OTP verification.',
+                    [
+                        { text: 'OK', onPress: () => navigation.navigate('OTP', { email: trimmedEmail, mode: 'verify', prefillOtp: devOtp }) }
+                    ]
+                );
             }
         } catch (error) {
             console.error('Signup Error:', error);
