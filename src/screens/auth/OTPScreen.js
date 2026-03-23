@@ -78,8 +78,11 @@ const OTPScreen = ({ route, navigation }) => {
                 ]);
             } else {
                 const response = await verifyOtp(email, otpString);
-                if (response.data && response.data.token) {
-                    await authStore.saveAuthData(response.data.token, response.data);
+                // Backend now returns { data: { user, token } } after OTP verification
+                const token = response.data?.data?.token || response.data?.token;
+                const userData = response.data?.data;
+                if (token && userData) {
+                    await authStore.saveAuthData(token, userData);
                     Alert.alert('Verified', 'Your email has been verified successfully.', [
                         { text: 'Continue', onPress: () => navigation.replace('MainApp') }
                     ]);
