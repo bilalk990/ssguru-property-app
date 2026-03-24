@@ -86,7 +86,7 @@ const AgentsScreen = ({ navigation }) => {
                 <FlatList
                     data={agents}
                     renderItem={renderAgent}
-                    keyExtractor={item => (item.id || item._id).toString()}
+                    keyExtractor={(item, idx) => String(item._id || item.id || idx)}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={

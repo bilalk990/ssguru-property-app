@@ -146,7 +146,7 @@ const ProfileScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor={Colors.primary} barStyle="light-content" />
+            <StatusBar backgroundColor={Colors.primary} barStyle="light-content" translucent={false} />
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     // Header
     header: {
         backgroundColor: Colors.primary,
-        paddingTop: Platform.OS === 'ios' ? 60 : 30,
+        paddingTop: Platform.OS === 'ios' ? 60 : 20,
         paddingBottom: 24,
         borderBottomLeftRadius: 28,
         borderBottomRightRadius: 28,

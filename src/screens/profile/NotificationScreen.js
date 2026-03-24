@@ -89,7 +89,7 @@ const NotificationScreen = ({ navigation }) => {
                 <FlatList
                     data={notifications}
                     renderItem={renderItem}
-                    keyExtractor={item => (item.id || item._id).toString()}
+                    keyExtractor={(item, idx) => String(item._id || item.id || idx)}
                     contentContainerStyle={styles.list}
                     ListEmptyComponent={
                         <View style={styles.empty}>

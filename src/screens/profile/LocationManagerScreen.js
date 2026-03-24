@@ -164,7 +164,7 @@ const LocationManagerScreen = ({ navigation }) => {
                 <FlatList
                     data={tab === 'districts' ? districts : areas}
                     renderItem={renderItem}
-                    keyExtractor={item => (item.id || item._id).toString()}
+                    keyExtractor={(item, idx) => String(item._id || item.id || idx)}
                     contentContainerStyle={styles.list}
                     onRefresh={fetchData}
                     refreshing={loading}

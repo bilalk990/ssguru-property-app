@@ -19,7 +19,6 @@ import Colors from '../../constants/colors';
 import { getUsers, deleteUser, updateUser } from '../../api/userApi';
 import { getAgents, toggleAgentStatus, deleteAgent, getAgentsByFranchise, updateAgent, updateAgentInFranchise, deleteAgentInFranchise, addAgentToFranchise } from '../../api/agentApi';
 import { getFranchises, toggleFranchiseStatus, deleteFranchise, createFranchise, updateFranchise } from '../../api/franchiseApi';
-import useAuthStore from '../../store/authStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ManagementListScreen = ({ navigation, route }) => {
@@ -275,7 +274,7 @@ const ManagementListScreen = ({ navigation, route }) => {
                 <FlatList
                     data={data}
                     renderItem={renderItem}
-                    keyExtractor={item => (item.id || item._id).toString()}
+                    keyExtractor={(item, idx) => String(item._id || item.id || idx)}
                     contentContainerStyle={styles.list}
                     onRefresh={fetchData}
                     refreshing={loading}

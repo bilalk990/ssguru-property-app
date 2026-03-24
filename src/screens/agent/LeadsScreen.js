@@ -128,7 +128,7 @@ const LeadsScreen = ({ navigation }) => {
                 <FlatList
                     data={data}
                     renderItem={renderItem}
-                    keyExtractor={item => (item.id || item._id).toString()}
+                    keyExtractor={(item, idx) => String(item._id || item.id || idx)}
                     contentContainerStyle={styles.list}
                     ListEmptyComponent={
                         <View style={styles.empty}>

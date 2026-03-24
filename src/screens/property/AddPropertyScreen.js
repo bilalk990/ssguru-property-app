@@ -53,7 +53,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
         const loadInitialData = async () => {
             try {
                 const res = await getDistricts();
-                setDistricts(res.data?.districts || res.data || []);
+                setDistricts(res.data?.data || res.data?.districts || res.data || []);
             } catch (e) {
                 console.error('AddProperty Init Error:', e);
             }

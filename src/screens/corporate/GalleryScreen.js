@@ -72,7 +72,7 @@ const GalleryScreen = ({ navigation }) => {
                 <FlatList
                     data={images}
                     renderItem={renderItem}
-                    keyExtractor={item => (item.id || Math.random()).toString()}
+                    keyExtractor={(item, idx) => String(item.id || item._id || idx)}
                     numColumns={2}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}

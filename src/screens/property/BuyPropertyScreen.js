@@ -40,19 +40,29 @@ const BuyPropertyScreen = ({ navigation, route }) => {
         setLoading(true);
         try {
             const params = {
-                search,
-                city: selectedCity === 'All Cities' ? undefined : selectedCity,
-                type: selectedType === 'All Types' ? undefined : selectedType,
+                search: search || undefined,
+                category: selectedType === 'All Types' ? undefined : selectedType,
                 minPrice: selectedPrice.min || undefined,
                 maxPrice: (selectedPrice.max && selectedPrice.max !== Infinity) ? selectedPrice.max : undefined,
-                agentId: activeAgentId || undefined,
-                franchiseId: activeFranchiseId || undefined,
             };
+            
+            console.log('=== FETCH PROPERTIES ===');
+            console.log('Params:', params);
+            
             const response = await getProperties(params);
+            
+            console.log('Response:', response.data);
+            console.log('Response.data.data:', response.data?.data);
+            
             const listings = response.data?.data || response.data?.properties || response.data || [];
+            
+            console.log('Parsed listings:', Array.isArray(listings) ? listings.length : 'NOT ARRAY', listings);
+            console.log('=======================');
+            
             setProperties(Array.isArray(listings) ? listings.map(normalizeProperty) : []);
         } catch (error) {
             console.error('Error fetching properties:', error);
+            setProperties([]);
         } finally {
             setLoading(false);
         }

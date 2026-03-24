@@ -27,21 +27,51 @@ const getImageUri = (images) => {
 
 // Normalize backend property fields to what UI expects
 export const normalizeProperty = (item) => {
-    if (!item) return {};
+    if (!item || typeof item !== 'object') {
+        console.warn('normalizeProperty received invalid item:', item);
+        return {
+            _id: String(Math.random()),
+            title: 'Invalid Property',
+            type: 'Property',
+            city: '',
+            area: '',
+            price: 'Price on request',
+            sqft: '',
+            bedrooms: 0,
+            bathrooms: 0,
+            featured: false,
+            postedDate: '',
+            images: [],
+            agentPhone: '',
+            agentAvatar: '',
+            videoUrl: '',
+        };
+    }
+    
     return {
         ...item,
         _id: item._id || item.id || String(Math.random()),
         title: item.title || 'Untitled Property',
-        type: item.type || item.category || 'Property',
-        city: item.city || item.district?.name || item.district || '',
+        type: item.type || item.category || item.sellingType || 'Property',
+        city: item.city || (typeof item.district === 'object' ? item.district?.name : '') || (typeof item.district === 'string' && item.district.length < 30 ? item.district : '') || '',
         area: item.area?.name || item.area || '',
-        price: item.price ? `PKR ${Number(item.price).toLocaleString()}` : 'Price on request',
-        sqft: item.sqft || item.areaSize ? `${item.sqft || item.areaSize} sqft` : '',
+        price: item.price
+            ? (typeof item.price === 'string' && item.price.startsWith('PKR')
+                ? item.price
+                : `PKR ${Number(item.price).toLocaleString()}`)
+            : 'Price on request',
+        sqft: item.sqft
+            ? (typeof item.sqft === 'string' && item.sqft.includes('sqft') ? item.sqft : `${item.sqft} sqft`)
+            : (item.areaSize ? `${item.areaSize} sqft` : ''),
         bedrooms: item.bedrooms || 0,
         bathrooms: item.bathrooms || 0,
         featured: item.featured || item.isFeatured || false,
         postedDate: item.postedDate || (item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''),
         images: item.images || [],
+        // Agent info - backend populates agent as object or ObjectId
+        agentPhone: item.agentPhone || item.contactNumber || (typeof item.agent === 'object' ? item.agent?.phone || item.agent?.contact : '') || '',
+        agentAvatar: item.agentAvatar || (typeof item.agent === 'object' ? item.agent?.avatar : '') || '',
+        videoUrl: item.videoUrl || item.video || '',
     };
 };
 

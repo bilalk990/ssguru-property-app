@@ -17,12 +17,13 @@ import Video from 'react-native-video';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
 import { createEnquiry } from '../../api/enquiryApi';
+import { normalizeProperty } from '../../components/PropertyCard';
 
 const { width, height } = Dimensions.get('window');
 
 const PropertyDetailScreen = ({ route, navigation }) => {
     const { property: initialProperty } = route.params || {};
-    const [property, setProperty] = useState(initialProperty || {});
+    const [property, setProperty] = useState(initialProperty ? normalizeProperty(initialProperty) : {});
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [loading, setLoading] = useState(false);
 
@@ -204,7 +205,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                                 </View>
                             </View>
                             <View style={styles.agentTextContainer}>
-                                <Text style={styles.agentName}>{property.agent}</Text>
+                                <Text style={styles.agentName}>{typeof property.agent === 'object' ? (property.agent?.name || 'Agent') : (property.agent || 'Agent')}</Text>
                                 <Text style={styles.agentRole}>Elite Property Consultant</Text>
                             </View>
                             <TouchableOpacity style={styles.miniCall} onPress={handleCall}>

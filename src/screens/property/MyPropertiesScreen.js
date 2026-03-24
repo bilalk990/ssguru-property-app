@@ -14,6 +14,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import Loader from '../../components/Loader';
+import { normalizeProperty } from '../../components/PropertyCard';
 import { getMyProperties, deleteProperty, updateProperty } from '../../api/propertyApi';
 
 const MyPropertiesScreen = ({ navigation }) => {
@@ -26,7 +27,7 @@ const MyPropertiesScreen = ({ navigation }) => {
         try {
             const response = await getMyProperties();
             const listings = response.data?.data || response.data?.properties || response.data || [];
-            setProperties(listings);
+            setProperties(Array.isArray(listings) ? listings.map(normalizeProperty) : []);
         } catch (error) {
             console.error('MyProperties Fetch Error:', error);
         } finally {
@@ -45,7 +46,7 @@ const MyPropertiesScreen = ({ navigation }) => {
             const fd = new FormData();
             fd.append('isLive', String(newStatus));
             await updateProperty(item.id || item._id, fd);
-            setProperties(prev => prev.map(p => (p.id || p._id) === (item.id || item._id) ? { ...p, isLive: newStatus } : p));
+            setProperties(prev => prev.map(p => String(p._id || p.id) === String(item._id || item.id) ? { ...p, isLive: newStatus } : p));
             Alert.alert('Success', `Property is now ${newStatus ? 'Live' : 'Hidden'}`);
         } catch (error) {
             Alert.alert('Error', 'Failed to update property status');
@@ -66,7 +67,7 @@ const MyPropertiesScreen = ({ navigation }) => {
                     onPress: async () => {
                         try {
                             await deleteProperty(id);
-                            setProperties(prev => prev.filter(p => p.id !== id));
+                            setProperties(prev => prev.filter(p => String(p._id || p.id) !== String(id)));
                             Alert.alert('Deleted', 'Property has been removed.');
                         } catch (error) {
                             Alert.alert('Error', 'Failed to delete property.');
@@ -164,7 +165,7 @@ const MyPropertiesScreen = ({ navigation }) => {
                 <FlatList
                     data={properties}
                     renderItem={renderProperty}
-                    keyExtractor={item => (item._id || item.id || Math.random()).toString()}
+                    keyExtractor={(item, idx) => String(item._id || item.id || idx)}
                     contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={

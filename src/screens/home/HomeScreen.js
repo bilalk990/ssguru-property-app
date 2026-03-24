@@ -116,15 +116,25 @@ const HomeScreen = ({ navigation }) => {
 
         try {
             const [propRes, agentRes, franchiseRes, streamRes] = await Promise.all([
-                getProperties({ limit: 10 }),
-                getTopAgents(),
-                getFranchises({ limit: 5 }).catch(() => ({ data: [] })),
-                getCurrentStream().catch(() => ({ data: null }))
+                getProperties({}).catch(err => { console.error('Properties API Error:', err); return { data: [] }; }),
+                getTopAgents().catch(err => { console.error('Agents API Error:', err); return { data: [] }; }),
+                getFranchises({ limit: 5 }).catch(err => { console.error('Franchises API Error:', err); return { data: [] }; }),
+                getCurrentStream().catch(err => { console.error('Stream API Error:', err); return { data: null }; })
             ]);
+
+            console.log('=== HOME DATA FETCH ===');
+            console.log('Properties response:', propRes.data);
+            console.log('Agents response:', agentRes.data);
+            console.log('Franchises response:', franchiseRes.data);
+            console.log('======================');
 
             const listings = propRes.data?.data || propRes.data?.properties || propRes.data || [];
             const topAgents = agentRes.data?.data || agentRes.data?.agents || agentRes.data || [];
             const topFranchises = franchiseRes.data?.data || franchiseRes.data?.franchises || franchiseRes.data?.franchise || franchiseRes.data || [];
+
+            console.log('Parsed listings count:', Array.isArray(listings) ? listings.length : 'NOT ARRAY');
+            console.log('Parsed agents count:', Array.isArray(topAgents) ? topAgents.length : 'NOT ARRAY');
+            console.log('Parsed franchises count:', Array.isArray(topFranchises) ? topFranchises.length : 'NOT ARRAY');
 
             setProperties(Array.isArray(listings) ? listings : []);
             setAgents(Array.isArray(topAgents) ? topAgents : []);
