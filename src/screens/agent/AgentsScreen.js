@@ -35,16 +35,19 @@ const AgentsScreen = ({ navigation }) => {
         fetchAgents();
     }, [fetchAgents]);
 
-    const handleWhatsApp = (phone) => {
+    const handleWhatsApp = (contact) => {
         const message = "Hi, I saw your profile on SS Property Guru.";
-        const cleanPhone = phone ? phone.replace(/\s/g, '') : '1234567890';
+        const cleanPhone = contact ? contact.replace(/\s/g, '') : '1234567890';
         Linking.openURL(`whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`);
     };
 
     const renderAgent = ({ item }) => (
         <TouchableOpacity
             style={styles.agentCard}
-            onPress={() => navigation.navigate('Projects', { agentId: item.id || item._id })}
+            onPress={() => navigation.navigate('Projects', { 
+                agentId: item.id || item._id,
+                agentName: item.name 
+            })}
         >
             <Image
                 source={{ uri: item.avatar || 'https://i.pravatar.cc/150' }}
@@ -60,7 +63,7 @@ const AgentsScreen = ({ navigation }) => {
             </View>
             <TouchableOpacity
                 style={styles.chatButton}
-                onPress={() => handleWhatsApp(item.phone)}
+                onPress={() => handleWhatsApp(item.contact || item.phone)}
             >
                 <Icon name="logo-whatsapp" size={20} color={Colors.textWhite} />
             </TouchableOpacity>

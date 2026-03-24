@@ -41,18 +41,21 @@ const PropertyDetailScreen = ({ route, navigation }) => {
     const images = property.images?.length ? property.images : ['https://via.placeholder.com/300'];
 
     const handleCall = () => {
-        Linking.openURL(`tel:${property.agentPhone || '1234567890'}`);
+        const phone = property.agentPhone || property.contactNumber || '1234567890';
+        console.log('Calling agent phone:', phone);
+        Linking.openURL(`tel:${phone}`);
     };
 
     const handleWhatsApp = async () => {
         const message = `Hi, I'm interested in the property: ${property.title} (${property.price})`;
-        const phone = property.agentPhone ? property.agentPhone.replace(/\s/g, '') : '1234567890';
+        const phone = (property.agentPhone || property.contactNumber || '1234567890').replace(/\s/g, '');
+        console.log('WhatsApp agent phone:', phone);
 
         // Log enquiry to backend first
         try {
             await createEnquiry({
                 name: 'App User',
-                contact: property.agentPhone || '0000000000',
+                contact: phone,
                 email: 'app@noemail.com',
                 city: property.city || 'General',
                 message: `WhatsApp interest: ${property.title}`,
@@ -205,7 +208,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                                 </View>
                             </View>
                             <View style={styles.agentTextContainer}>
-                                <Text style={styles.agentName}>{typeof property.agent === 'object' ? (property.agent?.name || 'Agent') : (property.agent || 'Agent')}</Text>
+                                <Text style={styles.agentName}>{property.agentName || 'Agent'}</Text>
                                 <Text style={styles.agentRole}>Elite Property Consultant</Text>
                             </View>
                             <TouchableOpacity style={styles.miniCall} onPress={handleCall}>

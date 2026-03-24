@@ -132,7 +132,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
             description: 'Property Listing Fee',
             image: 'https://sspropertyguru.com/assets/images/logo.png',
             currency: 'INR',
-            key: 'rzp_live_XXXXXXXXXXXXXX', // IMPORTANT: Replace with your actual Razorpay Live/Test Key
+            key: 'rzp_test_XXXXXXXXXXXXXX', // TODO: Replace with actual Razorpay key from dashboard
             amount: '2000', // ₹20 in paise
             name: 'SS Property Guru',
             prefill: {

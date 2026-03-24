@@ -14,7 +14,7 @@ import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
 import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
 import Loader from '../../components/Loader';
-import { getProperties } from '../../api/propertyApi';
+import { getProperties, getPropertiesByAgent } from '../../api/propertyApi';
 import { getDistricts } from '../../api/districtApi';
 import { propertyTypes, priceRanges } from '../../constants/appConstants';
 
@@ -35,29 +35,41 @@ const BuyPropertyScreen = ({ navigation, route }) => {
     // Role-based filters (Internal state to allow clearing)
     const [activeAgentId, setActiveAgentId] = useState(initialAgentId);
     const [activeFranchiseId, setActiveFranchiseId] = useState(initialFranchiseId);
+    const [agentName, setAgentName] = useState(route.params?.agentName || null);
 
     const fetchProperties = useCallback(async () => {
         setLoading(true);
         try {
-            const params = {
-                search: search || undefined,
-                category: selectedType === 'All Types' ? undefined : selectedType,
-                minPrice: selectedPrice.min || undefined,
-                maxPrice: (selectedPrice.max && selectedPrice.max !== Infinity) ? selectedPrice.max : undefined,
-            };
+            let listings = [];
             
-            console.log('=== FETCH PROPERTIES ===');
-            console.log('Params:', params);
-            
-            const response = await getProperties(params);
-            
-            console.log('Response:', response.data);
-            console.log('Response.data.data:', response.data?.data);
-            
-            const listings = response.data?.data || response.data?.properties || response.data || [];
-            
-            console.log('Parsed listings:', Array.isArray(listings) ? listings.length : 'NOT ARRAY', listings);
-            console.log('=======================');
+            // If filtering by agent, use dedicated endpoint
+            if (activeAgentId) {
+                console.log('=== FETCH AGENT PROPERTIES ===');
+                console.log('Agent ID:', activeAgentId);
+                
+                const response = await getPropertiesByAgent(activeAgentId);
+                listings = response.data?.data || response.data || [];
+                
+                console.log('Agent properties:', Array.isArray(listings) ? listings.length : 'NOT ARRAY');
+                console.log('==============================');
+            } else {
+                // Normal property search
+                const params = {
+                    search: search || undefined,
+                    category: selectedType === 'All Types' ? undefined : selectedType,
+                    minPrice: selectedPrice.min || undefined,
+                    maxPrice: (selectedPrice.max && selectedPrice.max !== Infinity) ? selectedPrice.max : undefined,
+                };
+                
+                console.log('=== FETCH PROPERTIES ===');
+                console.log('Params:', params);
+                
+                const response = await getProperties(params);
+                listings = response.data?.data || response.data?.properties || response.data || [];
+                
+                console.log('Parsed listings:', Array.isArray(listings) ? listings.length : 'NOT ARRAY');
+                console.log('=======================');
+            }
             
             setProperties(Array.isArray(listings) ? listings.map(normalizeProperty) : []);
         } catch (error) {
@@ -88,6 +100,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
         // Update local state if route params change
         if (route.params?.agentId) setActiveAgentId(route.params.agentId);
         if (route.params?.franchiseId) setActiveFranchiseId(route.params.franchiseId);
+        if (route.params?.agentName) setAgentName(route.params.agentName);
     }, [route.params]);
 
     const clearFilters = () => {
@@ -97,6 +110,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
         setSearch('');
         setActiveAgentId(null);
         setActiveFranchiseId(null);
+        setAgentName(null);
     };
 
     const hasActiveFilters =
@@ -274,7 +288,9 @@ const BuyPropertyScreen = ({ navigation, route }) => {
             <View style={styles.topBar}>
                 <View style={styles.screenHeaderTitle}>
                     <Icon name="business" size={24} color={Colors.primary} />
-                    <Text style={styles.screenTitle}>Properties</Text>
+                    <Text style={styles.screenTitle}>
+                        {agentName ? `${agentName}'s Properties` : 'Properties'}
+                    </Text>
                 </View>
                 <SearchBar
                     value={search}

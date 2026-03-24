@@ -18,10 +18,21 @@ const PLACEHOLDER = 'https://via.placeholder.com/300';
 
 // Safely get image URI from property
 const getImageUri = (images) => {
-    if (!images || !Array.isArray(images) || images.length === 0) return PLACEHOLDER;
+    if (!images || !Array.isArray(images) || images.length === 0) {
+        console.log('PropertyCard: No images array found');
+        return PLACEHOLDER;
+    }
     const first = images[0];
-    if (typeof first === 'string') return first || PLACEHOLDER;
-    if (first && typeof first === 'object') return first.url || first.secure_url || PLACEHOLDER;
+    if (typeof first === 'string') {
+        console.log('PropertyCard: Image is string:', first);
+        return first || PLACEHOLDER;
+    }
+    if (first && typeof first === 'object') {
+        const uri = first.url || first.secure_url || PLACEHOLDER;
+        console.log('PropertyCard: Image is object, extracted URI:', uri);
+        return uri;
+    }
+    console.log('PropertyCard: Unknown image format:', first);
     return PLACEHOLDER;
 };
 
@@ -68,9 +79,10 @@ export const normalizeProperty = (item) => {
         featured: item.featured || item.isFeatured || false,
         postedDate: item.postedDate || (item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''),
         images: item.images || [],
-        // Agent info - backend populates agent as object or ObjectId
-        agentPhone: item.agentPhone || item.contactNumber || (typeof item.agent === 'object' ? item.agent?.phone || item.agent?.contact : '') || '',
+        // Agent info - backend has contactNumber on property and contact on agent
+        agentPhone: item.contactNumber || (typeof item.agent === 'object' ? item.agent?.contact || item.agent?.phone : '') || item.agentPhone || '',
         agentAvatar: item.agentAvatar || (typeof item.agent === 'object' ? item.agent?.avatar : '') || '',
+        agentName: typeof item.agent === 'object' ? item.agent?.name : (item.agent || 'Agent'),
         videoUrl: item.videoUrl || item.video || '',
     };
 };

@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Linking, TextInput, Alert, ActivityIndicator } from 'react-native';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -5,8 +6,8 @@ import { submitEnquiry } from '../../api/propertyApi';
 import CustomButton from '../../components/CustomButton';
 
 const AboutContactScreen = ({ navigation }) => {
-    const [form, setForm] = React.useState({ name: '', phone: '', details: '' });
-    const [loading, setLoading] = React.useState(false);
+    const [form, setForm] = useState({ name: '', phone: '', details: '' });
+    const [loading, setLoading] = useState(false);
 
     const handleEmail = () => Linking.openURL('mailto:sspropertyguru1@gmail.com');
     const handleCall = () => Linking.openURL('tel:+917400763089');

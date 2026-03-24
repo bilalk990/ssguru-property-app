@@ -17,10 +17,12 @@ import { CommonActions } from '@react-navigation/native';
 import Colors from '../../constants/colors';
 import { getMe } from '../../api/authApi';
 import { applyForFranchise } from '../../api/franchiseApi';
+import { getPropertiesByAgent } from '../../api/propertyApi';
 
 const ProfileScreen = ({ navigation }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [propertyCount, setPropertyCount] = useState(0);
 
     const fetchProfile = useCallback(async () => {
         setLoading(true);
@@ -34,6 +36,18 @@ const ProfileScreen = ({ navigation }) => {
                 const data = response.data?.data || response.data?.user || response.data;
                 setUser(data);
                 if (data) await AsyncStorage.setItem('userData', JSON.stringify(data));
+
+                // Fetch property count for agents
+                if (data?.role === 'agent' || data?.role === 'admin') {
+                    try {
+                        const propertiesRes = await getPropertiesByAgent(userId);
+                        const properties = propertiesRes.data?.data || propertiesRes.data || [];
+                        setPropertyCount(Array.isArray(properties) ? properties.length : 0);
+                    } catch (err) {
+                        console.error('Property count fetch error:', err);
+                        setPropertyCount(0);
+                    }
+                }
             } else {
                 setUser(parsedUser);
             }
@@ -115,7 +129,7 @@ const ProfileScreen = ({ navigation }) => {
         {
             icon: 'business-outline',
             title: 'My Properties',
-            subtitle: `${userData.propertiesListed || 0} listings`,
+            subtitle: `${propertyCount} listings`,
             onPress: () => navigation.navigate('MyProperties'),
         },
         ...((userData.role === 'admin' || userData.role === 'agent') ? [{
@@ -171,7 +185,7 @@ const ProfileScreen = ({ navigation }) => {
                     {/* Stats */}
                     <View style={styles.statsRow}>
                         <View style={styles.statItem}>
-                            <Text style={styles.statValue}>{userData.propertiesListed || 0}</Text>
+                            <Text style={styles.statValue}>{propertyCount}</Text>
                             <Text style={styles.statLabel}>Listed</Text>
                         </View>
                         <View style={styles.statDivider} />
