@@ -19,7 +19,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
-import PropertyCard from '../../components/PropertyCard';
+import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
 import { getProperties } from '../../api/propertyApi';
 import { getTopAgents } from '../../api/agentApi';
 import { getFranchises } from '../../api/franchiseApi';
@@ -57,14 +57,14 @@ const AgenciesSection = ({ franchises, navigation }) => (
             <Text style={styles.sectionTitle}>Agencies</Text>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-            {franchises.map(item => (
+            {franchises.map((item, idx) => (
                 <TouchableOpacity
-                    key={item.id || item._id}
+                    key={String(item._id || item.id || idx)}
                     style={styles.agencyCard}
-                    onPress={() => navigation.navigate('Projects', { franchiseId: item.id || item._id })}
+                    onPress={() => navigation.navigate('Projects', { franchiseId: item._id || item.id })}
                 >
-                    <Image source={{ uri: item.image || 'https://via.placeholder.com/100' }} style={styles.agencyImage} />
-                    <Text style={styles.agencyName} numberOfLines={1}>{item.name}</Text>
+                    <Image source={{ uri: item.image || item.logo || 'https://via.placeholder.com/100' }} style={styles.agencyImage} />
+                    <Text style={styles.agencyName} numberOfLines={1}>{item.name || 'Agency'}</Text>
                 </TouchableOpacity>
             ))}
         </ScrollView>
@@ -83,14 +83,14 @@ const AgentsSection = ({ agents, navigation }) => (
             </TouchableOpacity>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-            {agents.map(item => (
+            {agents.map((item, idx) => (
                 <TouchableOpacity
-                    key={item.id || item._id}
+                    key={String(item._id || item.id || idx)}
                     style={styles.agentCard}
-                    onPress={() => navigation.navigate('Projects', { agentId: item.id || item._id })}
+                    onPress={() => navigation.navigate('Projects', { agentId: item._id || item.id })}
                 >
                     <Image source={{ uri: item.avatar || 'https://i.pravatar.cc/150' }} style={styles.agentImage} />
-                    <Text style={styles.agentName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.agentName} numberOfLines={1}>{item.name || 'Agent'}</Text>
                     <Text style={styles.agentRole}>Elite Agent</Text>
                 </TouchableOpacity>
             ))}
@@ -126,10 +126,10 @@ const HomeScreen = ({ navigation }) => {
             const topAgents = agentRes.data?.data || agentRes.data?.agents || agentRes.data || [];
             const topFranchises = franchiseRes.data?.data || franchiseRes.data?.franchises || franchiseRes.data?.franchise || franchiseRes.data || [];
 
-            setProperties(listings);
-            setAgents(topAgents);
-            setFranchises(topFranchises);
-            setIsLive(!!(streamRes.data?.youtubeUrl && streamRes.data?.isActive));
+            setProperties(Array.isArray(listings) ? listings : []);
+            setAgents(Array.isArray(topAgents) ? topAgents : []);
+            setFranchises(Array.isArray(topFranchises) ? topFranchises : []);
+            setIsLive(!!(streamRes.data?.data?.youtubeUrl && streamRes.data?.data?.isActive));
         } catch (error) {
             console.error('Home Data Error:', error);
         } finally {
@@ -157,8 +157,8 @@ const HomeScreen = ({ navigation }) => {
 
     const onRefresh = () => fetchHomeData(true);
 
-    const featured = properties.filter(p => p.featured || p.isFeatured);
-    const recent = properties.slice(0, 5);
+    const featured = properties.filter(p => p.featured || p.isFeatured).map(normalizeProperty);
+    const recent = properties.slice(0, 5).map(normalizeProperty);
 
     return (
         <View style={styles.container}>
@@ -281,12 +281,10 @@ const HomeScreen = ({ navigation }) => {
                                         <PropertyCard
                                             property={item}
                                             horizontal
-                                            onPress={() =>
-                                                navigation.navigate('PropertyDetail', { property: item })
-                                            }
+                                            onPress={() => navigation.navigate('PropertyDetail', { property: item })}
                                         />
                                     )}
-                                    keyExtractor={item => (item.id || item._id).toString()}
+                                    keyExtractor={item => String(item._id || item.id || Math.random())}
                                 />
                             </View>
                         )}
@@ -315,13 +313,11 @@ const HomeScreen = ({ navigation }) => {
                                     <Text style={styles.emptyText}>No properties found yet</Text>
                                 </View>
                             ) : (
-                                recent.map(property => (
+                                recent.map((property, idx) => (
                                     <PropertyCard
-                                        key={property.id || property._id}
+                                        key={String(property._id || property.id || idx)}
                                         property={property}
-                                        onPress={() =>
-                                            navigation.navigate('PropertyDetail', { property })
-                                        }
+                                        onPress={() => navigation.navigate('PropertyDetail', { property })}
                                     />
                                 ))
                             )}

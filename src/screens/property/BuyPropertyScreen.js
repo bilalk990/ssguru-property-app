@@ -12,7 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
-import PropertyCard from '../../components/PropertyCard';
+import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
 import Loader from '../../components/Loader';
 import { getProperties } from '../../api/propertyApi';
 import { getDistricts } from '../../api/districtApi';
@@ -50,7 +50,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
             };
             const response = await getProperties(params);
             const listings = response.data?.data || response.data?.properties || response.data || [];
-            setProperties(listings);
+            setProperties(Array.isArray(listings) ? listings.map(normalizeProperty) : []);
         } catch (error) {
             console.error('Error fetching properties:', error);
         } finally {
@@ -288,7 +288,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                             }
                         />
                     )}
-                    keyExtractor={item => (item._id || item.id || Math.random()).toString()}
+                    keyExtractor={item => String(item._id || item.id || Math.random())}
                     contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
                     showsVerticalScrollIndicator={false}
                     ListHeaderComponent={renderHeader}
