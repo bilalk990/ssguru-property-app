@@ -154,22 +154,16 @@ const PropertyCard = ({ property: rawProperty, onPress, style, horizontal = fals
                         </Text>
                     </View>
                     <View style={styles.infoRow}>
-                        {property.bedrooms > 0 && (
-                            <View style={styles.infoItem}>
-                                <Icon name="bed-outline" size={14} color={Colors.textSecondary} />
-                                <Text style={styles.infoText}>{property.bedrooms}</Text>
-                            </View>
-                        )}
-                        {property.bathrooms > 0 && (
-                            <View style={styles.infoItem}>
-                                <Icon name="water-outline" size={14} color={Colors.textSecondary} />
-                                <Text style={styles.infoText}>{property.bathrooms}</Text>
-                            </View>
-                        )}
                         {!!property.sqft && (
                             <View style={styles.infoItem}>
                                 <Icon name="resize-outline" size={14} color={Colors.textSecondary} />
                                 <Text style={styles.infoText}>{property.sqft}</Text>
+                            </View>
+                        )}
+                        {property.type && (
+                            <View style={styles.infoItem}>
+                                <Icon name="pricetag-outline" size={14} color={Colors.textSecondary} />
+                                <Text style={styles.infoText}>{property.type}</Text>
                             </View>
                         )}
                     </View>

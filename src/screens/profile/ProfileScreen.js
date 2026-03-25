@@ -119,12 +119,6 @@ const ProfileScreen = ({ navigation }) => {
                 subtitle: 'Districts & Areas',
                 onPress: () => navigation.navigate('LocationManager'),
             },
-            {
-                icon: 'videocam-outline',
-                title: 'Live Tour Manager',
-                subtitle: 'Control stream status',
-                onPress: () => navigation.navigate('StreamManager'),
-            }
         ] : []),
         {
             icon: 'business-outline',
@@ -132,12 +126,6 @@ const ProfileScreen = ({ navigation }) => {
             subtitle: `${propertyCount} listings`,
             onPress: () => navigation.navigate('MyProperties'),
         },
-        ...((userData.role === 'admin' || userData.role === 'agent') ? [{
-            icon: 'flash-outline',
-            title: 'Leads Manager',
-            subtitle: 'Enquiries & Requirements',
-            onPress: () => navigation.navigate('Leads'),
-        }] : []),
         {
             icon: 'add-circle-outline',
             title: 'Post Requirement',
@@ -213,19 +201,19 @@ const ProfileScreen = ({ navigation }) => {
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.quickAction}
-                        onPress={() => navigation.navigate('Agents')}>
+                        onPress={() => navigation.navigate('MyProperties')}>
                         <View style={[styles.quickIconBox, { backgroundColor: '#E8F5E9' }]}>
-                            <Icon name="people-outline" size={24} color="#2E7D32" />
+                            <Icon name="business-outline" size={24} color="#2E7D32" />
                         </View>
-                        <Text style={styles.quickText}>Meet{'\n'}Agents</Text>
+                        <Text style={styles.quickText}>My{'\n'}Properties</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.quickAction}
-                        onPress={() => navigation.navigate('Gallery')}>
+                        onPress={() => navigation.navigate('Agents')}>
                         <View style={[styles.quickIconBox, { backgroundColor: '#E3F2FD' }]}>
-                            <Icon name="images-outline" size={24} color="#1565C0" />
+                            <Icon name="people-outline" size={24} color="#1565C0" />
                         </View>
-                        <Text style={styles.quickText}>View{'\n'}Gallery</Text>
+                        <Text style={styles.quickText}>Meet{'\n'}Agents</Text>
                     </TouchableOpacity>
                 </View>
 

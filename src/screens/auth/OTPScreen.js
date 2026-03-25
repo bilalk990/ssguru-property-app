@@ -85,11 +85,11 @@ const OTPScreen = ({ route, navigation }) => {
                 const userData = response.data?.data;
                 if (token && userData) {
                     await authStore.saveAuthData(token, userData);
-                    Alert.alert('Verified', 'Your email has been verified successfully.', [
-                        { text: 'Continue', onPress: () => navigation.replace('MainApp') }
+                    Alert.alert('Verified', 'Your account has been verified successfully.', [
+                        { text: 'Continue', onPress: () => navigation.replace('Dashboard') }
                     ]);
                 } else {
-                    Alert.alert('Verified', 'Your email has been verified. Please login.', [
+                    Alert.alert('Verified', 'Your account has been verified. Please login.', [
                         { text: 'Login', onPress: () => navigation.navigate('Login') }
                     ]);
                 }
@@ -108,7 +108,7 @@ const OTPScreen = ({ route, navigation }) => {
         try {
             await forgotPassword(email);
             setTimer(30);
-            Alert.alert('OTP Sent', 'A new verification code has been sent to your email.');
+            Alert.alert('OTP Sent', 'A new verification code has been sent.');
         } catch (error) {
             const message = error.response?.data?.message || 'Failed to resend OTP. Please try again later.';
             Alert.alert('Error', message);

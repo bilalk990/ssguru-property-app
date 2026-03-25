@@ -10,7 +10,9 @@ import {
     StatusBar,
     Linking,
     Platform,
+    Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Video from 'react-native-video';
@@ -26,6 +28,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
     const [property, setProperty] = useState(initialProperty ? normalizeProperty(initialProperty) : {});
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(false);
 
     if (!property || Object.keys(property).length === 0) {
         return (
@@ -40,13 +43,43 @@ const PropertyDetailScreen = ({ route, navigation }) => {
 
     const images = property.images?.length ? property.images : ['https://via.placeholder.com/300'];
 
-    const handleCall = () => {
+    // Check if user is logged in before allowing contact
+    const checkAuthAndProceed = async (action) => {
+        const token = await AsyncStorage.getItem('authToken');
+        if (!token) {
+            Alert.alert(
+                'Login Required',
+                'Please login or signup to contact the agent',
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    { 
+                        text: 'Login', 
+                        onPress: () => navigation.navigate('Login')
+                    },
+                    { 
+                        text: 'Signup', 
+                        onPress: () => navigation.navigate('Signup')
+                    }
+                ]
+            );
+            return false;
+        }
+        return true;
+    };
+
+    const handleCall = async () => {
+        const canProceed = await checkAuthAndProceed('call');
+        if (!canProceed) return;
+
         const phone = property.agentPhone || property.contactNumber || '1234567890';
         console.log('Calling agent phone:', phone);
         Linking.openURL(`tel:${phone}`);
     };
 
     const handleWhatsApp = async () => {
+        const canProceed = await checkAuthAndProceed('whatsapp');
+        if (!canProceed) return;
+
         const message = `Hi, I'm interested in the property: ${property.title} (${property.price})`;
         const phone = (property.agentPhone || property.contactNumber || '1234567890').replace(/\s/g, '');
         console.log('WhatsApp agent phone:', phone);
@@ -65,6 +98,28 @@ const PropertyDetailScreen = ({ route, navigation }) => {
         }
 
         Linking.openURL(`whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`);
+    };
+
+    const handleShare = async () => {
+        const message = `Check out this property: ${property.title}\nPrice: ${property.price}\nLocation: ${property.area}, ${property.city}`;
+        
+        try {
+            const { Share } = require('react-native');
+            await Share.share({
+                message: message,
+                title: property.title,
+            });
+        } catch (error) {
+            console.error('Share error:', error);
+        }
+    };
+
+    const toggleFavorite = () => {
+        setIsFavorite(!isFavorite);
+        Alert.alert(
+            isFavorite ? 'Removed from Favorites' : 'Added to Favorites',
+            isFavorite ? 'Property removed from your favorites' : 'Property saved to your favorites'
+        );
     };
 
     return (
@@ -105,6 +160,20 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                         <Icon name="arrow-back" size={24} color={Colors.textWhite} />
                     </TouchableOpacity>
 
+                    {/* Action Buttons - Share & Favorite */}
+                    <View style={styles.topRightActions}>
+                        <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+                            <Icon name="share-social-outline" size={20} color={Colors.textWhite} />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.actionButton} onPress={toggleFavorite}>
+                            <Icon 
+                                name={isFavorite ? "heart" : "heart-outline"} 
+                                size={20} 
+                                color={isFavorite ? "#FF0000" : Colors.textWhite} 
+                            />
+                        </TouchableOpacity>
+                    </View>
+
                     {/* Image Counter Badge */}
                     <View style={styles.imageCounter}>
                         <Icon name="images-outline" size={14} color={Colors.textWhite} />
@@ -115,7 +184,14 @@ const PropertyDetailScreen = ({ route, navigation }) => {
 
                     {/* Price Header inside Image */}
                     <View style={styles.priceContainer}>
-                        <Text style={styles.priceText}>{property.price}</Text>
+                        <View>
+                            <Text style={styles.priceText}>{property.price}</Text>
+                            {property.sellingType && (
+                                <View style={styles.sellingTypeBadge}>
+                                    <Text style={styles.sellingTypeText}>For {property.sellingType}</Text>
+                                </View>
+                            )}
+                        </View>
                         <View style={styles.typeBadge}>
                             <Text style={styles.typeBadgeText}>{property.type}</Text>
                         </View>
@@ -126,6 +202,14 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                 <View style={styles.content}>
                     <Text style={styles.title}>{property.title}</Text>
 
+                    {/* Property ID */}
+                    {property._id && (
+                        <View style={styles.propertyIdRow}>
+                            <Icon name="pricetag-outline" size={14} color={Colors.textLight} />
+                            <Text style={styles.propertyIdText}>Property ID: {property._id.slice(-8).toUpperCase()}</Text>
+                        </View>
+                    )}
+
                     <View style={styles.locationWrapper}>
                         <Icon name="location-outline" size={16} color={Colors.primary} />
                         <Text style={styles.locationText}>
@@ -133,30 +217,30 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                         </Text>
                     </View>
 
-                    {/* Elite Info Grid */}
+                    {/* Elite Info Grid - Only show sqft for village properties */}
                     <View style={styles.infoGrid}>
-                        <View style={styles.infoItem}>
-                            <View style={styles.infoIconBox}>
-                                <Icon name="bed-outline" size={22} color={Colors.primary} />
-                            </View>
-                            <Text style={styles.infoValue}>{property.bedrooms || 0}</Text>
-                            <Text style={styles.infoLabel}>Beds</Text>
-                        </View>
-                        <View style={styles.infoDivider} />
-                        <View style={styles.infoItem}>
-                            <View style={styles.infoIconBox}>
-                                <Icon name="water-outline" size={22} color={Colors.primary} />
-                            </View>
-                            <Text style={styles.infoValue}>{property.bathrooms || 0}</Text>
-                            <Text style={styles.infoLabel}>Baths</Text>
-                        </View>
-                        <View style={styles.infoDivider} />
                         <View style={styles.infoItem}>
                             <View style={styles.infoIconBox}>
                                 <Icon name="expand-outline" size={22} color={Colors.primary} />
                             </View>
-                            <Text style={styles.infoValue}>{property.sqft || '-'}</Text>
-                            <Text style={styles.infoLabel}>Sq.Ft</Text>
+                            <Text style={styles.infoValue}>{property.sqft || property.areaSize || '-'}</Text>
+                            <Text style={styles.infoLabel}>Area</Text>
+                        </View>
+                        <View style={styles.infoDivider} />
+                        <View style={styles.infoItem}>
+                            <View style={styles.infoIconBox}>
+                                <Icon name="location-outline" size={22} color={Colors.primary} />
+                            </View>
+                            <Text style={styles.infoValue}>{property.city || '-'}</Text>
+                            <Text style={styles.infoLabel}>City</Text>
+                        </View>
+                        <View style={styles.infoDivider} />
+                        <View style={styles.infoItem}>
+                            <View style={styles.infoIconBox}>
+                                <Icon name="pricetag-outline" size={22} color={Colors.primary} />
+                            </View>
+                            <Text style={styles.infoValue}>{property.type || '-'}</Text>
+                            <Text style={styles.infoLabel}>Type</Text>
                         </View>
                     </View>
 
@@ -278,9 +362,26 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.2)',
     },
-    imageCounter: {
+    topRightActions: {
         position: 'absolute',
         top: Platform.OS === 'ios' ? 60 : 50,
+        right: 20,
+        flexDirection: 'row',
+        gap: 10,
+    },
+    actionButton: {
+        width: 45,
+        height: 45,
+        borderRadius: 22.5,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+    },
+    imageCounter: {
+        position: 'absolute',
+        top: Platform.OS === 'ios' ? 120 : 110,
         right: 20,
         backgroundColor: 'rgba(0,0,0,0.5)',
         paddingHorizontal: 15,
@@ -311,6 +412,20 @@ const styles = StyleSheet.create({
         textShadowColor: 'rgba(0,0,0,0.3)',
         textShadowOffset: { width: 0, height: 2 },
         textShadowRadius: 4,
+        marginBottom: 5,
+    },
+    sellingTypeBadge: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+    },
+    sellingTypeText: {
+        color: Colors.textWhite,
+        fontSize: 11,
+        fontWeight: '700',
+        textTransform: 'uppercase',
     },
     typeBadge: {
         backgroundColor: Colors.accentMuted,
@@ -338,8 +453,21 @@ const styles = StyleSheet.create({
         fontSize: 26,
         fontWeight: '800',
         color: Colors.textPrimary,
-        marginBottom: 12,
+        marginBottom: 8,
         lineHeight: 34,
+    },
+    propertyIdRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 12,
+    },
+    propertyIdText: {
+        fontSize: 12,
+        color: Colors.textLight,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     locationWrapper: {
         flexDirection: 'row',

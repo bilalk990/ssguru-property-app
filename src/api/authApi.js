@@ -35,8 +35,8 @@ export const getMe = async (id) => {
 };
 
 // POST /api/v1/auth/forgot-password
-export const forgotPassword = async (email) => {
-    return apiClient.post('/auth/forgot-password', { email });
+export const forgotPassword = async (identifier) => {
+    return apiClient.post('/auth/forgot-password', { email: identifier, contact: identifier, phone: identifier });
 };
 
 // POST /api/v1/auth/verify-otp

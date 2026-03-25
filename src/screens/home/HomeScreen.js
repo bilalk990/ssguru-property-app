@@ -247,20 +247,6 @@ const HomeScreen = ({ navigation }) => {
                         color="#E8F5E9"
                         onPress={() => navigation.navigate('Agents')}
                     />
-                    <ActionCard
-                        title="Gallery"
-                        desc="Showcases"
-                        icon="images"
-                        color="#FFF3E0"
-                        onPress={() => navigation.navigate('Gallery')}
-                    />
-                    <ActionCard
-                        title="Franchise"
-                        desc="Partner"
-                        icon="briefcase"
-                        color="#F3E5F5"
-                        onPress={() => navigation.navigate('Franchise')}
-                    />
                 </View>
 
                 {loading && !refreshing ? (
@@ -356,16 +342,6 @@ const HomeScreen = ({ navigation }) => {
                     </LinearGradient>
                 </TouchableOpacity>
 
-                {/* Live Floating Button */}
-                {isLive && (
-                    <TouchableOpacity
-                        style={styles.liveFloat}
-                        onPress={() => navigation.navigate('LiveTour')}
-                    >
-                        <View style={styles.liveDot} />
-                        <Text style={styles.liveFloatText}>WATCH LIVE TOUR</Text>
-                    </TouchableOpacity>
-                )}
 
             </Animated.ScrollView>
         </View>

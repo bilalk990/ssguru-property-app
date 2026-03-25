@@ -17,42 +17,36 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
-import { signin } from '../../api/authApi';
-import authStore from '../../store/authStore';
+import { forgotPassword } from '../../api/authApi';
 
 const { width } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
 
-    const handleLogin = async () => {
-        if (!email || !password) {
-            Alert.alert('Fields Required', 'Please enter both email and password.');
+    const handleSendOTP = async () => {
+        if (!phone || phone.length < 10) {
+            Alert.alert('Invalid Phone', 'Please enter a valid 10-digit phone number.');
             return;
         }
 
         setLoading(true);
         try {
-            const response = await signin(email.trim().toLowerCase(), password);
-            console.log('[LOGIN] Full response:', JSON.stringify(response.data));
-            
-            // Backend returns: { statusCode, success, data: { user, token }, message }
-            const token = response.data?.data?.token || response.data?.token;
-            const user = response.data?.data?.user || response.data?.user;
-            
-            if (token) {
-                await authStore.saveAuthData(token, { token, user });
-                navigation.replace('MainApp');
-            } else {
-                Alert.alert('Login Failed', response.data?.message || 'Invalid credentials or server error.');
+            const response = await forgotPassword(phone);
+            const devOtp = response.data?.data?.devOtp;
+            navigation.navigate('OTP', {
+                email: phone,
+                mode: 'verify',
+                prefillOtp: devOtp,
+            });
+            if (devOtp) {
+                Alert.alert('OTP (Dev)', `Your OTP: ${devOtp}`);
             }
         } catch (error) {
             console.error('[LOGIN] Error:', error.response?.data);
-            const message = error.response?.data?.message || 'Failed to sign in. Please check your credentials.';
-            Alert.alert('Login Failed', message);
+            const msg = error.response?.data?.message || 'Failed to send OTP. Please try again.';
+            Alert.alert('Error', msg);
         } finally {
             setLoading(false);
         }
@@ -91,52 +85,30 @@ const LoginScreen = ({ navigation }) => {
                         />
                     </View>
                     <Text style={styles.title}>Welcome Back</Text>
-                    <Text style={styles.subtitle}>Enter your credentials to manage your properties</Text>
+                    <Text style={styles.subtitle}>Enter your phone number to login</Text>
                 </View>
 
 
                 {/* Input Card */}
                 <View style={styles.card}>
-                    <Text style={styles.label}>Email Address</Text>
+                    <Text style={styles.label}>Phone Number</Text>
                     <View style={styles.inputWrapper}>
-                        <Icon name="mail-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
+                        <Icon name="call-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
+                        <Text style={styles.countryCode}>+91</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="yourname@gmail.com"
+                            placeholder="Enter 10-digit number"
                             placeholderTextColor={Colors.textLight}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            value={email}
-                            onChangeText={setEmail}
+                            keyboardType="phone-pad"
+                            maxLength={10}
+                            value={phone}
+                            onChangeText={setPhone}
                         />
                     </View>
-
-                    <Text style={styles.label}>Password</Text>
-                    <View style={styles.inputWrapper}>
-                        <Icon name="lock-closed-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="••••••••"
-                            placeholderTextColor={Colors.textLight}
-                            secureTextEntry={!showPassword}
-                            value={password}
-                            onChangeText={setPassword}
-                        />
-                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                            <Icon name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={Colors.textLight} />
-                        </TouchableOpacity>
-                    </View>
-
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('OTP', { email, mode: 'forgot' })}
-                        style={styles.forgotBtn}
-                    >
-                        <Text style={styles.forgotText}>Forgot Password?</Text>
-                    </TouchableOpacity>
 
                     <CustomButton
-                        title="Sign In"
-                        onPress={handleLogin}
+                        title="Send OTP"
+                        onPress={handleSendOTP}
                         loading={loading}
                         size="large"
                         style={styles.button}
@@ -265,6 +237,12 @@ const styles = StyleSheet.create({
     },
     inputIcon: {
         marginRight: 12,
+    },
+    countryCode: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: Colors.textPrimary,
+        marginRight: 8,
     },
     input: {
         flex: 1,

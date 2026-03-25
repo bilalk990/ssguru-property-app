@@ -372,20 +372,14 @@ const AddPropertyScreen = ({ navigation, route }) => {
                             onChangeText={v => updateField('price', v)}
                         />
 
-                        <View style={styles.threeColumn}>
-                            <View style={styles.thirdField}>
-                                <Text style={styles.sectionLabel}>Beds</Text>
-                                <TextInput style={styles.input} placeholder="3" keyboardType="numeric" value={form.bedrooms} onChangeText={v => updateField('bedrooms', v)} />
-                            </View>
-                            <View style={styles.thirdField}>
-                                <Text style={styles.sectionLabel}>Baths</Text>
-                                <TextInput style={styles.input} placeholder="2" keyboardType="numeric" value={form.bathrooms} onChangeText={v => updateField('bathrooms', v)} />
-                            </View>
-                            <View style={styles.thirdField}>
-                                <Text style={styles.sectionLabel}>Sq.Ft</Text>
-                                <TextInput style={styles.input} placeholder="1500" keyboardType="numeric" value={form.sqft} onChangeText={v => updateField('sqft', v)} />
-                            </View>
-                        </View>
+                        <Text style={styles.sectionLabel}>Area Size (Sq.Ft) *</Text>
+                        <TextInput 
+                            style={styles.input} 
+                            placeholder="e.g. 5000" 
+                            keyboardType="numeric" 
+                            value={form.sqft} 
+                            onChangeText={v => updateField('sqft', v)} 
+                        />
 
                         <Text style={styles.sectionLabel}>Add Features (e.g. Park Facing) *</Text>
                         <View style={styles.featureInputRow}>

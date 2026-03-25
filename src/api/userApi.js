@@ -24,3 +24,13 @@ export const updateUser = async (id, data) => {
 export const deleteUser = async (id) => {
     return apiClient.delete(`/users/${id}`);
 };
+
+// POST /api/v1/users/fcm-token - Save FCM token for push notifications
+export const saveFCMToken = async (token) => {
+    return apiClient.post('/users/fcm-token', { token });
+};
+
+// DELETE /api/v1/users/fcm-token - Remove FCM token on logout
+export const removeFCMToken = async () => {
+    return apiClient.delete('/users/fcm-token');
+};
