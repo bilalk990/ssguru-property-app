@@ -86,7 +86,12 @@ const OTPScreen = ({ route, navigation }) => {
                 if (token && userData) {
                     await authStore.saveAuthData(token, userData);
                     Alert.alert('Verified', 'Your account has been verified successfully.', [
-                        { text: 'Continue', onPress: () => navigation.replace('Dashboard') }
+                        {
+                            text: 'Continue',
+                            onPress: () => navigation.replace('MainApp', {
+                                screen: 'Sell'
+                            })
+                        }
                     ]);
                 } else {
                     Alert.alert('Verified', 'Your account has been verified. Please login.', [

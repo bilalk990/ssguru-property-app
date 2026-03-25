@@ -18,7 +18,8 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import CustomButton from '../../components/CustomButton';
 import { addProperty, updateProperty } from '../../api/propertyApi';
 import { getDistricts, getAreas } from '../../api/districtApi';
-import { propertyTypes } from '../../constants/appConstants';
+import { propertyTypes, RAZORPAY_KEY, LISTING_FEE_PAISE } from '../../constants/appConstants';
+import authStore from '../../store/authStore';
 
 const AddPropertyScreen = ({ navigation, route }) => {
     const editMode = route.params?.editMode || false;
@@ -50,6 +51,14 @@ const AddPropertyScreen = ({ navigation, route }) => {
     const [locLoading, setLocLoading] = useState(false); // This state is still here but not used in the provided diff for step 3. Keeping it for now.
 
     useEffect(() => {
+        const checkAuth = async () => {
+            const loggedIn = await authStore.isLoggedIn();
+            if (!loggedIn) {
+                navigation.navigate('Login');
+            }
+        };
+        checkAuth();
+
         const loadInitialData = async () => {
             try {
                 const res = await getDistricts();
@@ -59,7 +68,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
             }
         };
         loadInitialData();
-    }, []);
+    }, [navigation]);
 
     // handleDistrictChange and related logic removed as per instruction implying removal of area selection based on district.
     // If area selection is still needed, this function would need to be re-added and adapted.
@@ -132,13 +141,13 @@ const AddPropertyScreen = ({ navigation, route }) => {
             description: 'Property Listing Fee',
             image: 'https://sspropertyguru.com/assets/images/logo.png',
             currency: 'INR',
-            key: 'rzp_test_XXXXXXXXXXXXXX', // TODO: Replace with actual Razorpay key from dashboard
-            amount: '2000', // ₹20 in paise
+            key: RAZORPAY_KEY,
+            amount: LISTING_FEE_PAISE.toString(),
             name: 'SS Property Guru',
             prefill: {
-                email: 'user@example.com',
-                contact: '9100000000',
-                name: 'User Name'
+                email: user?.email || '',
+                contact: user?.phone || '',
+                name: user?.name || ''
             },
             theme: { color: Colors.primary }
         };
@@ -373,12 +382,12 @@ const AddPropertyScreen = ({ navigation, route }) => {
                         />
 
                         <Text style={styles.sectionLabel}>Area Size (Sq.Ft) *</Text>
-                        <TextInput 
-                            style={styles.input} 
-                            placeholder="e.g. 5000" 
-                            keyboardType="numeric" 
-                            value={form.sqft} 
-                            onChangeText={v => updateField('sqft', v)} 
+                        <TextInput
+                            style={styles.input}
+                            placeholder="e.g. 5000"
+                            keyboardType="numeric"
+                            value={form.sqft}
+                            onChangeText={v => updateField('sqft', v)}
                         />
 
                         <Text style={styles.sectionLabel}>Add Features (e.g. Park Facing) *</Text>

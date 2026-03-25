@@ -36,11 +36,7 @@ const SplashScreen = ({ navigation }) => {
             try {
                 const loggedIn = await authStore.isLoggedIn();
                 const token = await authStore.getToken();
-                if (loggedIn && token) {
-                    navigation.replace('MainApp');
-                } else {
-                    navigation.replace('Login');
-                }
+                navigation.replace('MainApp');
             } catch (e) {
                 navigation.replace('Login');
             }

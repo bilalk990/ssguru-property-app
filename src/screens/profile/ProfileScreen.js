@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommonActions } from '@react-navigation/native';
 import Colors from '../../constants/colors';
 import { getMe } from '../../api/authApi';
+import authStore from '../../store/authStore';
 import { applyForFranchise } from '../../api/franchiseApi';
 import { getPropertiesByAgent } from '../../api/propertyApi';
 
@@ -59,8 +60,15 @@ const ProfileScreen = ({ navigation }) => {
     }, []);
 
     useEffect(() => {
+        const checkAuth = async () => {
+            const loggedIn = await authStore.isLoggedIn();
+            if (!loggedIn) {
+                navigation.navigate('Login');
+            }
+        };
+        checkAuth();
         fetchProfile();
-    }, [fetchProfile]);
+    }, [fetchProfile, navigation]);
 
     const handleApply = async () => {
         Alert.alert(

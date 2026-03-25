@@ -21,3 +21,6 @@ export const priceRanges = [
     { label: '₹1 - 2 Cr', min: 10000000, max: 20000000 },
     { label: 'Above ₹2 Cr', min: 20000000, max: Infinity },
 ];
+
+export const RAZORPAY_KEY = 'rzp_test_XXXXXXXXXXXXXX'; // Replace with actual key
+export const LISTING_FEE_PAISE = 2000; // ₹20 in paise

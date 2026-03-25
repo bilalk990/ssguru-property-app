@@ -16,6 +16,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Colors from '../../constants/colors';
 import { getPropertiesByAgent } from '../../api/propertyApi';
 import { normalizeProperty } from '../../components/PropertyCard';
+import authStore from '../../store/authStore';
 
 const DashboardScreen = ({ navigation }) => {
     const [user, setUser] = useState(null);
@@ -47,8 +48,15 @@ const DashboardScreen = ({ navigation }) => {
     }, []);
 
     useEffect(() => {
+        const checkAuth = async () => {
+            const loggedIn = await authStore.isLoggedIn();
+            if (!loggedIn) {
+                navigation.navigate('Login');
+            }
+        };
+        checkAuth();
         fetchDashboardData();
-    }, [fetchDashboardData]);
+    }, [fetchDashboardData, navigation]);
 
     const onRefresh = () => fetchDashboardData(true);
 
@@ -67,7 +75,7 @@ const DashboardScreen = ({ navigation }) => {
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
                 }>
-                
+
                 {/* Header */}
                 <LinearGradient
                     colors={Colors.gradientPrimary}
@@ -111,7 +119,7 @@ const DashboardScreen = ({ navigation }) => {
                 {/* Main Actions */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Quick Actions</Text>
-                    
+
                     <TouchableOpacity
                         style={styles.primaryAction}
                         onPress={() => navigation.navigate('AddProperty')}

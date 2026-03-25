@@ -12,6 +12,7 @@ import BuyPropertyScreen from '../screens/property/BuyPropertyScreen';
 import PropertyDetailScreen from '../screens/property/PropertyDetailScreen';
 import AddPropertyScreen from '../screens/property/AddPropertyScreen';
 import MyPropertiesScreen from '../screens/property/MyPropertiesScreen';
+import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import AgentsScreen from '../screens/agent/AgentsScreen';
 import GalleryScreen from '../screens/corporate/GalleryScreen';
@@ -102,7 +103,10 @@ const BuyStack = () => (
 
 const SellStack = () => (
     <SellStackNav.Navigator screenOptions={{ headerShown: false }}>
-        <SellStackNav.Screen name="AddPropertyMain" component={AddPropertyScreen} />
+        <SellStackNav.Screen name="Dashboard" component={DashboardScreen} />
+        <SellStackNav.Screen name="AddProperty" component={AddPropertyScreen} />
+        <SellStackNav.Screen name="MyProperties" component={MyPropertiesScreen} />
+        <SellStackNav.Screen name="PropertyDetail" component={PropertyDetailScreen} />
     </SellStackNav.Navigator>
 );
 
@@ -134,7 +138,7 @@ const AppNavigator = () => {
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
                     if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
-                    else if (route.name === 'Projects') iconName = focused ? 'search' : 'search-outline'; // Changed from business to search for explore
+                    else if (route.name === 'Buy') iconName = focused ? 'search' : 'search-outline';
                     else if (route.name === 'Sell') iconName = focused ? 'add-circle' : 'add-circle-outline';
                     else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
                     return <Icon name={iconName} size={24} color={color} />;
@@ -155,7 +159,7 @@ const AppNavigator = () => {
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Projects" component={BuyPropertyScreen} />
+            <Tab.Screen name="Buy" component={BuyPropertyScreen} />
             <Tab.Screen name="Sell" component={AddPropertyScreen} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
@@ -163,6 +167,7 @@ const AppNavigator = () => {
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Dashboard" component={DashboardScreen} />
             <Stack.Screen name="MainTabs" component={MainTabNavigator} />
             <Stack.Screen name="PropertyDetail" component={PropertyDetailScreen} />
             <Stack.Screen name="Enquiry" component={EnquiryFormScreen} />
