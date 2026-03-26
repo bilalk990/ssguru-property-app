@@ -35,10 +35,13 @@ const SplashScreen = ({ navigation }) => {
         const timer = setTimeout(async () => {
             try {
                 const loggedIn = await authStore.isLoggedIn();
-                const token = await authStore.getToken();
-                navigation.replace('MainApp');
+                if (loggedIn) {
+                    navigation.replace('MainApp');
+                } else {
+                    navigation.replace('MainApp'); // Go to MainApp (Home tab) for browsing
+                }
             } catch (e) {
-                navigation.replace('Login');
+                navigation.replace('MainApp');
             }
         }, 3000);
 
