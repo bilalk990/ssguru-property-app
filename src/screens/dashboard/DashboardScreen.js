@@ -48,16 +48,8 @@ const DashboardScreen = ({ navigation }) => {
     }, []);
 
     useEffect(() => {
-        const checkAuth = async () => {
-            const loggedIn = await authStore.isLoggedIn();
-            if (!loggedIn) {
-                navigation.replace('Login');
-                return;
-            }
-            fetchDashboardData();
-        };
-        checkAuth();
-    }, [fetchDashboardData, navigation]);
+        fetchDashboardData();
+    }, [fetchDashboardData]);
 
     const onRefresh = () => fetchDashboardData(true);
 
