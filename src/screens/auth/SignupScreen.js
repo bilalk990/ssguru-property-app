@@ -47,22 +47,18 @@ const SignupScreen = ({ navigation }) => {
 
             if (response.data) {
                 const devOtp = response.data?.data?.devOtp;
-                Alert.alert(
-                    'Account Created',
-                    devOtp
-                        ? `OTP (dev): ${devOtp}`
-                        : 'Please verify your phone number with the OTP sent.',
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => navigation.navigate('OTP', {
-                                email: trimmedPhone,
-                                mode: 'verify',
-                                prefillOtp: devOtp,
-                            }),
-                        },
-                    ]
-                );
+                // Go directly to OTP screen - prefill if devOtp available (dev mode)
+                navigation.navigate('OTP', {
+                    email: trimmedPhone,
+                    mode: 'verify',
+                    prefillOtp: devOtp || null,
+                });
+                if (devOtp) {
+                    // Small delay so OTP screen is visible first
+                    setTimeout(() => {
+                        Alert.alert('Dev Mode OTP', `Your OTP: ${devOtp}`);
+                    }, 500);
+                }
             }
         } catch (error) {
             console.error('Signup Error:', error.response?.data);

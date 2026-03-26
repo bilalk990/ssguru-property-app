@@ -26,10 +26,15 @@ import authStore from '../../store/authStore';
 const OTP_LENGTH = 6;
 
 const OTPScreen = ({ route, navigation }) => {
-    const { email, mode, prefillOtp } = route.params || {}; // mode: 'verify' or 'forgot'
-    const [otp, setOtp] = useState(
-        prefillOtp ? prefillOtp.toString().split('') : ['', '', '', '', '', '']
-    );
+    const { email, mode, prefillOtp } = route.params || {};
+    const buildOtpArray = (val) => {
+        if (!val) return ['', '', '', '', '', ''];
+        const str = val.toString().slice(0, 6);
+        const arr = str.split('');
+        while (arr.length < 6) arr.push('');
+        return arr;
+    };
+    const [otp, setOtp] = useState(buildOtpArray(prefillOtp));
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -80,19 +85,11 @@ const OTPScreen = ({ route, navigation }) => {
                 ]);
             } else {
                 const response = await verifyOtp(email, otpString);
-                // Backend now returns { data: { user, token } } after OTP verification
                 const token = response.data?.data?.token || response.data?.token;
-                const userData = response.data?.data;
+                const userData = response.data?.data?.user || response.data?.data;
                 if (token && userData) {
                     await authStore.saveAuthData(token, userData);
-                    Alert.alert('Verified', 'Your account has been verified successfully.', [
-                        {
-                            text: 'Continue',
-                            onPress: () => navigation.replace('MainApp', {
-                                screen: 'Sell'
-                            })
-                        }
-                    ]);
+                    navigation.replace('Dashboard');
                 } else {
                     Alert.alert('Verified', 'Your account has been verified. Please login.', [
                         { text: 'Login', onPress: () => navigation.navigate('Login') }

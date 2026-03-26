@@ -38,10 +38,12 @@ const LoginScreen = ({ navigation }) => {
             navigation.navigate('OTP', {
                 email: phone,
                 mode: 'verify',
-                prefillOtp: devOtp,
+                prefillOtp: devOtp || null,
             });
             if (devOtp) {
-                Alert.alert('OTP (Dev)', `Your OTP: ${devOtp}`);
+                setTimeout(() => {
+                    Alert.alert('Dev Mode OTP', `Your OTP: ${devOtp}`);
+                }, 500);
             }
         } catch (error) {
             console.error('[LOGIN] Error:', error.response?.data);
