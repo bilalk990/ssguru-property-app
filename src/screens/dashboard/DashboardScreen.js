@@ -127,7 +127,14 @@ const DashboardScreen = ({ navigation }) => {
 
                         <TouchableOpacity
                             style={[styles.actionCard, styles.sellCard]}
-                            onPress={() => navigation.navigate('AddProperty')}
+                            onPress={async () => {
+                                const token = await AsyncStorage.getItem('authToken');
+                                if (!token) {
+                                    navigation.navigate('Login');
+                                } else {
+                                    navigation.navigate('AddProperty');
+                                }
+                            }}
                             activeOpacity={0.85}>
                             <View style={[styles.actionIconBox, { backgroundColor: '#E8F5E9' }]}>
                                 <Icon name="add-circle" size={26} color="#2E7D32" />

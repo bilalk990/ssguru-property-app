@@ -112,7 +112,7 @@ const HomeScreen = ({ navigation }) => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(30)).current;
 
-    const [enquiryForm, setEnquiryForm] = useState({ name: '', phone: '', requirement: '' });
+    const [enquiryForm, setEnquiryForm] = useState({ name: '', phone: '', requirement: '', city: '' });
     const [enquiryLoading, setEnquiryLoading] = useState(false);
 
     const handleEnquirySubmit = async () => {
@@ -126,10 +126,10 @@ const HomeScreen = ({ navigation }) => {
                 name: enquiryForm.name,
                 contact: enquiryForm.phone,
                 message: enquiryForm.requirement,
-                city: 'Ujjain'
+                city: enquiryForm.city || 'General',
             });
             Alert.alert('Success', 'Your requirement has been sent!');
-            setEnquiryForm({ name: '', phone: '', requirement: '' });
+            setEnquiryForm({ name: '', phone: '', requirement: '', city: '' });
         } catch (e) {
             Alert.alert('Error', 'Failed to send. Try again.');
         } finally {
@@ -308,6 +308,13 @@ const HomeScreen = ({ navigation }) => {
                                     keyboardType="phone-pad"
                                     value={enquiryForm.phone}
                                     onChangeText={(v) => setEnquiryForm(prev => ({ ...prev, phone: v }))}
+                                />
+                                <TextInput
+                                    style={styles.enquiryInput}
+                                    placeholder="City / Area"
+                                    placeholderTextColor={Colors.textLight}
+                                    value={enquiryForm.city}
+                                    onChangeText={(v) => setEnquiryForm(prev => ({ ...prev, city: v }))}
                                 />
                                 <TextInput
                                     style={[styles.enquiryInput, { height: 80 }]}

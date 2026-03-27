@@ -169,7 +169,11 @@ const ProfileScreen = ({ navigation }) => {
                             style={styles.avatar}
                         />
                         <Text style={styles.userName}>{userData.name || 'Guest User'}</Text>
-                        <Text style={styles.userPhone}>{userData.email || userData.phone || 'No contact info'}</Text>
+                        <Text style={styles.userPhone}>
+                            {userData.contact || userData.phone || 
+                             (userData.email && !userData.email.includes('@noemail.local') ? userData.email : '') || 
+                             'No contact info'}
+                        </Text>
                         <TouchableOpacity
                             style={styles.editProfileBtn}
                             onPress={() => navigation.navigate('EditProfile')}

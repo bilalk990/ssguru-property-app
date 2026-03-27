@@ -429,16 +429,18 @@ const styles = StyleSheet.create({
     },
     typeBadge: {
         backgroundColor: Colors.accentMuted,
-        paddingHorizontal: 15,
+        paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 12,
+        maxWidth: 160,
     },
     typeBadgeText: {
         color: Colors.textWhite,
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: '800',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
+        flexShrink: 1,
     },
     // Content
     content: {
@@ -505,9 +507,10 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     infoValue: {
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: '800',
         color: Colors.textPrimary,
+        textAlign: 'center',
     },
     infoLabel: {
         fontSize: 11,
