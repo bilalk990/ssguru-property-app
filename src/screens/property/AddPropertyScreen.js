@@ -11,14 +11,13 @@ import {
     Platform,
     Image,
 } from 'react-native';
-import RazorpayCheckout from 'react-native-razorpay';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { launchImageLibrary } from 'react-native-image-picker';
 import CustomButton from '../../components/CustomButton';
 import { addProperty, updateProperty } from '../../api/propertyApi';
 import { getDistricts, getAreas } from '../../api/districtApi';
-import { propertyTypes, RAZORPAY_KEY, LISTING_FEE_PAISE } from '../../constants/appConstants';
+import { propertyTypes } from '../../constants/appConstants';
 import authStore from '../../store/authStore';
 
 const AddPropertyScreen = ({ navigation, route }) => {
@@ -131,36 +130,8 @@ const AddPropertyScreen = ({ navigation, route }) => {
             return;
         }
 
-        if (editMode) {
-            // No payment for edit
-            handleSubmit();
-            return;
-        }
-
-        const options = {
-            description: 'Property Listing Fee',
-            image: 'https://sspropertyguru.com/assets/images/logo.png',
-            currency: 'INR',
-            key: RAZORPAY_KEY,
-            amount: LISTING_FEE_PAISE.toString(),
-            name: 'SS Property Guru',
-            prefill: {
-                email: user?.email || '',
-                contact: user?.phone || '',
-                name: user?.name || ''
-            },
-            theme: { color: Colors.primary }
-        };
-
-        RazorpayCheckout.open(options).then((data) => {
-            // handle success
-            console.log(`Success: ${data.razorpay_payment_id}`);
-            handleSubmit(data.razorpay_payment_id);
-        }).catch((error) => {
-            // handle failure
-            console.log(`Error: ${error.code} | ${error.description}`);
-            Alert.alert('Payment Failed', 'Payment was not successful. Please try again to list your property.');
-        });
+        // Skip payment for now - directly submit
+        handleSubmit();
     };
 
     const handleSubmit = async (paymentId = null) => {
@@ -443,17 +414,12 @@ const AddPropertyScreen = ({ navigation, route }) => {
                             onChangeText={v => updateField('description', v)}
                         />
 
-                        <View style={styles.paymentNotice}>
-                            <Icon name="card-outline" size={24} color={Colors.accent} />
-                            <Text style={styles.paymentTitle}>Listing Fee: ₹20</Text>
-                        </View>
-
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={styles.prevButton} onPress={prevStep}>
                                 <Text style={styles.prevButtonText}>Back</Text>
                             </TouchableOpacity>
                             <CustomButton
-                                title={editMode ? 'Save Changes' : 'Pay & List'}
+                                title={editMode ? 'Save Changes' : 'Submit Listing'}
                                 onPress={handlePayment}
                                 loading={loading}
                                 style={{ flex: 1 }}
