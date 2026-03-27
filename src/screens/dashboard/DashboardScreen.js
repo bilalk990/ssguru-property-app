@@ -116,7 +116,7 @@ const DashboardScreen = ({ navigation }) => {
                     <View style={styles.actionGrid}>
                         <TouchableOpacity
                             style={[styles.actionCard, styles.buyCard]}
-                            onPress={() => navigation.navigate('Projects')}
+                            onPress={() => navigation.navigate('Buy', { screen: 'BuyMain' })}
                             activeOpacity={0.85}>
                             <View style={[styles.actionIconBox, { backgroundColor: Colors.primarySoft }]}>
                                 <Icon name="home" size={26} color={Colors.primary} />

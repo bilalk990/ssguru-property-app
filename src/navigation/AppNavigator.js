@@ -124,13 +124,13 @@ const ProfileStack = () => (
     </ProfileStackNav.Navigator>
 );
 
-const Stack = createNativeStackNavigator(); // Define Stack navigator
+const Stack = createNativeStackNavigator();
 
-// Bottom Tabs
+// Bottom Tabs with Dashboard as Sell tab
 const AppNavigator = () => {
     const insets = useSafeAreaInsets();
 
-    const MainTabNavigator = () => (
+    return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 headerShown: false,
@@ -158,36 +158,11 @@ const AppNavigator = () => {
                 },
             })}
         >
-            <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Buy" component={BuyPropertyScreen} />
-            <Tab.Screen name="Sell" component={AddPropertyScreen} />
-            <Tab.Screen name="Profile" component={ProfileScreen} />
+            <Tab.Screen name="Home" component={HomeStack} />
+            <Tab.Screen name="Buy" component={BuyStack} />
+            <Tab.Screen name="Sell" component={SellStack} />
+            <Tab.Screen name="Profile" component={ProfileStack} />
         </Tab.Navigator>
-    );
-
-    return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Dashboard" component={DashboardScreen} />
-            <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-            <Stack.Screen name="PropertyDetail" component={PropertyDetailScreen} />
-            <Stack.Screen name="Enquiry" component={EnquiryFormScreen} />
-            <Stack.Screen name="MyProperties" component={MyPropertiesScreen} />
-            <Stack.Screen name="AddProperty" component={AddPropertyScreen} />
-            <Stack.Screen name="Agents" component={AgentsScreen} />
-            <Stack.Screen name="Gallery" component={GalleryScreen} />
-            <Stack.Screen name="Franchise" component={FranchiseScreen} />
-            <Stack.Screen name="AboutContact" component={AboutContactScreen} />
-            <Stack.Screen name="LiveTour" component={LiveTourScreen} />
-            <Stack.Screen name="PostRequirement" component={PostRequirementScreen} />
-            <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
-            <Stack.Screen name="Notification" component={NotificationScreen} />
-            <Stack.Screen name="ManagementList" component={ManagementListScreen} />
-            <Stack.Screen name="Leads" component={LeadsScreen} />
-            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-            <Stack.Screen name="LocationManager" component={LocationManagerScreen} />
-            <Stack.Screen name="StreamManager" component={StreamManagerScreen} />
-            <Stack.Screen name="FranchiseDashboard" component={FranchiseDashboardScreen} />
-        </Stack.Navigator>
     );
 };
 
