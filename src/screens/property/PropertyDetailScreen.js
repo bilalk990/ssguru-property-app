@@ -193,7 +193,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                             )}
                         </View>
                         <View style={styles.typeBadge}>
-                            <Text style={styles.typeBadgeText}>{property.type}</Text>
+                            <Text style={styles.typeBadgeText} numberOfLines={1}>{property.type}</Text>
                         </View>
                     </View>
                 </View>
@@ -432,15 +432,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 12,
-        maxWidth: 160,
+        maxWidth: 140,
+        overflow: 'hidden',
     },
     typeBadgeText: {
         color: Colors.textWhite,
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: '800',
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
-        flexShrink: 1,
+        letterSpacing: 0.3,
+        numberOfLines: 1,
     },
     // Content
     content: {
