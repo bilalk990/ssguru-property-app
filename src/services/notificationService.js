@@ -1,22 +1,6 @@
-/**
- * Push Notification Service
- * 
- * SETUP REQUIRED:
- * 1. Install Firebase: npm install @react-native-firebase/app @react-native-firebase/messaging
- * 2. Configure Firebase in android/app/google-services.json
- * 3. Configure Firebase in ios/GoogleService-Info.plist
- * 4. Update android/app/build.gradle to add Firebase plugin
- * 5. Request notification permissions
- * 
- * For now, this is a placeholder that logs notifications.
- * Once Firebase is configured, uncomment the Firebase code below.
- */
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, PermissionsAndroid, Alert } from 'react-native';
-
-// Uncomment after installing Firebase
-// import messaging from '@react-native-firebase/messaging';
+import messaging from '@react-native-firebase/messaging';
 
 const NOTIFICATION_TOKEN_KEY = 'fcm_token';
 
@@ -68,14 +52,12 @@ class NotificationService {
                     );
                     return granted === PermissionsAndroid.RESULTS.GRANTED;
                 }
-                return true; // Android < 13 doesn't need runtime permission
+                return true;
             } else {
                 // iOS
-                // Uncomment after installing Firebase
-                // const authStatus = await messaging().requestPermission();
-                // return authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-                //        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-                return true;
+                const authStatus = await messaging().requestPermission();
+                return authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+                    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
             }
         } catch (error) {
             console.error('[NotificationService] Permission error:', error);
@@ -88,13 +70,8 @@ class NotificationService {
      */
     async getFCMToken() {
         try {
-            // Uncomment after installing Firebase
-            // const token = await messaging().getToken();
-            // console.log('[NotificationService] FCM Token:', token);
-            
-            // For now, generate a dummy token
-            const token = `dummy_token_${Date.now()}`;
-            console.log('[NotificationService] Dummy Token (Firebase not configured):', token);
+            const token = await messaging().getToken();
+            console.log('[NotificationService] FCM Token:', token);
 
             this.token = token;
             await AsyncStorage.setItem(NOTIFICATION_TOKEN_KEY, token);
@@ -122,7 +99,7 @@ class NotificationService {
 
             // Import API function
             const { saveFCMToken } = require('../api/userApi');
-            
+
             await saveFCMToken(token);
             console.log('[NotificationService] Token sent to backend successfully');
         } catch (error) {
@@ -134,31 +111,27 @@ class NotificationService {
      * Setup notification handlers
      */
     setupNotificationHandlers() {
-        // Uncomment after installing Firebase
-
         // Handle notifications when app is in foreground
-        // messaging().onMessage(async remoteMessage => {
-        //     console.log('[NotificationService] Foreground notification:', remoteMessage);
-        //     this.showLocalNotification(remoteMessage);
-        // });
+        messaging().onMessage(async remoteMessage => {
+            console.log('[NotificationService] Foreground notification:', remoteMessage);
+            this.showLocalNotification(remoteMessage);
+        });
 
         // Handle notification when app is opened from background
-        // messaging().onNotificationOpenedApp(remoteMessage => {
-        //     console.log('[NotificationService] Notification opened app:', remoteMessage);
-        //     this.handleNotificationNavigation(remoteMessage);
-        // });
+        messaging().onNotificationOpenedApp(remoteMessage => {
+            console.log('[NotificationService] Notification opened app:', remoteMessage);
+            this.handleNotificationNavigation(remoteMessage);
+        });
 
         // Handle notification when app is opened from quit state
-        // messaging()
-        //     .getInitialNotification()
-        //     .then(remoteMessage => {
-        //         if (remoteMessage) {
-        //             console.log('[NotificationService] Notification opened app from quit state:', remoteMessage);
-        //             this.handleNotificationNavigation(remoteMessage);
-        //         }
-        //     });
-
-        console.log('[NotificationService] Notification handlers setup (Firebase not configured)');
+        messaging()
+            .getInitialNotification()
+            .then(remoteMessage => {
+                if (remoteMessage) {
+                    console.log('[NotificationService] Notification opened app from quit state:', remoteMessage);
+                    this.handleNotificationNavigation(remoteMessage);
+                }
+            });
     }
 
     /**
@@ -181,12 +154,7 @@ class NotificationService {
     handleNotificationNavigation(remoteMessage) {
         const { data } = remoteMessage;
         console.log('[NotificationService] Navigation data:', data);
-
-        // TODO: Implement navigation based on notification type
-        // Example:
-        // if (data.type === 'new_property') {
-        //     navigation.navigate('PropertyDetail', { propertyId: data.propertyId });
-        // }
+        // Navigation logic can be added here if needed
     }
 
     /**
@@ -207,6 +175,7 @@ class NotificationService {
      */
     async clearToken() {
         try {
+            await messaging().deleteToken();
             await AsyncStorage.removeItem(NOTIFICATION_TOKEN_KEY);
             this.token = null;
             console.log('[NotificationService] Token cleared');
