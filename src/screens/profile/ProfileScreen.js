@@ -254,6 +254,10 @@ const ProfileScreen = ({ navigation }) => {
                                 text: 'Logout',
                                 style: 'destructive',
                                 onPress: async () => {
+                                    try {
+                                        const notificationService = require('../../services/notificationService').default;
+                                        await notificationService.clearToken();
+                                    } catch (e) {}
                                     await AsyncStorage.clear();
                                     navigation.dispatch(
                                         CommonActions.reset({
