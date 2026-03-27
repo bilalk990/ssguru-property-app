@@ -14,7 +14,6 @@ import AddPropertyScreen from '../screens/property/AddPropertyScreen';
 import MyPropertiesScreen from '../screens/property/MyPropertiesScreen';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
-import AgentsScreen from '../screens/agent/AgentsScreen';
 import GalleryScreen from '../screens/corporate/GalleryScreen';
 import FranchiseScreen from '../screens/corporate/FranchiseScreen';
 import AboutContactScreen from '../screens/corporate/AboutContactScreen';
@@ -24,7 +23,6 @@ import PostRequirementScreen from '../screens/home/PostRequirementScreen';
 import AdminDashboardScreen from '../screens/profile/AdminDashboardScreen';
 import NotificationScreen from '../screens/profile/NotificationScreen';
 import ManagementListScreen from '../screens/profile/ManagementListScreen';
-import LeadsScreen from '../screens/agent/LeadsScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import LocationManagerScreen from '../screens/profile/LocationManagerScreen';
 import StreamManagerScreen from '../screens/profile/StreamManagerScreen';
@@ -87,7 +85,6 @@ const HomeStack = () => (
         <HomeStackNav.Screen name="Enquiry" component={EnquiryFormScreen} />
         <HomeStackNav.Screen name="MyProperties" component={MyPropertiesScreen} />
         <HomeStackNav.Screen name="AddProperty" component={AddPropertyScreen} />
-        <HomeStackNav.Screen name="Agents" component={AgentsScreen} />
         <HomeStackNav.Screen name="Gallery" component={GalleryScreen} />
         <HomeStackNav.Screen name="Franchise" component={FranchiseScreen} />
         <HomeStackNav.Screen name="AboutContact" component={AboutContactScreen} />
@@ -117,7 +114,6 @@ const ProfileStack = () => (
         <ProfileStackNav.Screen name="AddProperty" component={AddPropertyScreen} />
         <ProfileStackNav.Screen name="Enquiry" component={EnquiryFormScreen} />
         <ProfileStackNav.Screen name="PropertyDetail" component={PropertyDetailScreen} />
-        <ProfileStackNav.Screen name="Agents" component={AgentsScreen} />
         <ProfileStackNav.Screen name="Gallery" component={GalleryScreen} />
         <ProfileStackNav.Screen name="Franchise" component={FranchiseScreen} />
         <ProfileStackNav.Screen name="AboutContact" component={AboutContactScreen} />

@@ -23,8 +23,6 @@ import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
 import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
 import { getProperties } from '../../api/propertyApi';
-import { getTopAgents } from '../../api/agentApi';
-import { getFranchises } from '../../api/franchiseApi';
 import { getCurrentStream } from '../../api/streamApi';
 import { createEnquiry } from '../../api/enquiryApi';
 
@@ -103,8 +101,6 @@ const AgentsSection = ({ agents, navigation }) => (
 const HomeScreen = ({ navigation }) => {
     const [search, setSearch] = useState('');
     const [properties, setProperties] = useState([]);
-    const [agents, setAgents] = useState([]);
-    const [franchises, setFranchises] = useState([]);
     const [isLive, setIsLive] = useState(false);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -142,20 +138,13 @@ const HomeScreen = ({ navigation }) => {
         else setLoading(true);
 
         try {
-            const [propRes, agentRes, franchiseRes, streamRes] = await Promise.all([
+            const [propRes, streamRes] = await Promise.all([
                 getProperties({}).catch(() => ({ data: [] })),
-                getTopAgents().catch(() => ({ data: [] })),
-                getFranchises({ limit: 5 }).catch(() => ({ data: [] })),
                 getCurrentStream().catch(() => ({ data: null }))
             ]);
 
             const listings = propRes.data?.data || propRes.data?.properties || propRes.data || [];
-            const topAgents = agentRes.data?.data || agentRes.data?.agents || agentRes.data || [];
-            const topFranchises = franchiseRes.data?.data || franchiseRes.data?.franchises || franchiseRes.data?.franchise || franchiseRes.data || [];
-
             setProperties(Array.isArray(listings) ? listings : []);
-            setAgents(Array.isArray(topAgents) ? topAgents : []);
-            setFranchises(Array.isArray(topFranchises) ? topFranchises : []);
             setIsLive(!!(streamRes.data?.data?.youtubeUrl && streamRes.data?.data?.isActive));
         } catch (error) {
             console.error('Home Data Error:', error);
@@ -223,7 +212,6 @@ const HomeScreen = ({ navigation }) => {
                     <ActionCard title="Buy" desc="Find homes" icon="home" color={Colors.primarySoft} onPress={() => navigation.navigate('Buy')} />
                     <ActionCard title="Sell" desc="List & Earn" icon="cash" color={Colors.accentSoft} onPress={() => navigation.navigate('Sell')} />
                     <ActionCard title="Enquiry" desc="Expert help" icon="chatbubble-ellipses" color="#EDE7F6" onPress={() => navigation.navigate('Enquiry')} />
-                    <ActionCard title="Our Agents" desc="Meet experts" icon="people" color="#E8F5E9" onPress={() => navigation.navigate('Agents')} />
                     <ActionCard
                         title={isLive ? "Live Tour 🔴" : "Live Tour"}
                         desc={isLive ? "Join Now" : "Coming Soon"}
@@ -263,9 +251,6 @@ const HomeScreen = ({ navigation }) => {
                                 />
                             </View>
                         )}
-
-                        <AgenciesSection franchises={franchises} navigation={navigation} />
-                        <AgentsSection agents={agents} navigation={navigation} />
 
                         <View style={styles.section}>
                             <View style={styles.sectionHeader}>

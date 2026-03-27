@@ -219,14 +219,6 @@ const ProfileScreen = ({ navigation }) => {
                         </View>
                         <Text style={styles.quickText}>My{'\n'}Properties</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.quickAction}
-                        onPress={() => navigation.navigate('Agents')}>
-                        <View style={[styles.quickIconBox, { backgroundColor: '#E3F2FD' }]}>
-                            <Icon name="people-outline" size={24} color="#1565C0" />
-                        </View>
-                        <Text style={styles.quickText}>Meet{'\n'}Agents</Text>
-                    </TouchableOpacity>
                 </View>
 
                 {/* Menu */}

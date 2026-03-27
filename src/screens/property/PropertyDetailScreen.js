@@ -17,17 +17,16 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Video from 'react-native-video';
 import Colors from '../../constants/colors';
-import CustomButton from '../../components/CustomButton';
-import { createEnquiry } from '../../api/enquiryApi';
 import { normalizeProperty } from '../../components/PropertyCard';
 
 const { width, height } = Dimensions.get('window');
+
+const ADMIN_PHONE = '917400763089'; // Admin WhatsApp number
 
 const PropertyDetailScreen = ({ route, navigation }) => {
     const { property: initialProperty } = route.params || {};
     const [property, setProperty] = useState(initialProperty ? normalizeProperty(initialProperty) : {});
     const [activeImageIndex, setActiveImageIndex] = useState(0);
-    const [loading, setLoading] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
 
     if (!property || Object.keys(property).length === 0) {
@@ -43,23 +42,16 @@ const PropertyDetailScreen = ({ route, navigation }) => {
 
     const images = property.images?.length ? property.images : ['https://via.placeholder.com/300'];
 
-    // Check if user is logged in before allowing contact
-    const checkAuthAndProceed = async (action) => {
+    const checkAuthAndProceed = async () => {
         const token = await AsyncStorage.getItem('authToken');
         if (!token) {
             Alert.alert(
                 'Login Required',
-                'Please login or signup to contact the agent',
+                'Please login or signup to contact us',
                 [
                     { text: 'Cancel', style: 'cancel' },
-                    { 
-                        text: 'Login', 
-                        onPress: () => navigation.navigate('Login')
-                    },
-                    { 
-                        text: 'Signup', 
-                        onPress: () => navigation.navigate('Signup')
-                    }
+                    { text: 'Login', onPress: () => navigation.navigate('Login') },
+                    { text: 'Signup', onPress: () => navigation.navigate('Signup') }
                 ]
             );
             return false;
@@ -68,36 +60,14 @@ const PropertyDetailScreen = ({ route, navigation }) => {
     };
 
     const handleCall = async () => {
-        const canProceed = await checkAuthAndProceed('call');
-        if (!canProceed) return;
-
-        const phone = property.agentPhone || property.contactNumber || '1234567890';
-        console.log('Calling agent phone:', phone);
-        Linking.openURL(`tel:${phone}`);
+        if (!await checkAuthAndProceed()) return;
+        Linking.openURL(`tel:+${ADMIN_PHONE}`);
     };
 
     const handleWhatsApp = async () => {
-        const canProceed = await checkAuthAndProceed('whatsapp');
-        if (!canProceed) return;
-
-        const message = `Hi, I'm interested in the property: ${property.title} (${property.price})`;
-        const phone = (property.agentPhone || property.contactNumber || '1234567890').replace(/\s/g, '');
-        console.log('WhatsApp agent phone:', phone);
-
-        // Log enquiry to backend first
-        try {
-            await createEnquiry({
-                name: 'App User',
-                contact: phone,
-                email: 'app@noemail.com',
-                city: property.city || 'General',
-                message: `WhatsApp interest: ${property.title}`,
-            });
-        } catch (e) {
-            console.warn('Silent enquiry log failed', e);
-        }
-
-        Linking.openURL(`whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`);
+        if (!await checkAuthAndProceed()) return;
+        const message = `Hi, I'm interested in the property: ${property.title}\nPrice: ${property.price}\nLocation: ${property.area}, ${property.city}`;
+        Linking.openURL(`whatsapp://send?phone=${ADMIN_PHONE}&text=${encodeURIComponent(message)}`);
     };
 
     const handleShare = async () => {
@@ -279,28 +249,6 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                         </View>
                     </View>
 
-                    {/* Luxury Agent Card */}
-                    <View style={styles.agentCard}>
-                        <View style={styles.agentInfo}>
-                            <View style={styles.avatarWrapper}>
-                                <Image
-                                    source={{ uri: property.agentAvatar || 'https://i.pravatar.cc/150' }}
-                                    style={styles.avatar}
-                                />
-                                <View style={styles.verifiedBadge}>
-                                    <Icon name="checkmark-sharp" size={10} color={Colors.textWhite} />
-                                </View>
-                            </View>
-                            <View style={styles.agentTextContainer}>
-                                <Text style={styles.agentName}>{property.agentName || 'Agent'}</Text>
-                                <Text style={styles.agentRole}>Elite Property Consultant</Text>
-                            </View>
-                            <TouchableOpacity style={styles.miniCall} onPress={handleCall}>
-                                <Icon name="call" size={20} color={Colors.primary} />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
                     <View style={styles.dateRow}>
                         <Icon name="time-outline" size={14} color={Colors.textLight} />
                         <Text style={styles.dateText}>Listed {property.postedDate || 'Just now'}</Text>
@@ -321,7 +269,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}>
                         <Icon name="logo-whatsapp" size={20} color={Colors.textWhite} />
-                        <Text style={styles.whatsappLabel}>Contact Agent</Text>
+                        <Text style={styles.whatsappLabel}>Contact Admin</Text>
                     </LinearGradient>
                 </TouchableOpacity>
             </View>
