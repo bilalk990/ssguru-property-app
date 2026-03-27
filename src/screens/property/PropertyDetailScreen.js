@@ -217,30 +217,30 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                         </Text>
                     </View>
 
-                    {/* Elite Info Grid - Only show sqft for village properties */}
+                    {/* Info Grid */}
                     <View style={styles.infoGrid}>
                         <View style={styles.infoItem}>
                             <View style={styles.infoIconBox}>
-                                <Icon name="expand-outline" size={22} color={Colors.primary} />
+                                <Icon name="expand-outline" size={20} color={Colors.primary} />
                             </View>
-                            <Text style={styles.infoValue}>{property.sqft || property.areaSize || '-'}</Text>
-                            <Text style={styles.infoLabel}>Area</Text>
+                            <Text style={styles.infoValue} numberOfLines={1}>{property.sqft || property.areaSize || '-'}</Text>
+                            <Text style={styles.infoLabel}>AREA</Text>
                         </View>
                         <View style={styles.infoDivider} />
                         <View style={styles.infoItem}>
                             <View style={styles.infoIconBox}>
-                                <Icon name="location-outline" size={22} color={Colors.primary} />
+                                <Icon name="location-outline" size={20} color={Colors.primary} />
                             </View>
-                            <Text style={styles.infoValue}>{property.city || '-'}</Text>
-                            <Text style={styles.infoLabel}>City</Text>
+                            <Text style={styles.infoValue} numberOfLines={1}>{property.city || '-'}</Text>
+                            <Text style={styles.infoLabel}>CITY</Text>
                         </View>
                         <View style={styles.infoDivider} />
                         <View style={styles.infoItem}>
                             <View style={styles.infoIconBox}>
-                                <Icon name="pricetag-outline" size={22} color={Colors.primary} />
+                                <Icon name="pricetag-outline" size={20} color={Colors.primary} />
                             </View>
-                            <Text style={styles.infoValue}>{property.type || '-'}</Text>
-                            <Text style={styles.infoLabel}>Type</Text>
+                            <Text style={styles.infoValue} numberOfLines={2}>{property.type || '-'}</Text>
+                            <Text style={styles.infoLabel}>TYPE</Text>
                         </View>
                     </View>
 
@@ -429,11 +429,12 @@ const styles = StyleSheet.create({
     },
     typeBadge: {
         backgroundColor: Colors.accentMuted,
-        paddingHorizontal: 12,
+        paddingHorizontal: 10,
         paddingVertical: 6,
-        borderRadius: 12,
-        maxWidth: 140,
+        borderRadius: 10,
+        maxWidth: 120,
         overflow: 'hidden',
+        flexShrink: 1,
     },
     typeBadgeText: {
         color: Colors.textWhite,
@@ -441,7 +442,6 @@ const styles = StyleSheet.create({
         fontWeight: '800',
         textTransform: 'uppercase',
         letterSpacing: 0.3,
-        numberOfLines: 1,
     },
     // Content
     content: {
@@ -487,42 +487,45 @@ const styles = StyleSheet.create({
     infoGrid: {
         flexDirection: 'row',
         backgroundColor: Colors.surfaceSecondary,
-        borderRadius: 24,
-        padding: 24,
+        borderRadius: 20,
+        padding: 20,
         marginBottom: 35,
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
     infoItem: {
         flex: 1,
         alignItems: 'center',
-        gap: 6,
+        paddingHorizontal: 4,
     },
     infoIconBox: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         backgroundColor: 'rgba(27, 94, 32, 0.08)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 4,
+        marginBottom: 8,
     },
     infoValue: {
-        fontSize: 15,
+        fontSize: 13,
         fontWeight: '800',
         color: Colors.textPrimary,
         textAlign: 'center',
+        marginBottom: 4,
     },
     infoLabel: {
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: '600',
         color: Colors.textSecondary,
         textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        textAlign: 'center',
     },
     infoDivider: {
         width: 1,
-        height: 40,
-        backgroundColor: 'rgba(0,0,0,0.05)',
+        height: 50,
+        backgroundColor: 'rgba(0,0,0,0.07)',
+        marginTop: 10,
     },
     // Description
     section: {
