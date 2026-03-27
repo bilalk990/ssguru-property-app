@@ -359,9 +359,9 @@ const styles = StyleSheet.create({
     profileButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
     headerTitle: { fontSize: 32, fontWeight: '800', color: Colors.textWhite, lineHeight: 40, marginBottom: 25 },
     searchBar: { marginTop: 5 },
-    actionsSection: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, paddingTop: 24, gap: 12, justifyContent: 'space-between' },
+    actionsSection: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, paddingTop: 24, gap: 12, justifyContent: 'center' },
     actionCard: {
-        width: (width - 48) / 3,
+        width: (width - 56) / 3,
         backgroundColor: Colors.backgroundCard,
         borderRadius: 20,
         padding: 12,
