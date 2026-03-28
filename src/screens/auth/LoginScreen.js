@@ -47,8 +47,21 @@ const LoginScreen = ({ navigation }) => {
             }
         } catch (error) {
             console.error('[LOGIN] Error:', error.response?.data);
-            const msg = error.response?.data?.message || 'Failed to send OTP. Please try again.';
-            Alert.alert('Error', msg);
+            let message = 'Failed to send OTP. Please try again.';
+            
+            if (error.response?.status === 404) {
+                message = 'Phone number not found. Please sign up first.';
+            } else if (error.response?.data?.message) {
+                message = error.response.data.message;
+            } else if (error.code === 'ERR_NETWORK') {
+                message = 'Cannot connect to server. Check your internet connection.';
+            } else if (error.code === 'ECONNABORTED') {
+                message = 'Request timeout. The server is taking too long to respond. Please try again.';
+            } else if (error.message) {
+                message = error.message;
+            }
+            
+            Alert.alert('Error', message);
         } finally {
             setLoading(false);
         }

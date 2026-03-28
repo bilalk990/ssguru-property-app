@@ -10,7 +10,8 @@ export const signup = async (data) => {
     if (data instanceof FormData) {
         // For FormData, let axios handle Content-Type with boundary
         return apiClient.post('/auth/signup', data, {
-            headers: { 'Content-Type': 'multipart/form-data' }
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 90000 // Increased timeout for OTP sending
         });
     } else {
         // For JSON, send as plain object (axios will serialize)
@@ -19,7 +20,8 @@ export const signup = async (data) => {
             throw new Error('Invalid signup data');
         }
         return apiClient.post('/auth/signup', data, {
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            timeout: 90000 // Increased timeout for OTP sending
         });
     }
 };
@@ -36,7 +38,9 @@ export const getMe = async (id) => {
 
 // POST /api/v1/auth/forgot-password
 export const forgotPassword = async (identifier) => {
-    return apiClient.post('/auth/forgot-password', { email: identifier, contact: identifier, phone: identifier });
+    return apiClient.post('/auth/forgot-password', { email: identifier, contact: identifier, phone: identifier }, {
+        timeout: 90000 // Increased timeout for OTP sending
+    });
 };
 
 // POST /api/v1/auth/verify-otp

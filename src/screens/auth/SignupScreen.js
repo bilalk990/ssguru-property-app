@@ -70,6 +70,10 @@ const SignupScreen = ({ navigation }) => {
                 message = error.response.data.message;
             } else if (error.code === 'ERR_NETWORK') {
                 message = 'Cannot connect to server. Check your internet connection.';
+            } else if (error.code === 'ECONNABORTED') {
+                message = 'Request timeout. The server is taking too long to respond. Please try again.';
+            } else if (error.message) {
+                message = error.message;
             }
 
             Alert.alert('Signup Error', message);
