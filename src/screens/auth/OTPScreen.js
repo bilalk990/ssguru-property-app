@@ -89,8 +89,11 @@ const OTPScreen = ({ route, navigation }) => {
                 const userData = response.data?.data?.user || response.data?.data;
                 if (token && userData) {
                     await authStore.saveAuthData(token, userData);
-                    // Navigate to MainApp (bottom tabs visible, Sell tab selected with Dashboard)
-                    navigation.replace('MainApp');
+                    // Navigate to Dashboard (Sell tab)
+                    navigation.replace('MainApp', { 
+                        screen: 'Sell', 
+                        params: { screen: 'Dashboard' } 
+                    });
                 } else {
                     Alert.alert('Verified', 'Your account has been verified. Please login.', [
                         { text: 'Login', onPress: () => navigation.navigate('Login') }

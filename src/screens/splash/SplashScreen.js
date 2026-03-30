@@ -36,12 +36,18 @@ const SplashScreen = ({ navigation }) => {
             try {
                 const loggedIn = await authStore.isLoggedIn();
                 if (loggedIn) {
-                    navigation.replace('MainApp');
+                    // User logged in → Go to Dashboard (Sell tab)
+                    navigation.replace('MainApp', { 
+                        screen: 'Sell', 
+                        params: { screen: 'Dashboard' } 
+                    });
                 } else {
-                    navigation.replace('MainApp'); // Go to MainApp (Home tab) for browsing
+                    // User NOT logged in → Go to Login page
+                    navigation.replace('Login');
                 }
             } catch (e) {
-                navigation.replace('MainApp');
+                // Error → Go to Login page
+                navigation.replace('Login');
             }
         }, 3000);
 
