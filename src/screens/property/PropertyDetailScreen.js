@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
     // Footer
     footer: {
         position: 'absolute',
-        bottom: 20,
+        bottom: 110,
         left: 20,
         right: 20,
         backgroundColor: Colors.backgroundCard,

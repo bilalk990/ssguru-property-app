@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: Colors.textPrimary,
         marginRight: 8,
-        marginTop: 10,
+        paddingTop: 20,
     },
     input: {
         flex: 1,
