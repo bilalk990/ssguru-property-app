@@ -11,6 +11,7 @@ import { signup } from '../../api/authApi';
 
 const SignupScreen = ({ navigation }) => {
     const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -19,13 +20,15 @@ const SignupScreen = ({ navigation }) => {
     const headerSlide = useRef(new Animated.Value(-30)).current;
     const nameAnim = useRef(new Animated.Value(0)).current;
     const nameSlide = useRef(new Animated.Value(20)).current;
+    const emailAnim = useRef(new Animated.Value(0)).current;
+    const emailSlide = useRef(new Animated.Value(20)).current;
     const phoneAnim = useRef(new Animated.Value(0)).current;
     const phoneSlide = useRef(new Animated.Value(20)).current;
     const btnAnim = useRef(new Animated.Value(0)).current;
     const btnSlide = useRef(new Animated.Value(20)).current;
 
     useEffect(() => {
-        Animated.stagger(120, [
+        Animated.stagger(100, [
             Animated.parallel([
                 Animated.timing(headerAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
                 Animated.spring(headerSlide, { toValue: 0, tension: 20, friction: 6, useNativeDriver: true })
@@ -33,6 +36,10 @@ const SignupScreen = ({ navigation }) => {
             Animated.parallel([
                 Animated.timing(nameAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
                 Animated.spring(nameSlide, { toValue: 0, tension: 30, friction: 7, useNativeDriver: true })
+            ]),
+            Animated.parallel([
+                Animated.timing(emailAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+                Animated.spring(emailSlide, { toValue: 0, tension: 30, friction: 7, useNativeDriver: true })
             ]),
             Animated.parallel([
                 Animated.timing(phoneAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
@@ -47,14 +54,25 @@ const SignupScreen = ({ navigation }) => {
 
     const handleSignup = async () => {
         const trimmedName = (name || '').trim();
+        const trimmedEmail = (email || '').trim();
         const trimmedPhone = (phone || '').trim();
 
-        if (!trimmedName || !trimmedPhone) return Alert.alert('Missing Fields', 'Please enter your name and phone number.');
-        if (trimmedPhone.length < 10) return Alert.alert('Invalid Phone', 'Please enter a valid 10-digit number.');
+        if (!trimmedName || !trimmedEmail || !trimmedPhone) {
+            return Alert.alert('Missing Fields', 'Please fill in your name, email, and phone number.');
+        }
+
+        const emailRegex = /\S+@\S+\.\S+/;
+        if (!emailRegex.test(trimmedEmail)) {
+            return Alert.alert('Invalid Email', 'Please enter a valid email address.');
+        }
+
+        if (trimmedPhone.length < 10) {
+            return Alert.alert('Invalid Phone', 'Please enter a valid 10-digit number.');
+        }
 
         setLoading(true);
         try {
-            const response = await signup({ name: trimmedName, contact: trimmedPhone });
+            const response = await signup({ name: trimmedName, email: trimmedEmail, contact: trimmedPhone });
             if (response.data) {
                 const devOtp = response.data?.data?.devOtp;
                 navigation.navigate('OTP', { email: trimmedPhone, mode: 'verify', prefillOtp: devOtp || null });
@@ -63,7 +81,7 @@ const SignupScreen = ({ navigation }) => {
         } catch (error) {
             console.error('Signup Error:', error.response?.data);
             let message = 'Failed to create account. Please try again.';
-            if (error.response?.status === 409) message = 'This phone number is already registered. Please login.';
+            if (error.response?.status === 409) message = 'This phone or email is already registered. Please login.';
             else if (error.response?.data?.message) message = error.response.data.message;
             Alert.alert('Signup Error', message);
         } finally {
@@ -93,6 +111,17 @@ const SignupScreen = ({ navigation }) => {
                             value={name}
                             onChangeText={setName}
                             icon="person-outline"
+                            style={{ marginBottom: 20 }}
+                        />
+                    </Animated.View>
+
+                    <Animated.View style={{ opacity: emailAnim, transform: [{ translateY: emailSlide }] }}>
+                        <FloatingLabelInput
+                            label="Email Address"
+                            value={email}
+                            onChangeText={setEmail}
+                            icon="mail-outline"
+                            keyboardType="email-address"
                             style={{ marginBottom: 20 }}
                         />
                     </Animated.View>
@@ -144,7 +173,7 @@ const styles = StyleSheet.create({
     scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 60 },
     topDecoration: { position: 'absolute', top: -150, right: -150, zIndex: -1 },
     decorCircle: { width: 400, height: 400, borderRadius: 200, opacity: 0.5 },
-    header: { marginBottom: 40, marginTop: 40 },
+    header: { marginBottom: 30, marginTop: 20 },
     title: { fontSize: 34, fontWeight: '900', color: Colors.textPrimary, letterSpacing: -0.5 },
     subtitle: { fontSize: 16, color: Colors.textSecondary, marginTop: 6, fontWeight: '500' },
     card: {
@@ -156,7 +185,7 @@ const styles = StyleSheet.create({
     loginContainer: { flexDirection: 'row', justifyContent: 'center', marginTop: 30 },
     alreadyAccountText: { color: Colors.textSecondary, fontSize: 14, fontWeight: '500' },
     loginLink: { color: Colors.primary, fontSize: 14, fontWeight: '800' },
-    footer: { marginTop: 40, marginBottom: 40, paddingHorizontal: 20 },
+    footer: { marginTop: 30, marginBottom: 40, paddingHorizontal: 20 },
     footerText: { fontSize: 12, color: Colors.textLight, textAlign: 'center', lineHeight: 18 },
     link: { color: Colors.primary, fontWeight: '700' },
 });
