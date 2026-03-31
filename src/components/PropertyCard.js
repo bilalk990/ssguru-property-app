@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../constants/colors';
+import { formatPrice } from '../utils/helpers';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.44;
@@ -67,9 +68,9 @@ export const normalizeProperty = (item) => {
         city: item.city || (typeof item.district === 'object' ? item.district?.name : '') || (typeof item.district === 'string' && item.district.length < 30 ? item.district : '') || '',
         area: item.area?.name || item.area || '',
         price: item.price
-            ? (typeof item.price === 'string' && item.price.startsWith('PKR')
-                ? item.price
-                : `PKR ${Number(item.price).toLocaleString()}`)
+            ? (typeof item.price === 'string' && (item.price.startsWith('PKR') || item.price.startsWith('₹'))
+                ? item.price.replace('PKR', '₹')
+                : formatPrice(Number(item.price)))
             : 'Price on request',
         sqft: item.sqft
             ? (typeof item.sqft === 'string' && item.sqft.includes('sqft') ? item.sqft : `${item.sqft} sqft`)
