@@ -156,13 +156,17 @@ const ProfileScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor={Colors.primary} barStyle="light-content" translucent={false} />
+            <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 20 }}>
-                {/* Profile Header */}
-                <View style={styles.header}>
+                contentContainerStyle={{ paddingBottom: 100 }}>
+                {/* Premium Profile Header */}
+                <LinearGradient
+                    colors={Colors.gradientPrimary}
+                    style={styles.header}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}>
                     <View style={styles.profileSection}>
                         <Image
                             source={{ uri: userData.avatar || 'https://i.pravatar.cc/150' }}
@@ -170,19 +174,19 @@ const ProfileScreen = ({ navigation }) => {
                         />
                         <Text style={styles.userName}>{userData.name || 'Guest User'}</Text>
                         <Text style={styles.userPhone}>
-                            {userData.contact || userData.phone || 
-                             (userData.email && !userData.email.includes('@noemail.local') ? userData.email : '') || 
-                             'No contact info'}
+                            {userData.contact || userData.phone ||
+                                (userData.email && !userData.email.includes('@noemail.local') ? userData.email : '') ||
+                                'No contact info'}
                         </Text>
                         <TouchableOpacity
                             style={styles.editProfileBtn}
                             onPress={() => navigation.navigate('EditProfile')}
                         >
-                            <Icon name="pencil" size={14} color={Colors.textWhite} />
+                            <Icon name="pencil" size={16} color={Colors.textWhite} />
                         </TouchableOpacity>
                     </View>
 
-                    {/* Stats */}
+                    {/* Elite Stats */}
                     <View style={styles.statsRow}>
                         <View style={styles.statItem}>
                             <Text style={styles.statValue}>{propertyCount}</Text>
@@ -195,11 +199,11 @@ const ProfileScreen = ({ navigation }) => {
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
-                            <Icon name="star" size={20} color="#FFD700" />
+                            <Icon name="star" size={24} color={Colors.accentMuted} />
                             <Text style={styles.statLabel}>{userData.role === 'agent' ? 'Expert' : 'Premium'}</Text>
                         </View>
                     </View>
-                </View>
+                </LinearGradient>
 
                 {/* Quick Actions */}
                 <View style={styles.quickActions}>
@@ -257,7 +261,7 @@ const ProfileScreen = ({ navigation }) => {
                                     try {
                                         const notificationService = require('../../services/notificationService').default;
                                         await notificationService.clearToken();
-                                    } catch (e) {}
+                                    } catch (e) { }
                                     await AsyncStorage.clear();
                                     navigation.dispatch(
                                         CommonActions.reset({
@@ -290,11 +294,15 @@ const styles = StyleSheet.create({
     },
     // Header
     header: {
-        backgroundColor: Colors.primary,
-        paddingTop: Platform.OS === 'ios' ? 60 : 20,
-        paddingBottom: 24,
-        borderBottomLeftRadius: 28,
-        borderBottomRightRadius: 28,
+        paddingTop: Platform.OS === 'ios' ? 70 : 50,
+        paddingBottom: 35,
+        borderBottomLeftRadius: 36,
+        borderBottomRightRadius: 36,
+        elevation: 10,
+        shadowColor: Colors.shadowPremium,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 16,
     },
     profileSection: {
         alignItems: 'center',
@@ -396,15 +404,17 @@ const styles = StyleSheet.create({
     // Menu
     menuSection: {
         marginTop: 24,
-        marginHorizontal: 16,
+        marginHorizontal: 20,
         backgroundColor: Colors.backgroundCard,
-        borderRadius: 16,
+        borderRadius: 24,
         overflow: 'hidden',
-        elevation: 2,
-        shadowColor: Colors.shadow,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
+        elevation: 6,
+        shadowColor: Colors.shadowPremium,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        borderWidth: 1,
+        borderColor: Colors.borderLight,
     },
     menuItem: {
         flexDirection: 'row',

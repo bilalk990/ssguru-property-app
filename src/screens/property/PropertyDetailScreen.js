@@ -72,7 +72,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
 
     const handleShare = async () => {
         const message = `Check out this property: ${property.title}\nPrice: ${property.price}\nLocation: ${property.area}, ${property.city}`;
-        
+
         try {
             const { Share } = require('react-native');
             await Share.share({
@@ -136,10 +136,10 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                             <Icon name="share-social-outline" size={20} color={Colors.textWhite} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.actionButton} onPress={toggleFavorite}>
-                            <Icon 
-                                name={isFavorite ? "heart" : "heart-outline"} 
-                                size={20} 
-                                color={isFavorite ? "#FF0000" : Colors.textWhite} 
+                            <Icon
+                                name={isFavorite ? "heart" : "heart-outline"}
+                                size={20}
+                                color={isFavorite ? "#FF0000" : Colors.textWhite}
                             />
                         </TouchableOpacity>
                     </View>
@@ -435,10 +435,17 @@ const styles = StyleSheet.create({
     infoGrid: {
         flexDirection: 'row',
         backgroundColor: Colors.surfaceSecondary,
-        borderRadius: 20,
-        padding: 20,
+        borderRadius: 24,
+        padding: 24,
         marginBottom: 35,
         alignItems: 'flex-start',
+        borderWidth: 1,
+        borderColor: Colors.borderLight,
+        elevation: 4,
+        shadowColor: Colors.shadowPremium,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
     },
     infoItem: {
         flex: 1,
@@ -493,16 +500,16 @@ const styles = StyleSheet.create({
     // Agent Card
     agentCard: {
         backgroundColor: Colors.background,
-        borderRadius: 24,
-        padding: 20,
+        borderRadius: 28,
+        padding: 24,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: Colors.borderLight,
         marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.05,
-        shadowRadius: 20,
-        elevation: 2,
+        shadowColor: Colors.shadowPremium,
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.15,
+        shadowRadius: 24,
+        elevation: 6,
     },
     agentInfo: {
         flexDirection: 'row',
@@ -599,50 +606,55 @@ const styles = StyleSheet.create({
     // Footer
     footer: {
         position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: Colors.background,
-        paddingHorizontal: 20,
-        paddingTop: 15,
-        paddingBottom: Platform.OS === 'ios' ? 35 : 20,
+        bottom: 20,
+        left: 20,
+        right: 20,
+        backgroundColor: Colors.backgroundCard,
+        borderRadius: 35,
+        paddingHorizontal: 10,
+        paddingVertical: 10,
         flexDirection: 'row',
         gap: 15,
-        borderTopWidth: 1,
-        borderTopColor: Colors.border,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.8)',
+        elevation: 15,
+        shadowColor: Colors.shadowDark,
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.2,
+        shadowRadius: 24,
     },
     callActionButton: {
-        width: 60,
-        height: 60,
-        borderRadius: 18,
+        width: 65,
+        height: 65,
+        borderRadius: 32.5,
         borderWidth: 1.5,
-        borderColor: Colors.border,
+        borderColor: Colors.borderLight,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: Colors.surfaceSecondary,
     },
     callLabel: {
-        fontSize: 10,
-        fontWeight: '700',
+        fontSize: 11,
+        fontWeight: '800',
         color: Colors.primary,
         marginTop: 2,
     },
     whatsappActionButton: {
         flex: 1,
-        height: 60,
+        height: 65,
     },
     whatsappGradient: {
         flex: 1,
-        borderRadius: 18,
+        borderRadius: 32.5,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 10,
+        gap: 12,
     },
     whatsappLabel: {
         color: Colors.textWhite,
-        fontSize: 16,
-        fontWeight: '700',
+        fontSize: 17,
+        fontWeight: '800',
     },
 });
 

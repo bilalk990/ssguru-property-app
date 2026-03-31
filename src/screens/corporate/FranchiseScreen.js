@@ -1,120 +1,287 @@
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, StatusBar, Alert } from 'react-native';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import {
+    View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity,
+    StatusBar, Alert, ActivityIndicator, KeyboardAvoidingView, Platform,
+    Dimensions
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
-import LinearGradient from 'react-native-linear-gradient';
 import { applyForFranchise } from '../../api/franchiseApi';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const { width } = Dimensions.get('window');
 
 const FranchiseScreen = ({ navigation }) => {
-    const handleApply = async () => {
-        const userDataStr = await AsyncStorage.getItem('userData');
-        const userData = userDataStr ? JSON.parse(userDataStr) : {};
+    const insets = useSafeAreaInsets();
+    const [form, setForm] = useState({
+        name: '', phone: '', email: '', city: '', message: '', agreed: false
+    });
+    const [loading, setLoading] = useState(false);
 
-        Alert.alert(
-            "Franchise Application",
-            "Submit your franchise application? Our team will contact you shortly.",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Apply",
-                    onPress: async () => {
-                        try {
-                            await applyForFranchise({
-                                name: userData.name || 'Interested Partner',
-                                phone: userData.contact || userData.phone || '',
-                                message: "Applying for a new franchise branch."
-                            });
-                            Alert.alert("Success", "Your franchise application has been submitted!");
-                        } catch (e) {
-                            Alert.alert("Error", "Failed to submit application.");
-                        }
-                    }
-                }
-            ]
-        );
+    useEffect(() => {
+        const loadUser = async () => {
+            const userDataStr = await AsyncStorage.getItem('userData');
+            if (userDataStr) {
+                const userData = JSON.parse(userDataStr);
+                setForm(prev => ({
+                    ...prev,
+                    name: userData.name || '',
+                    phone: userData.contact || userData.phone || '',
+                    email: userData.email || '',
+                }));
+            }
+        };
+        loadUser();
+    }, []);
+
+    const handleSubmit = async () => {
+        if (!form.name || !form.phone || !form.email || !form.city) {
+            Alert.alert('Incomplete', 'Please fill all mandatory fields (*).');
+            return;
+        }
+        if (!form.agreed) {
+            Alert.alert('Terms & Privacy', 'Please agree to the terms and privacy policy to proceed.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await applyForFranchise({
+                name: form.name,
+                phone: form.phone,
+                email: form.email,
+                city: form.city,
+                message: form.message || 'Applying for Franchise.',
+            });
+            Alert.alert('Success', 'Your franchise application has been submitted successfully!', [
+                { text: 'OK', onPress: () => navigation.goBack() }
+            ]);
+            setForm({ name: '', phone: '', email: '', city: '', message: '', agreed: false });
+        } catch (error) {
+            Alert.alert('Error', 'Failed to submit application. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <View style={styles.container}>
-            <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* ... existing sections ... */}
-                <View style={styles.heroSection}>
-                    <Image
-                        source={{ uri: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000' }}
-                        style={styles.heroImage}
-                    />
-                    <LinearGradient colors={['rgba(0,0,0,0.6)', 'transparent', 'rgba(0,0,0,0.8)']} style={styles.gradient} />
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Icon name="arrow-back" size={24} color={Colors.textWhite} />
-                    </TouchableOpacity>
-                    <View style={styles.heroContent}>
-                        <Text style={styles.heroTitle}>Partner with the Best</Text>
-                        <Text style={styles.heroSubtitle}>Join SS Property Guru as a Franchise Partner</Text>
-                    </View>
+        <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+            <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+            <View style={[styles.header, { paddingTop: insets.top || 40 }]}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
+                </TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+
+                <View style={styles.titleSection}>
+                    <Text style={styles.title}>Apply for Franchise</Text>
+                    <Text style={styles.subtitle}>Fill out the form below to start your journey with SS Property</Text>
                 </View>
 
-                <View style={styles.content}>
-                    <Text style={styles.sectionTitle}>Why Choose Us?</Text>
-                    <View style={styles.benefitCard}>
-                        <Icon name="trending-up-outline" size={32} color={Colors.primary} />
-                        <Text style={styles.benefitTitle}>Proven Business Model</Text>
-                        <Text style={styles.benefitDesc}>Leverage our established brand and successful real estate strategies.</Text>
-                    </View>
-                    <View style={styles.benefitCard}>
-                        <Icon name="shield-checkmark-outline" size={32} color={Colors.primary} />
-                        <Text style={styles.benefitTitle}>Full Training & Support</Text>
-                        <Text style={styles.benefitDesc}>Get comprehensive training for you and your staff to ensure success.</Text>
+                <View style={styles.formCard}>
+
+                    {/* Row 1 for larger screens, but column for mobile */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.label}>Full Name *</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={form.name}
+                            onChangeText={t => setForm({ ...form, name: t })}
+                        />
                     </View>
 
-                    <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-                        <LinearGradient
-                            colors={[Colors.primary, '#1B5E20']}
-                            style={styles.applyGradient}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                        >
-                            <Text style={styles.applyText}>Apply for Franchise</Text>
-                            <Icon name="arrow-forward" size={20} color={Colors.textWhite} />
-                        </LinearGradient>
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.label}>Mobile Number *</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={form.phone}
+                            keyboardType="phone-pad"
+                            onChangeText={t => setForm({ ...form, phone: t })}
+                        />
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.label}>Email Address *</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={form.email}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            onChangeText={t => setForm({ ...form, email: t })}
+                        />
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.label}>City *</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={form.city}
+                            onChangeText={t => setForm({ ...form, city: t })}
+                        />
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.label}>Message / Query</Text>
+                        <TextInput
+                            style={[styles.input, styles.textArea]}
+                            multiline
+                            numberOfLines={4}
+                            textAlignVertical="top"
+                            value={form.message}
+                            onChangeText={t => setForm({ ...form, message: t })}
+                        />
+                    </View>
+
+                    <TouchableOpacity style={styles.checkboxRow} activeOpacity={0.8} onPress={() => setForm({ ...form, agreed: !form.agreed })}>
+                        <View style={[styles.checkbox, form.agreed && styles.checkboxActive]}>
+                            {form.agreed && <Icon name="checkmark" size={14} color="#FFF" />}
+                        </View>
+                        <Text style={styles.checkboxText}>
+                            I agree to the terms & privacy policy and consent to being contacted by SS Property regarding franchise opportunities.
+                        </Text>
                     </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={loading}>
+                        {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.submitBtnText}>Submit Application</Text>}
+                    </TouchableOpacity>
+
                 </View>
+
                 <View style={{ height: 40 }} />
             </ScrollView>
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Colors.background },
-    heroSection: { height: 350, position: 'relative' },
-    heroImage: { width: '100%', height: '100%' },
-    gradient: { ...StyleSheet.absoluteFillObject },
-    backButton: { position: 'absolute', top: 50, left: 20, zIndex: 10, padding: 8 },
-    heroContent: { position: 'absolute', bottom: 30, left: 20, right: 20 },
-    heroTitle: { fontSize: 32, fontWeight: '900', color: Colors.textWhite },
-    heroSubtitle: { fontSize: 16, color: 'rgba(255,255,255,0.9)', marginTop: 8 },
-    content: { padding: 25 },
-    sectionTitle: { fontSize: 24, fontWeight: '800', color: Colors.textPrimary, marginBottom: 25 },
-    benefitCard: {
-        backgroundColor: Colors.background,
+    container: {
+        flex: 1,
+        backgroundColor: '#FAFAFA'
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingBottom: 15,
+        backgroundColor: '#FAFAFA',
+    },
+    backButton: {
+        width: 40,
+        height: 40,
         borderRadius: 20,
-        padding: 25,
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: Colors.border,
-        elevation: 3,
+        backgroundColor: '#FFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 2,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+    },
+    scrollContent: {
+        paddingHorizontal: 16,
+        paddingBottom: 40,
+    },
+    titleSection: {
+        alignItems: 'center',
+        marginTop: 10,
+        marginBottom: 25,
+    },
+    title: {
+        fontSize: 26,
+        fontWeight: '800',
+        color: '#2E7D32', // Deep green matching web
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    subtitle: {
+        fontSize: 14,
+        color: '#666',
+        textAlign: 'center',
+        paddingHorizontal: 20,
+        lineHeight: 20,
+    },
+    formCard: {
+        backgroundColor: '#FFF',
+        borderRadius: 12,
+        padding: 24,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 10,
+        borderWidth: 1,
+        borderColor: '#EFEFEF',
     },
-    benefitTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginTop: 15 },
-    benefitDesc: { fontSize: 14, color: Colors.textSecondary, marginTop: 8, lineHeight: 22 },
-    applyButton: { marginTop: 20, borderRadius: 18, overflow: 'hidden' },
-    applyGradient: { paddingVertical: 18, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
-    applyText: { fontSize: 16, fontWeight: '700', color: Colors.textWhite },
+    inputContainer: {
+        marginBottom: 20,
+    },
+    label: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 8,
+    },
+    input: {
+        backgroundColor: '#FFF',
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        borderRadius: 8,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        fontSize: 15,
+        color: '#333',
+    },
+    textArea: {
+        height: 100,
+        paddingTop: 14, // helps with vertical alignment in multiline
+    },
+    checkboxRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginTop: 10,
+        marginBottom: 25,
+    },
+    checkbox: {
+        width: 22,
+        height: 22,
+        borderRadius: 4,
+        borderWidth: 1.5,
+        borderColor: '#CCC',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+        marginTop: 2,
+        backgroundColor: '#FFF',
+    },
+    checkboxActive: {
+        backgroundColor: '#2E7D32',
+        borderColor: '#2E7D32',
+    },
+    checkboxText: {
+        flex: 1,
+        fontSize: 13,
+        color: '#555',
+        lineHeight: 20,
+    },
+    submitBtn: {
+        backgroundColor: '#2E7D32',
+        borderRadius: 8,
+        paddingVertical: 15,
+        alignItems: 'center',
+        shadowColor: '#2E7D32',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    submitBtnText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: '700',
+    },
 });
 
 export default FranchiseScreen;

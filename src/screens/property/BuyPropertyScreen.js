@@ -11,7 +11,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
 import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
-import Loader from '../../components/Loader';
+import { PropertyCardSkeleton } from '../../components/SkeletonLoader';
 import { getProperties, getPropertiesByAgent } from '../../api/propertyApi';
 import { getDistricts, getAreas } from '../../api/districtApi';
 import { ScrollView, TouchableOpacity } from 'react-native';
@@ -141,29 +141,35 @@ const BuyPropertyScreen = ({ navigation, route }) => {
             </View>
 
             {loading ? (
-                <Loader message="Finding properties..." fullScreen={false} />
+                <ScrollView contentContainerStyle={{ padding: 20 }}>
+                    <PropertyCardSkeleton />
+                    <PropertyCardSkeleton />
+                    <PropertyCardSkeleton />
+                </ScrollView>
             ) : (
                 <FlatList
                     data={properties}
-                    renderItem={({ item }) => (
-                        <PropertyCard
-                            property={item}
-                            onPress={() => navigation.navigate('PropertyDetail', { property: item })}
-                        />
+                    renderItem={({ item, index }) => (
+                        <View style={{ animationDuration: `${(index % 5 + 1) * 200}ms` }}>
+                            <PropertyCard
+                                property={item}
+                                onPress={() => navigation.navigate('PropertyDetail', { property: item })}
+                            />
+                        </View>
                     )}
                     keyExtractor={(item, idx) => String(item._id || item.id || idx)}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
                     ListHeaderComponent={
                         <Text style={styles.resultCount}>
-                            {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
+                            {properties.length} {properties.length === 1 ? 'premium property' : 'premium properties'} found
                         </Text>
                     }
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
-                            <Icon name="search-outline" size={50} color={Colors.textLight} />
-                            <Text style={styles.emptyTitle}>No properties found</Text>
-                            <Text style={styles.emptyText}>Try a different search term</Text>
+                            <Icon name="search-outline" size={56} color={Colors.textLight} />
+                            <Text style={styles.emptyTitle}>No matching properties</Text>
+                            <Text style={styles.emptyText}>Try adjusting your premium search criteria</Text>
                         </View>
                     }
                 />
@@ -176,43 +182,53 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.backgroundSecondary },
     topBar: {
         backgroundColor: Colors.background,
-        paddingHorizontal: 16,
-        paddingTop: Platform.OS === 'ios' ? 60 : 16,
-        paddingBottom: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: Colors.border,
+        paddingHorizontal: 20,
+        paddingTop: Platform.OS === 'ios' ? 60 : 20,
+        paddingBottom: 20,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        elevation: 10,
+        shadowColor: Colors.shadowPremium,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+        marginBottom: 10,
     },
-    screenHeaderTitle: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 },
-    screenTitle: { fontSize: 24, fontWeight: '800', color: Colors.textPrimary },
-    searchBar: { marginBottom: 12 },
-    selectorContainer: { marginTop: 4 },
-    chipScroll: { paddingBottom: 4 },
+    screenHeaderTitle: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
+    screenTitle: { fontSize: 26, fontWeight: '900', color: Colors.textPrimary, letterSpacing: -0.5 },
+    searchBar: { marginBottom: 14 },
+    selectorContainer: { marginTop: 6 },
+    chipScroll: { paddingBottom: 6 },
     chip: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        backgroundColor: Colors.backgroundSecondary,
-        marginRight: 10,
+        paddingHorizontal: 18,
+        paddingVertical: 10,
+        borderRadius: 24,
+        backgroundColor: Colors.surfaceSecondary,
+        marginRight: 12,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: Colors.borderLight,
+        elevation: 2,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4,
     },
     chipActive: {
         backgroundColor: Colors.primary,
-        borderColor: Colors.primary,
+        borderColor: Colors.primaryDark,
+        elevation: 4,
+        shadowColor: Colors.primaryDark, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8,
     },
     chipText: {
-        fontSize: 13,
+        fontSize: 14,
         color: Colors.textSecondary,
-        fontWeight: '600',
+        fontWeight: '700',
     },
     chipTextActive: {
         color: Colors.textWhite,
     },
-    listContent: { padding: 16, paddingBottom: 20 },
-    resultCount: { fontSize: 13, color: Colors.textSecondary, fontWeight: '500', marginBottom: 8 },
-    emptyContainer: { alignItems: 'center', paddingVertical: 60 },
-    emptyTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginTop: 16, marginBottom: 8 },
-    emptyText: { fontSize: 14, color: Colors.textSecondary },
+    listContent: { padding: 20, paddingBottom: 100 },
+    resultCount: { fontSize: 14, color: Colors.textSecondary, fontWeight: '600', marginBottom: 16 },
+    emptyContainer: { alignItems: 'center', paddingVertical: 80 },
+    emptyTitle: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, marginTop: 20, marginBottom: 8 },
+    emptyText: { fontSize: 15, color: Colors.textSecondary, fontWeight: '500' },
 });
 
 export default BuyPropertyScreen;

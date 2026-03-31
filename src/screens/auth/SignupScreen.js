@@ -1,20 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-    View,
-    Text,
-    TextInput,
-    StyleSheet,
-    StatusBar,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Alert,
-    TouchableOpacity,
+    View, Text, StyleSheet, StatusBar, KeyboardAvoidingView,
+    Platform, ScrollView, Alert, TouchableOpacity, Animated
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
-import CustomButton from '../../components/CustomButton';
+import FloatingLabelInput from '../../components/FloatingLabelInput';
+import AnimatedButton from '../../components/AnimatedButton';
 import { signup } from '../../api/authApi';
 
 const SignupScreen = ({ navigation }) => {
@@ -22,60 +14,57 @@ const SignupScreen = ({ navigation }) => {
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Staggered Animations
+    const headerAnim = useRef(new Animated.Value(0)).current;
+    const headerSlide = useRef(new Animated.Value(-30)).current;
+    const nameAnim = useRef(new Animated.Value(0)).current;
+    const nameSlide = useRef(new Animated.Value(20)).current;
+    const phoneAnim = useRef(new Animated.Value(0)).current;
+    const phoneSlide = useRef(new Animated.Value(20)).current;
+    const btnAnim = useRef(new Animated.Value(0)).current;
+    const btnSlide = useRef(new Animated.Value(20)).current;
+
+    useEffect(() => {
+        Animated.stagger(120, [
+            Animated.parallel([
+                Animated.timing(headerAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+                Animated.spring(headerSlide, { toValue: 0, tension: 20, friction: 6, useNativeDriver: true })
+            ]),
+            Animated.parallel([
+                Animated.timing(nameAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+                Animated.spring(nameSlide, { toValue: 0, tension: 30, friction: 7, useNativeDriver: true })
+            ]),
+            Animated.parallel([
+                Animated.timing(phoneAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+                Animated.spring(phoneSlide, { toValue: 0, tension: 30, friction: 7, useNativeDriver: true })
+            ]),
+            Animated.parallel([
+                Animated.timing(btnAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+                Animated.spring(btnSlide, { toValue: 0, tension: 30, friction: 7, useNativeDriver: true })
+            ]),
+        ]).start();
+    }, []);
+
     const handleSignup = async () => {
         const trimmedName = (name || '').trim();
         const trimmedPhone = (phone || '').trim();
 
-        if (!trimmedName || !trimmedPhone) {
-            Alert.alert('Missing Fields', 'Please enter your name and phone number.');
-            return;
-        }
-
-        if (trimmedPhone.length < 10) {
-            Alert.alert('Invalid Phone', 'Please enter a valid phone number (at least 10 digits).');
-            return;
-        }
+        if (!trimmedName || !trimmedPhone) return Alert.alert('Missing Fields', 'Please enter your name and phone number.');
+        if (trimmedPhone.length < 10) return Alert.alert('Invalid Phone', 'Please enter a valid 10-digit number.');
 
         setLoading(true);
         try {
-            const requestData = {
-                name: trimmedName,
-                contact: trimmedPhone,
-            };
-
-            const response = await signup(requestData);
-
+            const response = await signup({ name: trimmedName, contact: trimmedPhone });
             if (response.data) {
                 const devOtp = response.data?.data?.devOtp;
-                // Go directly to OTP screen - prefill if devOtp available (dev mode)
-                navigation.navigate('OTP', {
-                    email: trimmedPhone,
-                    mode: 'verify',
-                    prefillOtp: devOtp || null,
-                });
-                if (devOtp) {
-                    // Small delay so OTP screen is visible first
-                    setTimeout(() => {
-                        Alert.alert('Dev Mode OTP', `Your OTP: ${devOtp}`);
-                    }, 500);
-                }
+                navigation.navigate('OTP', { email: trimmedPhone, mode: 'verify', prefillOtp: devOtp || null });
+                if (devOtp) setTimeout(() => Alert.alert('Dev Mode OTP', `Your OTP: ${devOtp}`), 500);
             }
         } catch (error) {
             console.error('Signup Error:', error.response?.data);
             let message = 'Failed to create account. Please try again.';
-
-            if (error.response?.status === 409) {
-                message = 'This phone number is already registered. Please login.';
-            } else if (error.response?.data?.message) {
-                message = error.response.data.message;
-            } else if (error.code === 'ERR_NETWORK') {
-                message = 'Cannot connect to server. Check your internet connection.';
-            } else if (error.code === 'ECONNABORTED') {
-                message = 'Request timeout. The server is taking too long to respond. Please try again.';
-            } else if (error.message) {
-                message = error.message;
-            }
-
+            if (error.response?.status === 409) message = 'This phone number is already registered. Please login.';
+            else if (error.response?.data?.message) message = error.response.data.message;
             Alert.alert('Signup Error', message);
         } finally {
             setLoading(false);
@@ -83,79 +72,68 @@ const SignupScreen = ({ navigation }) => {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-            <ScrollView
-                contentContainerStyle={styles.scrollContent}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
                 <View style={styles.topDecoration}>
-                    <LinearGradient
-                        colors={[Colors.primarySoft, Colors.background]}
-                        style={styles.decorCircle}
-                    />
+                    <LinearGradient colors={[Colors.primarySoft, Colors.background]} style={styles.decorCircle} />
                 </View>
 
-                <View style={styles.header}>
+                <Animated.View style={[styles.header, { opacity: headerAnim, transform: [{ translateY: headerSlide }] }]}>
                     <Text style={styles.title}>Create Account</Text>
                     <Text style={styles.subtitle}>Enter your details to get started</Text>
-                </View>
+                </Animated.View>
 
                 <View style={styles.card}>
-                    <Text style={styles.label}>Full Name</Text>
-                    <View style={styles.inputWrapper}>
-                        <Icon name="person-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Your full name"
-                            placeholderTextColor={Colors.textLight}
+                    <Animated.View style={{ opacity: nameAnim, transform: [{ translateY: nameSlide }] }}>
+                        <FloatingLabelInput
+                            label="Full Name"
                             value={name}
                             onChangeText={setName}
+                            icon="person-outline"
+                            style={{ marginBottom: 20 }}
                         />
-                    </View>
+                    </Animated.View>
 
-                    <Text style={styles.label}>Phone Number</Text>
-                    <View style={styles.inputWrapper}>
-                        <Icon name="call-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
-                        <Text style={styles.countryCode}>+91</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="10-digit number"
-                            placeholderTextColor={Colors.textLight}
-                            keyboardType="phone-pad"
-                            maxLength={10}
+                    <Animated.View style={{ opacity: phoneAnim, transform: [{ translateY: phoneSlide }] }}>
+                        <FloatingLabelInput
+                            label="Phone Number"
                             value={phone}
                             onChangeText={setPhone}
+                            icon="call-outline"
+                            prefix="+91"
+                            keyboardType="phone-pad"
+                            maxLength={10}
+                            style={{ marginBottom: 28 }}
                         />
-                    </View>
+                    </Animated.View>
 
-                    <CustomButton
-                        title="Create Account"
-                        onPress={handleSignup}
-                        loading={loading}
-                        size="large"
-                        style={styles.button}
-                    />
+                    <Animated.View style={{ opacity: btnAnim, transform: [{ translateY: btnSlide }] }}>
+                        <AnimatedButton
+                            title="Create Account"
+                            onPress={handleSignup}
+                            loading={loading}
+                        />
 
-                    <View style={styles.loginContainer}>
-                        <Text style={styles.alreadyAccountText}>Already have an account? </Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                            <Text style={styles.loginLink}>Sign In</Text>
-                        </TouchableOpacity>
-                    </View>
+                        <View style={styles.loginContainer}>
+                            <Text style={styles.alreadyAccountText}>Already have an account? </Text>
+                            <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.7}>
+                                <Text style={styles.loginLink}>Sign In</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
                 </View>
 
-                <View style={styles.footer}>
+                <Animated.View style={[styles.footer, { opacity: btnAnim }]}>
                     <Text style={styles.footerText}>
                         By signing up, you agree to our{' '}
                         <Text style={styles.link}>Terms</Text> and{' '}
                         <Text style={styles.link}>Privacy Policy</Text>
                     </Text>
-                </View>
+                </Animated.View>
+
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -166,36 +144,19 @@ const styles = StyleSheet.create({
     scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 60 },
     topDecoration: { position: 'absolute', top: -150, right: -150, zIndex: -1 },
     decorCircle: { width: 400, height: 400, borderRadius: 200, opacity: 0.5 },
-    header: { marginBottom: 40 },
-    title: { fontSize: 32, fontWeight: '800', color: Colors.textPrimary, letterSpacing: -0.5 },
-    subtitle: { fontSize: 16, color: Colors.textSecondary, marginTop: 6 },
+    header: { marginBottom: 40, marginTop: 40 },
+    title: { fontSize: 34, fontWeight: '900', color: Colors.textPrimary, letterSpacing: -0.5 },
+    subtitle: { fontSize: 16, color: Colors.textSecondary, marginTop: 6, fontWeight: '500' },
     card: {
-        backgroundColor: Colors.surface,
-        borderRadius: 28,
-        padding: 24,
-        elevation: 4,
-        shadowColor: Colors.shadowDark,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.05,
-        shadowRadius: 24,
+        backgroundColor: Colors.surface, borderRadius: 32, padding: 28, elevation: 6,
+        shadowColor: Colors.shadowPremium, shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.1, shadowRadius: 32, borderWidth: 1, borderColor: Colors.borderLight,
+        paddingBottom: 24,
     },
-    label: {
-        fontSize: 13, fontWeight: '700', color: Colors.textPrimary,
-        marginBottom: 10, marginLeft: 4, textTransform: 'uppercase',
-    },
-    inputWrapper: {
-        flexDirection: 'row', alignItems: 'center',
-        backgroundColor: Colors.surfaceSecondary,
-        borderRadius: 18, height: 60, paddingHorizontal: 16, marginBottom: 20,
-    },
-    inputIcon: { marginRight: 12 },
-    countryCode: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, marginRight: 8 },
-    input: { flex: 1, fontSize: 16, color: Colors.textPrimary, fontWeight: '600' },
-    button: { marginTop: 10 },
-    loginContainer: { flexDirection: 'row', justifyContent: 'center', marginTop: 25 },
-    alreadyAccountText: { color: Colors.textSecondary, fontSize: 14 },
-    loginLink: { color: Colors.primary, fontSize: 14, fontWeight: '700' },
-    footer: { marginTop: 40, marginBottom: 40 },
+    loginContainer: { flexDirection: 'row', justifyContent: 'center', marginTop: 30 },
+    alreadyAccountText: { color: Colors.textSecondary, fontSize: 14, fontWeight: '500' },
+    loginLink: { color: Colors.primary, fontSize: 14, fontWeight: '800' },
+    footer: { marginTop: 40, marginBottom: 40, paddingHorizontal: 20 },
     footerText: { fontSize: 12, color: Colors.textLight, textAlign: 'center', lineHeight: 18 },
     link: { color: Colors.primary, fontWeight: '700' },
 });

@@ -1,14 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    Image,
-    Platform,
-    RefreshControl,
-    ActivityIndicator,
+    View, Text, StyleSheet, ScrollView, TouchableOpacity, Image,
+    Platform, RefreshControl, Animated
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -16,13 +9,16 @@ import LinearGradient from 'react-native-linear-gradient';
 import Colors from '../../constants/colors';
 import { getPropertiesByAgent } from '../../api/propertyApi';
 import { normalizeProperty } from '../../components/PropertyCard';
-import authStore from '../../store/authStore';
+import { PropertyCardSkeleton } from '../../components/SkeletonLoader';
 
 const DashboardScreen = ({ navigation }) => {
     const [user, setUser] = useState(null);
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(20)).current;
 
     const fetchDashboardData = useCallback(async (isRefreshing = false) => {
         if (isRefreshing) setRefreshing(true);
@@ -44,22 +40,19 @@ const DashboardScreen = ({ navigation }) => {
         } finally {
             setLoading(false);
             setRefreshing(false);
+
+            Animated.parallel([
+                Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+                Animated.spring(slideAnim, { toValue: 0, tension: 40, friction: 7, useNativeDriver: true })
+            ]).start();
         }
-    }, []);
+    }, [fadeAnim, slideAnim]);
 
     useEffect(() => {
         fetchDashboardData();
     }, [fetchDashboardData]);
 
     const onRefresh = () => fetchDashboardData(true);
-
-    if (loading && !user) {
-        return (
-            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color={Colors.primary} />
-            </View>
-        );
-    }
 
     return (
         <View style={styles.container}>
@@ -69,7 +62,7 @@ const DashboardScreen = ({ navigation }) => {
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
                 }>
 
-                {/* Header */}
+                {/* Premium Header */}
                 <LinearGradient
                     colors={Colors.gradientPrimary}
                     style={styles.header}
@@ -77,8 +70,8 @@ const DashboardScreen = ({ navigation }) => {
                     end={{ x: 1, y: 1 }}>
                     <View style={styles.headerContent}>
                         <View>
-                            <Text style={styles.welcomeText}>Welcome Back!</Text>
-                            <Text style={styles.userName}>{user?.name || 'User'}</Text>
+                            <Text style={styles.welcomeText}>Welcome Back, Agent</Text>
+                            <Text style={styles.userName}>{user?.name || 'Loading...'}</Text>
                         </View>
                         <TouchableOpacity
                             style={styles.profileButton}
@@ -91,123 +84,125 @@ const DashboardScreen = ({ navigation }) => {
                     </View>
                 </LinearGradient>
 
-                {/* Quick Stats */}
-                <View style={styles.statsContainer}>
-                    <View style={styles.statCard}>
-                        <View style={styles.statIconBox}>
-                            <Icon name="home" size={24} color={Colors.primary} />
-                        </View>
-                        <Text style={styles.statValue}>{properties.length}</Text>
-                        <Text style={styles.statLabel}>My Properties</Text>
-                    </View>
-                    <View style={styles.statCard}>
-                        <View style={styles.statIconBox}>
-                            <Icon name="people" size={24} color={Colors.accent} />
-                        </View>
-                        <Text style={styles.statValue}>-</Text>
-                        <Text style={styles.statLabel}>Enquiries</Text>
-                    </View>
-                </View>
-
-                {/* Buy / Sell Actions */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Quick Actions</Text>
-
-                    <View style={styles.actionGrid}>
-                        <TouchableOpacity
-                            style={[styles.actionCard, styles.buyCard]}
-                            onPress={() => navigation.navigate('Buy', { screen: 'BuyMain' })}
-                            activeOpacity={0.85}>
-                            <View style={[styles.actionIconBox, { backgroundColor: Colors.primarySoft }]}>
-                                <Icon name="home" size={26} color={Colors.primary} />
+                <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], paddingBottom: 100 }}>
+                    {/* Elite Stats */}
+                    <View style={styles.statsContainer}>
+                        <View style={styles.statCard}>
+                            <View style={styles.statIconBox}>
+                                <Icon name="home" size={24} color={Colors.primary} />
                             </View>
-                            <Text style={styles.actionTitle}>Buy Property</Text>
-                            <Text style={styles.actionCount}>Browse all listings</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[styles.actionCard, styles.sellCard]}
-                            onPress={async () => {
-                                const token = await AsyncStorage.getItem('authToken');
-                                if (!token) {
-                                    navigation.navigate('Login');
-                                } else {
-                                    navigation.navigate('AddProperty');
-                                }
-                            }}
-                            activeOpacity={0.85}>
-                            <View style={[styles.actionIconBox, { backgroundColor: '#E8F5E9' }]}>
-                                <Icon name="add-circle" size={26} color="#2E7D32" />
+                            <Text style={styles.statValue}>{properties.length}</Text>
+                            <Text style={styles.statLabel}>My Properties</Text>
+                        </View>
+                        <View style={styles.statCard}>
+                            <View style={[styles.statIconBox, { backgroundColor: Colors.accentSoft }]}>
+                                <Icon name="bar-chart" size={24} color={Colors.accentLight} />
                             </View>
-                            <Text style={styles.actionTitle}>Sell Property</Text>
-                            <Text style={styles.actionCount}>Add new listing</Text>
-                        </TouchableOpacity>
+                            <Text style={styles.statValue}>{user?.enquiriesMade || 0}</Text>
+                            <Text style={styles.statLabel}>Enquiries</Text>
+                        </View>
                     </View>
 
-                    {/* My Properties row */}
-                    <TouchableOpacity
-                        style={styles.myPropertiesRow}
-                        onPress={() => navigation.navigate('MyProperties')}
-                        activeOpacity={0.8}>
-                        <View style={[styles.actionIconBox, { backgroundColor: Colors.primarySoft, marginBottom: 0 }]}>
-                            <Icon name="list" size={22} color={Colors.primary} />
-                        </View>
-                        <View style={{ flex: 1, marginLeft: 14 }}>
-                            <Text style={styles.actionTitle}>My Properties</Text>
-                            <Text style={styles.actionCount}>{properties.length} listed</Text>
-                        </View>
-                        <Icon name="chevron-forward" size={20} color={Colors.textLight} />
-                    </TouchableOpacity>
-                </View>
+                    {/* Buy / Sell Actions */}
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Agent Actions</Text>
 
-                {/* Recent Properties */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>My Recent Listings</Text>
-                        {properties.length > 0 && (
-                            <TouchableOpacity onPress={() => navigation.navigate('MyProperties')}>
-                                <Text style={styles.viewAllText}>View All</Text>
+                        <View style={styles.actionGrid}>
+                            <TouchableOpacity
+                                style={[styles.actionCard, styles.buyCard]}
+                                onPress={() => navigation.navigate('Buy', { screen: 'BuyMain' })}
+                                activeOpacity={0.85}>
+                                <View style={[styles.actionIconBox, { backgroundColor: Colors.primarySoft }]}>
+                                    <Icon name="search" size={26} color={Colors.primary} />
+                                </View>
+                                <Text style={styles.actionTitle}>Browse DB</Text>
+                                <Text style={styles.actionCount}>Find listings</Text>
                             </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.actionCard, styles.sellCard]}
+                                onPress={async () => {
+                                    const token = await AsyncStorage.getItem('authToken');
+                                    if (!token) navigation.navigate('Login');
+                                    else navigation.navigate('AddProperty');
+                                }}
+                                activeOpacity={0.85}>
+                                <View style={[styles.actionIconBox, { backgroundColor: '#E8F5E9' }]}>
+                                    <Icon name="add-circle" size={26} color="#2E7D32" />
+                                </View>
+                                <Text style={styles.actionTitle}>List Property</Text>
+                                <Text style={styles.actionCount}>Add new asset</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Premium My Properties row */}
+                        <TouchableOpacity
+                            style={styles.myPropertiesRow}
+                            onPress={() => navigation.navigate('MyProperties')}
+                            activeOpacity={0.8}>
+                            <View style={[styles.actionIconBox, { backgroundColor: Colors.surfaceSecondary, marginBottom: 0, width: 48, height: 48 }]}>
+                                <Icon name="business" size={20} color={Colors.primary} />
+                            </View>
+                            <View style={{ flex: 1, marginLeft: 16 }}>
+                                <Text style={styles.actionTitle}>My Portfolio</Text>
+                                <Text style={styles.actionCount}>{properties.length} active assets</Text>
+                            </View>
+                            <View style={styles.goIcon}>
+                                <Icon name="arrow-forward" size={18} color={Colors.textWhite} />
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Recent Properties */}
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitle}>Recent Assets</Text>
+                            {properties.length > 0 && (
+                                <TouchableOpacity onPress={() => navigation.navigate('MyProperties')}>
+                                    <Text style={styles.viewAllText}>View All</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+
+                        {loading && !refreshing && properties.length === 0 ? (
+                            <View>
+                                <PropertyCardSkeleton horizontal={false} style={{ width: '100%', marginBottom: 16 }} />
+                                <PropertyCardSkeleton horizontal={false} style={{ width: '100%', marginBottom: 16 }} />
+                            </View>
+                        ) : properties.length === 0 ? (
+                            <View style={styles.emptyState}>
+                                <Icon name="analytics-outline" size={64} color={Colors.textLight} />
+                                <Text style={styles.emptyTitle}>Portfolio Empty</Text>
+                                <Text style={styles.emptyText}>Start generating leads by adding assets.</Text>
+                                <TouchableOpacity
+                                    style={styles.emptyButton}
+                                    onPress={() => navigation.navigate('AddProperty')}>
+                                    <LinearGradient colors={Colors.gradientPrimary} style={styles.emptyBtnGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+                                        <Text style={styles.emptyButtonText}>List New Property</Text>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            properties.slice(0, 3).map((property, index) => (
+                                <TouchableOpacity
+                                    key={String(property._id || index)}
+                                    style={styles.propertyItem}
+                                    onPress={() => navigation.navigate('PropertyDetail', { property })}>
+                                    <Image
+                                        source={{ uri: property.images?.[0] || 'https://via.placeholder.com/100' }}
+                                        style={styles.propertyImage}
+                                    />
+                                    <View style={styles.propertyInfo}>
+                                        <Text style={styles.propertyTitle} numberOfLines={1}>{property.title}</Text>
+                                        <Text style={styles.propertyLocation} numberOfLines={1}>{property.area}, {property.city}</Text>
+                                        <Text style={styles.propertyPrice}>{property.price}</Text>
+                                    </View>
+                                    <Icon name="chevron-forward" size={20} color={Colors.textLight} />
+                                </TouchableOpacity>
+                            ))
                         )}
                     </View>
-
-                    {properties.length === 0 ? (
-                        <View style={styles.emptyState}>
-                            <Icon name="home-outline" size={60} color={Colors.textLight} />
-                            <Text style={styles.emptyTitle}>No Properties Yet</Text>
-                            <Text style={styles.emptyText}>Start by adding your first property</Text>
-                            <TouchableOpacity
-                                style={styles.emptyButton}
-                                onPress={() => navigation.navigate('AddProperty')}>
-                                <Text style={styles.emptyButtonText}>Add Property</Text>
-                            </TouchableOpacity>
-                        </View>
-                    ) : (
-                        properties.slice(0, 3).map((property, index) => (
-                            <TouchableOpacity
-                                key={String(property._id || index)}
-                                style={styles.propertyItem}
-                                onPress={() => navigation.navigate('PropertyDetail', { property })}>
-                                <Image
-                                    source={{ uri: property.images?.[0] || 'https://via.placeholder.com/100' }}
-                                    style={styles.propertyImage}
-                                />
-                                <View style={styles.propertyInfo}>
-                                    <Text style={styles.propertyTitle} numberOfLines={1}>
-                                        {property.title}
-                                    </Text>
-                                    <Text style={styles.propertyLocation} numberOfLines={1}>
-                                        {property.area}, {property.city}
-                                    </Text>
-                                    <Text style={styles.propertyPrice}>{property.price}</Text>
-                                </View>
-                                <Icon name="chevron-forward" size={20} color={Colors.textLight} />
-                            </TouchableOpacity>
-                        ))
-                    )}
-                </View>
-
-                <View style={{ height: 30 }} />
+                </Animated.View>
             </ScrollView>
         </View>
     );
@@ -216,80 +211,92 @@ const DashboardScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.backgroundSecondary },
     header: {
-        paddingTop: Platform.OS === 'ios' ? 60 : 40,
-        paddingBottom: 30,
-        paddingHorizontal: 20,
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
+        paddingTop: Platform.OS === 'ios' ? 70 : 50,
+        paddingBottom: 40,
+        paddingHorizontal: 24,
+        borderBottomLeftRadius: 40,
+        borderBottomRightRadius: 40,
+        elevation: 10,
+        shadowColor: Colors.shadowPremium,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 16,
     },
     headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    welcomeText: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginBottom: 4 },
-    userName: { fontSize: 24, fontWeight: '800', color: Colors.textWhite },
+    welcomeText: { fontSize: 13, color: 'rgba(255,255,255,0.85)', marginBottom: 2, letterSpacing: 0.5 },
+    userName: { fontSize: 26, fontWeight: '900', color: Colors.textWhite, letterSpacing: -0.5 },
     profileButton: {
-        width: 50, height: 50, borderRadius: 25, overflow: 'hidden',
+        width: 56, height: 56, borderRadius: 28, overflow: 'hidden',
         borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)',
     },
     profileImage: { width: '100%', height: '100%' },
     statsContainer: {
-        flexDirection: 'row', paddingHorizontal: 20, marginTop: -20, gap: 15,
+        flexDirection: 'row', paddingHorizontal: 20, marginTop: -25, gap: 16,
     },
     statCard: {
-        flex: 1, backgroundColor: Colors.backgroundCard, borderRadius: 16,
-        padding: 20, alignItems: 'center', elevation: 3,
-        shadowColor: Colors.shadowDark, shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1, shadowRadius: 8,
+        flex: 1, backgroundColor: Colors.backgroundCard, borderRadius: 24,
+        padding: 24, alignItems: 'center', elevation: 8,
+        shadowColor: Colors.shadowPremium, shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15, shadowRadius: 16, borderWidth: 1, borderColor: Colors.borderLight,
     },
     statIconBox: {
-        width: 50, height: 50, borderRadius: 25, backgroundColor: Colors.primarySoft,
-        justifyContent: 'center', alignItems: 'center', marginBottom: 12,
+        width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.primarySoft,
+        justifyContent: 'center', alignItems: 'center', marginBottom: 14,
     },
-    statValue: { fontSize: 28, fontWeight: '800', color: Colors.textPrimary, marginBottom: 4 },
-    statLabel: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
-    section: { paddingHorizontal: 20, marginTop: 30 },
+    statValue: { fontSize: 32, fontWeight: '900', color: Colors.textPrimary, marginBottom: 4 },
+    statLabel: { fontSize: 13, color: Colors.textSecondary, fontWeight: '700' },
+    section: { paddingHorizontal: 20, marginTop: 35 },
     sectionHeader: {
         flexDirection: 'row', justifyContent: 'space-between',
-        alignItems: 'center', marginBottom: 16,
+        alignItems: 'center', marginBottom: 18,
     },
-    sectionTitle: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, marginBottom: 16 },
+    sectionTitle: { fontSize: 22, fontWeight: '900', color: Colors.textPrimary, letterSpacing: -0.5 },
     viewAllText: { fontSize: 14, color: Colors.primary, fontWeight: '700' },
-    actionGrid: { flexDirection: 'row', gap: 15, marginBottom: 15 },
+    actionGrid: { flexDirection: 'row', gap: 16, marginBottom: 16 },
     actionCard: {
-        flex: 1, backgroundColor: Colors.backgroundCard, borderRadius: 16,
-        padding: 20, alignItems: 'center', elevation: 2,
-        shadowColor: Colors.shadowDark, shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08, shadowRadius: 6,
+        flex: 1, backgroundColor: Colors.backgroundCard, borderRadius: 24,
+        padding: 20, alignItems: 'center', elevation: 4,
+        shadowColor: Colors.shadowPremium, shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1, shadowRadius: 12,
     },
-    buyCard: { borderWidth: 1.5, borderColor: Colors.primary },
-    sellCard: { borderWidth: 1.5, borderColor: '#2E7D32' },
+    buyCard: { borderWidth: 1, borderColor: Colors.borderLight },
+    sellCard: { borderWidth: 1, borderColor: Colors.borderLight },
     actionIconBox: {
-        width: 56, height: 56, borderRadius: 28,
-        justifyContent: 'center', alignItems: 'center', marginBottom: 12,
+        width: 56, height: 56, borderRadius: 20,
+        justifyContent: 'center', alignItems: 'center', marginBottom: 14,
     },
-    actionTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
-    actionCount: { fontSize: 12, color: Colors.textSecondary },
+    actionTitle: { fontSize: 16, fontWeight: '800', color: Colors.textPrimary, marginBottom: 4 },
+    actionCount: { fontSize: 12, color: Colors.textSecondary, fontWeight: '500' },
     myPropertiesRow: {
         flexDirection: 'row', alignItems: 'center',
-        backgroundColor: Colors.backgroundCard, borderRadius: 16,
-        padding: 16, elevation: 2,
-        shadowColor: Colors.shadowDark, shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.08, shadowRadius: 4,
+        backgroundColor: Colors.backgroundCard, borderRadius: 24,
+        padding: 20, elevation: 6,
+        borderWidth: 1, borderColor: Colors.primarySoft,
+        shadowColor: Colors.shadowPremium, shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.1, shadowRadius: 14,
     },
-    emptyState: { alignItems: 'center', paddingVertical: 50 },
-    emptyTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginTop: 20, marginBottom: 8 },
-    emptyText: { fontSize: 14, color: Colors.textSecondary, marginBottom: 24 },
-    emptyButton: { backgroundColor: Colors.primary, paddingHorizontal: 30, paddingVertical: 14, borderRadius: 12 },
-    emptyButtonText: { color: Colors.textWhite, fontSize: 15, fontWeight: '700' },
+    goIcon: {
+        width: 36, height: 36, borderRadius: 18,
+        backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center'
+    },
+    emptyState: { alignItems: 'center', paddingVertical: 40, backgroundColor: Colors.surfaceSecondary, borderRadius: 24 },
+    emptyTitle: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, marginTop: 20, marginBottom: 8 },
+    emptyText: { fontSize: 14, color: Colors.textSecondary, marginBottom: 24, paddingHorizontal: 40, textAlign: 'center' },
+    emptyButton: { borderRadius: 16, overflow: 'hidden' },
+    emptyBtnGradient: { paddingHorizontal: 32, paddingVertical: 16 },
+    emptyButtonText: { color: Colors.textWhite, fontSize: 16, fontWeight: '800' },
     propertyItem: {
         flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.backgroundCard,
-        borderRadius: 16, padding: 12, marginBottom: 12, elevation: 2,
-        shadowColor: Colors.shadowDark, shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.08, shadowRadius: 4,
+        borderRadius: 20, padding: 14, marginBottom: 14, elevation: 4,
+        borderWidth: 1, borderColor: Colors.borderLight,
+        shadowColor: Colors.shadowPremium, shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08, shadowRadius: 10,
     },
-    propertyImage: { width: 70, height: 70, borderRadius: 12, backgroundColor: Colors.border },
-    propertyInfo: { flex: 1, marginLeft: 12 },
-    propertyTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
-    propertyLocation: { fontSize: 12, color: Colors.textSecondary, marginBottom: 6 },
-    propertyPrice: { fontSize: 16, fontWeight: '800', color: Colors.primary },
+    propertyImage: { width: 80, height: 80, borderRadius: 16, backgroundColor: Colors.border },
+    propertyInfo: { flex: 1, marginLeft: 16 },
+    propertyTitle: { fontSize: 16, fontWeight: '800', color: Colors.textPrimary, marginBottom: 4 },
+    propertyLocation: { fontSize: 13, color: Colors.textSecondary, marginBottom: 6 },
+    propertyPrice: { fontSize: 17, fontWeight: '900', color: Colors.primary },
 });
 
 export default DashboardScreen;

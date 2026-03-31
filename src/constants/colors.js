@@ -1,39 +1,37 @@
-// SS Property Guru - Color Theme
-// Extracted from logo: Green primary + Orange accent
-
+// SS Property Guru - Premium Color Theme
 const Colors = {
-  // Primary Green (from logo)
-  primary: '#2E7D32',
-  primaryDark: '#1B5E20',
-  primaryLight: '#4CAF50',
-  primarySoft: '#E8F5E9',
-  primaryMuted: '#A5D6A7',
+  // Primary (Deep Elite Green)
+  primary: '#065F46',
+  primaryDark: '#022C22',
+  primaryLight: '#34D399',
+  primarySoft: '#ECFDF5',
+  primaryMuted: '#6EE7B7',
 
-  // Accent Orange (from logo)
-  accent: '#E65100',
-  accentLight: '#F57C00',
-  accentSoft: '#FFF3E0',
-  accentMuted: '#FFB74D',
+  // Accent (Luxury Gold/Amber)
+  accent: '#D97706',
+  accentLight: '#F59E0B',
+  accentSoft: '#FEF3C7',
+  accentMuted: '#FCD34D',
 
   // Backgrounds
   background: '#FFFFFF',
-  backgroundSecondary: '#F8F9FC',
+  backgroundSecondary: '#F8FAFC',
   backgroundCard: '#FFFFFF',
-  backgroundDark: '#0A1F0D',
+  backgroundDark: '#0F172A',
   surface: '#FFFFFF',
-  surfaceSecondary: '#F1F3F7',
+  surfaceSecondary: '#F1F5F9',
 
   // Text
-  textPrimary: '#1A1A2E',
-  textSecondary: '#6B7280',
-  textLight: '#9CA3AF',
+  textPrimary: '#0F172A',
+  textSecondary: '#475569',
+  textLight: '#94A3B8',
   textWhite: '#FFFFFF',
   textOnPrimary: '#FFFFFF',
 
   // Borders & Dividers
-  border: '#E5E7EB',
-  borderLight: '#F3F4F6',
-  divider: '#F0F0F0',
+  border: '#E2E8F0',
+  borderLight: '#F1F5F9',
+  divider: '#CBD5E1',
 
   // Status
   success: '#10B981',
@@ -41,17 +39,19 @@ const Colors = {
   warning: '#F59E0B',
   info: '#3B82F6',
 
-  // Shadows / Overlays
-  shadow: 'rgba(0, 0, 0, 0.06)',
-  shadowMedium: 'rgba(0, 0, 0, 0.12)',
-  shadowDark: 'rgba(0, 0, 0, 0.2)',
-  overlay: 'rgba(0, 0, 0, 0.4)',
-  glassEffect: 'rgba(255, 255, 255, 0.8)',
+  // Premium Shadows / Overlays
+  shadow: 'rgba(15, 23, 42, 0.04)',
+  shadowMedium: 'rgba(15, 23, 42, 0.08)',
+  shadowDark: 'rgba(15, 23, 42, 0.15)',
+  shadowPremium: 'rgba(6, 95, 70, 0.25)',
+  overlay: 'rgba(15, 23, 42, 0.75)',
+  glassEffect: 'rgba(255, 255, 255, 0.85)',
 
   // Gradient pairs
-  gradientPrimary: ['#2E7D32', '#1B5E20'],
-  gradientAccent: ['#F57C00', '#E65100'],
-  gradientDark: ['#1B5E20', '#0A1F0D'],
+  gradientPrimary: ['#065F46', '#022C22'],
+  gradientAccent: ['#F59E0B', '#B45309'],
+  gradientDark: ['#0F172A', '#1E293B'],
+  gradientGold: ['#FDE68A', '#D97706'],
 };
 
 export default Colors;

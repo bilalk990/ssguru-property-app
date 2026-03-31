@@ -37,40 +37,51 @@ const BuyStackNav = createNativeStackNavigator();
 const SellStackNav = createNativeStackNavigator();
 const ProfileStackNav = createNativeStackNavigator();
 
-// Tab icon component
+// Premium Tab icon component
 const TabIcon = ({ label, icon, focused }) => {
     const scaleAnim = useRef(new Animated.Value(focused ? 1 : 0.9)).current;
-    const bgOpacityAnim = useRef(new Animated.Value(focused ? 1 : 0)).current;
+    const translateYAnim = useRef(new Animated.Value(focused ? -5 : 0)).current;
 
     useEffect(() => {
         Animated.parallel([
             Animated.spring(scaleAnim, {
-                toValue: focused ? 1 : 0.95,
-                friction: 8,
+                toValue: focused ? 1.05 : 1,
+                friction: 6,
                 useNativeDriver: true,
             }),
-            Animated.timing(bgOpacityAnim, {
-                toValue: focused ? 1 : 0,
-                duration: 250,
+            Animated.spring(translateYAnim, {
+                toValue: focused ? -6 : 0,
+                friction: 6,
                 useNativeDriver: true,
             })
         ]).start();
-    }, [focused, scaleAnim, bgOpacityAnim]);
+    }, [focused, scaleAnim, translateYAnim]);
 
     return (
         <Animated.View style={[
             styles.tabItemContainer,
-            { transform: [{ scale: scaleAnim }] }
+            { transform: [{ scale: scaleAnim }, { translateY: translateYAnim }] }
         ]}>
-            <Icon
-                name={focused ? icon : `${icon}-outline`}
-                size={24}
-                color={focused ? Colors.primary : Colors.textLight}
-            />
-            <Text style={[
-                styles.tabLabel,
-                focused && styles.tabLabelActive
-            ]}>
+            <View style={{
+                backgroundColor: focused ? Colors.primary : 'transparent',
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                justifyContent: 'center',
+                alignItems: 'center',
+                shadowColor: focused ? Colors.primary : 'transparent',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: focused ? 0.3 : 0,
+                shadowRadius: 8,
+                elevation: focused ? 6 : 0,
+            }}>
+                <Icon
+                    name={focused ? icon : `${icon}-outline`}
+                    size={20}
+                    color={focused ? Colors.textWhite : Colors.textLight}
+                />
+            </View>
+            <Text style={[styles.tabLabel, focused && styles.tabLabelActive, { marginTop: 4, opacity: focused ? 1 : 0.5 }]}>
                 {label}
             </Text>
         </Animated.View>
@@ -122,7 +133,7 @@ const ProfileStack = () => (
 
 const Stack = createNativeStackNavigator();
 
-// Bottom Tabs with Dashboard as Sell tab
+// Bottom Tabs with Premium Floating UI
 const AppNavigator = () => {
     const insets = useSafeAreaInsets();
 
@@ -131,26 +142,33 @@ const AppNavigator = () => {
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarHideOnKeyboard: true,
-                tabBarIcon: ({ focused, color, size }) => {
+                tabBarShowLabel: false,
+                tabBarIcon: ({ focused }) => {
                     let iconName;
-                    if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
-                    else if (route.name === 'Buy') iconName = focused ? 'search' : 'search-outline';
-                    else if (route.name === 'Sell') iconName = focused ? 'add-circle' : 'add-circle-outline';
-                    else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
-                    return <Icon name={iconName} size={24} color={color} />;
+                    let label;
+                    if (route.name === 'Home') { iconName = 'home'; label = 'Home'; }
+                    else if (route.name === 'Buy') { iconName = 'search'; label = 'Search'; }
+                    else if (route.name === 'Sell') { iconName = 'add-circle'; label = 'Sell'; }
+                    else if (route.name === 'Profile') { iconName = 'person'; label = 'Profile'; }
+                    return <TabIcon label={label} icon={iconName} focused={focused} />;
                 },
-                tabBarActiveTintColor: Colors.primary,
-                tabBarInactiveTintColor: Colors.textLight,
-                tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginBottom: 5 },
                 tabBarStyle: {
-                    height: 65 + insets.bottom,
-                    backgroundColor: Colors.background,
-                    borderTopWidth: 1,
-                    borderTopColor: Colors.border,
-                    paddingTop: 10,
-                    paddingBottom: insets.bottom > 0 ? insets.bottom : 5,
-                    elevation: 0,
-                    shadowOpacity: 0,
+                    position: 'absolute',
+                    bottom: insets.bottom > 0 ? insets.bottom : 20,
+                    left: 24,
+                    right: 24,
+                    height: 70,
+                    backgroundColor: Colors.backgroundCard,
+                    borderRadius: 35,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.8)',
+                    paddingBottom: 0,
+                    paddingTop: 0,
+                    elevation: 15,
+                    shadowColor: Colors.shadowDark,
+                    shadowOffset: { width: 0, height: 12 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 24,
                 },
             })}
         >
