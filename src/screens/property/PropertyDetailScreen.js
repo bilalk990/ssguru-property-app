@@ -12,9 +12,11 @@ import {
     Platform,
     Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useTranslation } from 'react-i18next';
 import Video from 'react-native-video';
 import Colors from '../../constants/colors';
 import { normalizeProperty } from '../../components/PropertyCard';
@@ -24,6 +26,8 @@ const { width, height } = Dimensions.get('window');
 const ADMIN_PHONE = '917400763089'; // Admin WhatsApp number
 
 const PropertyDetailScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const { property: initialProperty } = route.params || {};
     const [property, setProperty] = useState(initialProperty ? normalizeProperty(initialProperty) : {});
     const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -32,9 +36,9 @@ const PropertyDetailScreen = ({ route, navigation }) => {
     if (!property || Object.keys(property).length === 0) {
         return (
             <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={{ color: Colors.textSecondary }}>Property not found</Text>
+                <Text style={{ color: Colors.textSecondary }}>{t('property.notFound')}</Text>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Text style={{ color: Colors.primary, marginTop: 10 }}>Go Back</Text>
+                    <Text style={{ color: Colors.primary, marginTop: 10 }}>{t('common.back')}</Text>
                 </TouchableOpacity>
             </View>
         );
@@ -46,12 +50,12 @@ const PropertyDetailScreen = ({ route, navigation }) => {
         const token = await AsyncStorage.getItem('authToken');
         if (!token) {
             Alert.alert(
-                'Login Required',
-                'Please login or signup to contact us',
+                t('auth.login'),
+                t('auth.loginSubtitle'),
                 [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Login', onPress: () => navigation.navigate('Login') },
-                    { text: 'Signup', onPress: () => navigation.navigate('Signup') }
+                    { text: t('common.cancel'), style: 'cancel' },
+                    { text: t('auth.login'), onPress: () => navigation.navigate('Login') },
+                    { text: t('auth.signup'), onPress: () => navigation.navigate('Signup') }
                 ]
             );
             return false;
@@ -66,12 +70,20 @@ const PropertyDetailScreen = ({ route, navigation }) => {
 
     const handleWhatsApp = async () => {
         if (!await checkAuthAndProceed()) return;
-        const message = `Hi, I'm interested in the property: ${property.title}\nPrice: ${property.price}\nLocation: ${property.area}, ${property.city}`;
+        const message = t('property.whatsappMessage', {
+            title: property.title,
+            price: property.price,
+            location: `${property.area}, ${property.city}`
+        });
         Linking.openURL(`whatsapp://send?phone=${ADMIN_PHONE}&text=${encodeURIComponent(message)}`);
     };
 
     const handleShare = async () => {
-        const message = `Check out this property: ${property.title}\nPrice: ${property.price}\nLocation: ${property.area}, ${property.city}`;
+        const message = t('property.shareMessage', {
+            title: property.title,
+            price: property.price,
+            location: `${property.area}, ${property.city}`
+        });
 
         try {
             const { Share } = require('react-native');
@@ -87,8 +99,8 @@ const PropertyDetailScreen = ({ route, navigation }) => {
     const toggleFavorite = () => {
         setIsFavorite(!isFavorite);
         Alert.alert(
-            isFavorite ? 'Removed from Favorites' : 'Added to Favorites',
-            isFavorite ? 'Property removed from your favorites' : 'Property saved to your favorites'
+            isFavorite ? t('property.removedFavorite') : t('property.addedFavorite'),
+            isFavorite ? t('property.removedFavoriteDesc') : t('property.addedFavoriteDesc')
         );
     };
 
@@ -158,12 +170,12 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                             <Text style={styles.priceText}>{property.price}</Text>
                             {property.sellingType && (
                                 <View style={styles.sellingTypeBadge}>
-                                    <Text style={styles.sellingTypeText}>For {property.sellingType}</Text>
+                                    <Text style={styles.sellingTypeText}>{t('property.for')} {t(`common.${property.sellingType.toLowerCase()}`)}</Text>
                                 </View>
                             )}
                         </View>
                         <View style={styles.typeBadge}>
-                            <Text style={styles.typeBadgeText} numberOfLines={1}>{property.type}</Text>
+                            <Text style={styles.typeBadgeText} numberOfLines={1}>{t(`common.${property.type.toLowerCase()}`, { defaultValue: property.type })}</Text>
                         </View>
                     </View>
                 </View>
@@ -176,7 +188,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                     {property._id && (
                         <View style={styles.propertyIdRow}>
                             <Icon name="pricetag-outline" size={14} color={Colors.textLight} />
-                            <Text style={styles.propertyIdText}>Property ID: {property._id.slice(-8).toUpperCase()}</Text>
+                            <Text style={styles.propertyIdText}>{t('property.idLabel')}: {property._id.slice(-8).toUpperCase()}</Text>
                         </View>
                     )}
 
@@ -194,7 +206,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                                 <Icon name="expand-outline" size={20} color={Colors.primary} />
                             </View>
                             <Text style={styles.infoValue} numberOfLines={1}>{property.sqft || property.areaSize || '-'}</Text>
-                            <Text style={styles.infoLabel}>AREA</Text>
+                            <Text style={styles.infoLabel}>{t('common.area')}</Text>
                         </View>
                         <View style={styles.infoDivider} />
                         <View style={styles.infoItem}>
@@ -202,7 +214,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                                 <Icon name="location-outline" size={20} color={Colors.primary} />
                             </View>
                             <Text style={styles.infoValue} numberOfLines={1}>{property.city || '-'}</Text>
-                            <Text style={styles.infoLabel}>CITY</Text>
+                            <Text style={styles.infoLabel}>{t('property.cityLabel')}</Text>
                         </View>
                         <View style={styles.infoDivider} />
                         <View style={styles.infoItem}>
@@ -210,20 +222,20 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                                 <Icon name="pricetag-outline" size={20} color={Colors.primary} />
                             </View>
                             <Text style={styles.infoValue} numberOfLines={2}>{property.type || '-'}</Text>
-                            <Text style={styles.infoLabel}>TYPE</Text>
+                            <Text style={styles.infoLabel}>{t('common.type')}</Text>
                         </View>
                     </View>
 
                     {/* Description Section */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Overview</Text>
+                        <Text style={styles.sectionTitle}>{t('common.description')}</Text>
                         <Text style={styles.descriptionText}>{property.description}</Text>
                     </View>
 
                     {/* Property Video */}
                     {property.videoUrl && (
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Property Tour Video</Text>
+                            <Text style={styles.sectionTitle}>{t('property.tourVideo')}</Text>
                             <View style={styles.videoWrapper}>
                                 <Video
                                     source={{ uri: property.videoUrl }}
@@ -238,9 +250,9 @@ const PropertyDetailScreen = ({ route, navigation }) => {
 
                     {/* Features List */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Key Features</Text>
+                        <Text style={styles.sectionTitle}>{t('common.features')}</Text>
                         <View style={styles.featuresGrid}>
-                            {(property.features || ['Elite Design', 'Premium Location', 'Vastu Compliant']).map((feature, idx) => (
+                            {(property.features || [t('property.eliteDesign'), t('property.premiumLocation'), t('property.vastuCompliant')]).map((feature, idx) => (
                                 <View key={idx} style={styles.featureItem}>
                                     <Icon name="checkmark-circle" size={18} color={Colors.primary} />
                                     <Text style={styles.featureText}>{feature}</Text>
@@ -251,7 +263,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
 
                     <View style={styles.dateRow}>
                         <Icon name="time-outline" size={14} color={Colors.textLight} />
-                        <Text style={styles.dateText}>Listed {property.postedDate || 'Just now'}</Text>
+                        <Text style={styles.dateText}>{t('profile.listed')} {property.postedDate || t('common.justNow')}</Text>
                     </View>
                 </View>
             </ScrollView>
@@ -260,7 +272,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
             <View style={styles.footer}>
                 <TouchableOpacity style={styles.callActionButton} onPress={handleCall}>
                     <Icon name="call" size={20} color={Colors.primary} />
-                    <Text style={styles.callLabel}>Call</Text>
+                    <Text style={styles.callLabel}>{t('common.call')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.whatsappActionButton} onPress={handleWhatsApp}>
                     <LinearGradient
@@ -269,7 +281,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}>
                         <Icon name="logo-whatsapp" size={20} color={Colors.textWhite} />
-                        <Text style={styles.whatsappLabel}>Contact Admin</Text>
+                        <Text style={styles.whatsappLabel}>{t('common.contactAdmin')}</Text>
                     </LinearGradient>
                 </TouchableOpacity>
             </View>
@@ -299,7 +311,7 @@ const styles = StyleSheet.create({
     },
     backButton: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? 60 : 50,
+        top: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 15,
         left: 20,
         width: 45,
         height: 45,
@@ -312,7 +324,7 @@ const styles = StyleSheet.create({
     },
     topRightActions: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? 60 : 50,
+        top: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 15,
         right: 20,
         flexDirection: 'row',
         gap: 10,
@@ -329,7 +341,7 @@ const styles = StyleSheet.create({
     },
     imageCounter: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? 120 : 110,
+        top: Platform.OS === 'ios' ? Math.max(insets.top + 60, 110) : insets.top + 75,
         right: 20,
         backgroundColor: 'rgba(0,0,0,0.5)',
         paddingHorizontal: 15,

@@ -3,6 +3,8 @@ import {
     View, Text, StyleSheet, Image, StatusBar, KeyboardAvoidingView,
     Platform, ScrollView, Alert, Dimensions, TouchableOpacity, Animated
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import LinearGradient from 'react-native-linear-gradient';
 import Colors from '../../constants/colors';
 import FloatingLabelInput from '../../components/FloatingLabelInput';
@@ -12,6 +14,8 @@ import { forgotPassword } from '../../api/authApi';
 const { width } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -42,7 +46,7 @@ const LoginScreen = ({ navigation }) => {
 
     const handleSendOTP = async () => {
         if (!phone || phone.length < 10) {
-            Alert.alert('Invalid Phone', 'Please enter a valid 10-digit phone number.');
+            Alert.alert(t('auth.invalidPhone'), t('auth.invalidPhoneDesc'));
             return;
         }
 
@@ -54,10 +58,10 @@ const LoginScreen = ({ navigation }) => {
             if (devOtp) setTimeout(() => Alert.alert('Dev Mode OTP', `Your OTP: ${devOtp}`), 500);
         } catch (error) {
             console.error('[LOGIN] Error:', error.response?.data);
-            let message = 'Failed to send OTP. Please try again.';
-            if (error.response?.status === 404) message = 'Phone number not found. Please sign up first.';
+            let message = t('auth.failedToSendOTP');
+            if (error.response?.status === 404) message = t('auth.phoneNotFound');
             else if (error.response?.data?.message) message = error.response.data.message;
-            Alert.alert('Error', message);
+            Alert.alert(t('common.error'), message);
         } finally {
             setLoading(false);
         }
@@ -81,8 +85,8 @@ const LoginScreen = ({ navigation }) => {
                         <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
                     </Animated.View>
                     <Animated.View style={{ opacity: titleAnim, transform: [{ translateY: titleSlide }], alignItems: 'center' }}>
-                        <Text style={styles.title}>Welcome Back</Text>
-                        <Text style={styles.subtitle}>Enter your phone number to login</Text>
+                        <Text style={styles.title}>{t('auth.welcomeBack')}</Text>
+                        <Text style={styles.subtitle}>{t('auth.loginSubtitle')}</Text>
                     </Animated.View>
                 </View>
 
@@ -90,7 +94,7 @@ const LoginScreen = ({ navigation }) => {
                 <Animated.View style={[styles.card, { opacity: formAnim, transform: [{ translateY: formSlide }] }]}>
 
                     <FloatingLabelInput
-                        label="Phone Number"
+                        label={t('auth.phone')}
                         value={phone}
                         onChangeText={setPhone}
                         icon="call-outline"
@@ -101,25 +105,25 @@ const LoginScreen = ({ navigation }) => {
                     />
 
                     <AnimatedButton
-                        title="Send OTP"
+                        title={t('auth.sendOTP')}
                         onPress={handleSendOTP}
                         loading={loading}
                         icon="log-in-outline"
                     />
 
                     <View style={styles.signupContainer}>
-                        <Text style={styles.noAccountText}>Don't have an account? </Text>
+                        <Text style={styles.noAccountText}>{t('auth.noAccount')}</Text>
                         <TouchableOpacity onPress={() => navigation.navigate('Signup')} activeOpacity={0.7}>
-                            <Text style={styles.signupLink}>Sign Up</Text>
+                            <Text style={styles.signupLink}>{t('auth.signup')}</Text>
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
 
                 <Animated.View style={[styles.footer, { opacity: formAnim }]}>
                     <Text style={styles.footerText}>
-                        By signing in, you agree to our{' '}
-                        <Text style={styles.link}>Terms</Text> and{' '}
-                        <Text style={styles.link}>Privacy Policy</Text>
+                        {t('auth.agreeTo')}{' '}
+                        <Text style={styles.link}>{t('auth.terms')}</Text>{t('auth.and')}{' '}
+                        <Text style={styles.link}>{t('auth.privacyPolicy')}</Text>
                     </Text>
                 </Animated.View>
 
@@ -130,11 +134,11 @@ const LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.background },
-    scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: Platform.OS === 'ios' ? 40 : 20 },
+    scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: insets.top + 20 },
     topDecoration: { position: 'absolute', top: -100, right: -100, zIndex: -1 },
     decorCircle: { width: 300, height: 300, borderRadius: 150, opacity: 0.6 },
     decorCircleSmall: { width: 150, height: 150, borderRadius: 75, position: 'absolute', bottom: 50, left: -50, opacity: 0.4 },
-    header: { alignItems: 'center', marginTop: 60, marginBottom: 40 },
+    header: { alignItems: 'center', marginTop: 30, marginBottom: 40 },
     logoContainer: {
         width: 100, height: 100, borderRadius: 28, padding: 15,
         backgroundColor: Colors.surfaceSecondary, elevation: 15,

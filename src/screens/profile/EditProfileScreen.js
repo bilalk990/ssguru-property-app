@@ -12,6 +12,8 @@ import {
     ActivityIndicator,
     Platform
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { launchImageLibrary } from 'react-native-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,6 +24,8 @@ import { updateUser } from '../../api/userApi';
 import { getMe } from '../../api/authApi';
 
 const EditProfileScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState(''); // Email usually read-only or requires extra verification
@@ -74,7 +78,7 @@ const EditProfileScreen = ({ navigation }) => {
 
     const handleSave = async () => {
         if (!name || !phone) {
-            Alert.alert('Required', 'Name and phone are mandatory.');
+            Alert.alert(t('common.error'), t('auth.missingFieldsDesc'));
             return;
         }
 
@@ -101,12 +105,12 @@ const EditProfileScreen = ({ navigation }) => {
                 await updateUser(userId, formData);
             }
 
-            Alert.alert('Success', 'Profile updated successfully!', [
-                { text: 'OK', onPress: () => navigation.goBack() }
+            Alert.alert(t('common.success'), t('profile.profileUpdateSuccess'), [
+                { text: t('common.ok'), onPress: () => navigation.goBack() }
             ]);
         } catch (error) {
             console.error('Update Profile Error:', error);
-            Alert.alert('Error', error.response?.data?.message || 'Failed to update profile.');
+            Alert.alert(t('common.error'), error.response?.data?.message || t('profile.profileUpdateError'));
         } finally {
             setLoading(false);
         }
@@ -128,7 +132,7 @@ const EditProfileScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Edit Profile</Text>
+                <Text style={styles.headerTitle}>{t('profile.editProfile')}</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -147,34 +151,34 @@ const EditProfileScreen = ({ navigation }) => {
                             <Icon name="camera" size={20} color={Colors.textWhite} />
                         </View>
                     </TouchableOpacity>
-                    <Text style={styles.avatarHint}>Change Profile Picture</Text>
+                    <Text style={styles.avatarHint}>{t('profile.changeAvatar')}</Text>
                 </View>
 
                 <View style={styles.form}>
-                    <Text style={styles.label}>Full Name</Text>
+                    <Text style={styles.label}>{t('auth.name')}</Text>
                     <View style={styles.inputWrapper}>
                         <Icon name="person-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
                         <TextInput
                             style={styles.input}
                             value={name}
                             onChangeText={setName}
-                            placeholder="Your Name"
+                            placeholder={t('auth.name')}
                         />
                     </View>
 
-                    <Text style={styles.label}>Phone Number</Text>
+                    <Text style={styles.label}>{t('auth.phone')}</Text>
                     <View style={styles.inputWrapper}>
                         <Icon name="call-outline" size={20} color={Colors.primary} style={styles.inputIcon} />
                         <TextInput
                             style={styles.input}
                             value={phone}
                             onChangeText={setPhone}
-                            placeholder="Phone Number"
+                            placeholder={t('auth.phone')}
                             keyboardType="phone-pad"
                         />
                     </View>
 
-                    <Text style={styles.label}>Email Address (Protected)</Text>
+                    <Text style={styles.label}>{t('profile.protectedEmail')}</Text>
                     <View style={[styles.inputWrapper, styles.disabledInput]}>
                         <Icon name="mail-outline" size={20} color={Colors.textLight} style={styles.inputIcon} />
                         <TextInput
@@ -185,7 +189,7 @@ const EditProfileScreen = ({ navigation }) => {
                     </View>
 
                     <CustomButton
-                        title="Update Profile"
+                        title={t('profile.updateProfile')}
                         onPress={handleSave}
                         loading={loading}
                         size="large"
@@ -205,7 +209,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: Platform.OS === 'ios' ? 60 : 50,
+        paddingHorizontal: 16,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: Colors.border

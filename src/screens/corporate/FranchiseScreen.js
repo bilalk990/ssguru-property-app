@@ -5,6 +5,7 @@ import {
     Dimensions
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { applyForFranchise } from '../../api/franchiseApi';
@@ -13,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width } = Dimensions.get('window');
 
 const FranchiseScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     const insets = useSafeAreaInsets();
     const [form, setForm] = useState({
         name: '', phone: '', email: '', city: '', message: '', agreed: false
@@ -37,11 +39,11 @@ const FranchiseScreen = ({ navigation }) => {
 
     const handleSubmit = async () => {
         if (!form.name || !form.phone || !form.email || !form.city) {
-            Alert.alert('Incomplete', 'Please fill all mandatory fields (*).');
+            Alert.alert(t('corporate.incomplete'), t('corporate.fillMandatory'));
             return;
         }
         if (!form.agreed) {
-            Alert.alert('Terms & Privacy', 'Please agree to the terms and privacy policy to proceed.');
+            Alert.alert(t('corporate.termsPrivacy'), t('corporate.agreeToProceed'));
             return;
         }
 
@@ -54,12 +56,12 @@ const FranchiseScreen = ({ navigation }) => {
                 city: form.city,
                 message: form.message || 'Applying for Franchise.',
             });
-            Alert.alert('Success', 'Your franchise application has been submitted successfully!', [
-                { text: 'OK', onPress: () => navigation.goBack() }
+            Alert.alert(t('common.success'), t('corporate.teamContactSoon'), [
+                { text: t('common.ok'), onPress: () => navigation.goBack() }
             ]);
             setForm({ name: '', phone: '', email: '', city: '', message: '', agreed: false });
         } catch (error) {
-            Alert.alert('Error', 'Failed to submit application. Please try again later.');
+            Alert.alert(t('common.error'), t('home.enquiryError'));
         } finally {
             setLoading(false);
         }
@@ -76,61 +78,60 @@ const FranchiseScreen = ({ navigation }) => {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
                 <View style={styles.titleSection}>
-                    <Text style={styles.title}>Apply for Franchise</Text>
-                    <Text style={styles.subtitle}>Fill out the form below to start your journey with SS Property</Text>
+                    <Text style={styles.title}>{t('corporate.franchiseTitle')}</Text>
+                    <Text style={styles.subtitle}>{t('corporate.franchiseSubtitle')}</Text>
                 </View>
 
                 <View style={styles.formCard}>
 
-                    {/* Row 1 for larger screens, but column for mobile */}
                     <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Full Name *</Text>
+                        <Text style={styles.label}>{t('corporate.fullName')} *</Text>
                         <TextInput
                             style={styles.input}
                             value={form.name}
-                            onChangeText={t => setForm({ ...form, name: t })}
+                            onChangeText={txt => setForm({ ...form, name: txt })}
                         />
                     </View>
 
                     <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Mobile Number *</Text>
+                        <Text style={styles.label}>{t('corporate.mobileNumber')} *</Text>
                         <TextInput
                             style={styles.input}
                             value={form.phone}
                             keyboardType="phone-pad"
-                            onChangeText={t => setForm({ ...form, phone: t })}
+                            onChangeText={txt => setForm({ ...form, phone: txt })}
                         />
                     </View>
 
                     <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Email Address *</Text>
+                        <Text style={styles.label}>{t('corporate.emailAddress')} *</Text>
                         <TextInput
                             style={styles.input}
                             value={form.email}
                             keyboardType="email-address"
                             autoCapitalize="none"
-                            onChangeText={t => setForm({ ...form, email: t })}
+                            onChangeText={txt => setForm({ ...form, email: txt })}
                         />
                     </View>
 
                     <View style={styles.inputContainer}>
-                        <Text style={styles.label}>City *</Text>
+                        <Text style={styles.label}>{t('corporate.city')} *</Text>
                         <TextInput
                             style={styles.input}
                             value={form.city}
-                            onChangeText={t => setForm({ ...form, city: t })}
+                            onChangeText={txt => setForm({ ...form, city: txt })}
                         />
                     </View>
 
                     <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Message / Query</Text>
+                        <Text style={styles.label}>{t('corporate.messageQuery')}</Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
                             multiline
                             numberOfLines={4}
                             textAlignVertical="top"
                             value={form.message}
-                            onChangeText={t => setForm({ ...form, message: t })}
+                            onChangeText={txt => setForm({ ...form, message: txt })}
                         />
                     </View>
 
@@ -139,12 +140,12 @@ const FranchiseScreen = ({ navigation }) => {
                             {form.agreed && <Icon name="checkmark" size={14} color="#FFF" />}
                         </View>
                         <Text style={styles.checkboxText}>
-                            I agree to the terms & privacy policy and consent to being contacted by SS Property regarding franchise opportunities.
+                            {t('corporate.agreeTerms')}
                         </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={loading}>
-                        {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.submitBtnText}>Submit Application</Text>}
+                        {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.submitBtnText}>{t('corporate.submitApplication')}</Text>}
                     </TouchableOpacity>
 
                 </View>

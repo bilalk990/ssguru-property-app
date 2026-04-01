@@ -11,12 +11,16 @@ import {
     Platform,
     ScrollView
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import { getCurrentStream, setStream, deleteStream } from '../../api/streamApi';
 import CustomButton from '../../components/CustomButton';
 
 const StreamManagerScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [url, setUrl] = useState('');
     const [currentStream, setCurrentStream] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -42,26 +46,26 @@ const StreamManagerScreen = ({ navigation }) => {
 
     const handleUpdate = async () => {
         if (!url) {
-            Alert.alert('Required', 'Please enter a stream URL (e.g. YouTube Live or Facebook Live).');
+            Alert.alert(t('common.notice'), t('profile.streamUrlPlaceholder'));
             return;
         }
         setUpdating(true);
         try {
             await setStream(url);
-            Alert.alert('Success', 'Live Tour stream URL updated!');
+            Alert.alert(t('common.success'), t('profile.successfullyUpdated'));
             fetchStream();
         } catch (error) {
-            Alert.alert('Error', 'Failed to update stream URL.');
+            Alert.alert(t('common.error'), t('common.error'));
         } finally {
             setUpdating(false);
         }
     };
 
     const handleDelete = async () => {
-        Alert.alert('Stop Stream', 'This will remove the live tour button for all users.', [
-            { text: 'Cancel', style: 'cancel' },
+        Alert.alert(t('profile.stopStreamConfirm'), t('profile.stopStreamDesc'), [
+            { text: t('common.cancel'), style: 'cancel' },
             {
-                text: 'Remove',
+                text: t('common.delete'),
                 style: 'destructive',
                 onPress: async () => {
                     setUpdating(true);
@@ -69,9 +73,9 @@ const StreamManagerScreen = ({ navigation }) => {
                         await deleteStream();
                         setUrl('');
                         setCurrentStream(null);
-                        Alert.alert('Success', 'Live Tour removed.');
+                        Alert.alert(t('common.success'), t('profile.successfullyUpdated'));
                     } catch (error) {
-                        Alert.alert('Error', 'Failed to delete stream.');
+                        Alert.alert(t('common.error'), t('common.error'));
                     } finally {
                         setUpdating(false);
                     }
@@ -88,7 +92,7 @@ const StreamManagerScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Stream Manager</Text>
+                <Text style={styles.headerTitle}>{t('profile.manageLiveTour')}</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -101,13 +105,13 @@ const StreamManagerScreen = ({ navigation }) => {
                     <View style={styles.statusSection}>
                         <View style={[styles.statusIndicator, currentStream ? styles.statusLive : styles.statusOffline]} />
                         <Text style={styles.statusText}>
-                            Status: <Text style={{ fontWeight: '800' }}>{currentStream ? 'LIVE NOW' : 'OFFLINE'}</Text>
+                            {t('common.status')}: <Text style={{ fontWeight: '800' }}>{currentStream ? t('common.liveNow') : t('common.offline')}</Text>
                         </Text>
                     </View>
 
                     <View style={styles.formCard}>
-                        <Text style={styles.label}>Tour Stream URL</Text>
-                        <Text style={styles.hint}>Paste your YouTube Live, Facebook Live, or direct stream link below.</Text>
+                        <Text style={styles.label}>{t('profile.streamUrlPlaceholder')}</Text>
+                        <Text style={styles.hint}>{t('profile.streamUrlHint')}</Text>
 
                         <View style={styles.inputWrapper}>
                             <Icon name="videocam-outline" size={20} color={Colors.primary} style={styles.icon} />
@@ -122,7 +126,7 @@ const StreamManagerScreen = ({ navigation }) => {
                         </View>
 
                         <CustomButton
-                            title={currentStream ? "Update Link" : "Start Live Tour"}
+                            title={currentStream ? t('profile.update') : t('profile.create')}
                             onPress={handleUpdate}
                             loading={updating}
                             size="large"
@@ -133,7 +137,7 @@ const StreamManagerScreen = ({ navigation }) => {
                         {currentStream && (
                             <TouchableOpacity style={styles.deleteLink} onPress={handleDelete}>
                                 <Icon name="trash-outline" size={18} color={Colors.error} />
-                                <Text style={styles.deleteText}>Remove Current Stream</Text>
+                                <Text style={styles.deleteText}>{t('profile.removeStream')}</Text>
                             </TouchableOpacity>
                         )}
                     </View>
@@ -141,7 +145,7 @@ const StreamManagerScreen = ({ navigation }) => {
                     <View style={styles.infoBox}>
                         <Icon name="information-circle-outline" size={24} color={Colors.primary} />
                         <Text style={styles.infoText}>
-                            When a live stream URL is set, a floating "WATCH LIVE TOUR" button appears on the home screen for all users.
+                            {t('profile.streamManagerInfo')}
                         </Text>
                     </View>
                 </ScrollView>
@@ -157,7 +161,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: Platform.OS === 'ios' ? 60 : 50,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 16,
         backgroundColor: Colors.background,
         borderBottomWidth: 1,

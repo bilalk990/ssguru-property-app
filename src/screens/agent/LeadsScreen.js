@@ -10,12 +10,14 @@ import {
     Linking,
     Alert
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import { getEnquiries, updateEnquiry } from '../../api/enquiryApi';
 import { getRequirements } from '../../api/requirementApi';
 
 const LeadsScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     const [tab, setTab] = useState('enquiries');
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ const LeadsScreen = ({ navigation }) => {
             await updateEnquiry(id, status);
             setData(prev => prev.map(item => (item.id || item._id) === id ? { ...item, status } : item));
         } catch (e) {
-            Alert.alert('Error', 'Failed to update status');
+            Alert.alert(t('common.error'), t('agent.statusUpdateError'));
         } finally {
             setUpdatingId(null);
         }
@@ -59,7 +61,7 @@ const LeadsScreen = ({ navigation }) => {
                 <Text style={styles.leadName}>{item.name}</Text>
                 <View style={[styles.badge, { backgroundColor: tab === 'enquiries' ? Colors.primarySoft : Colors.accentSoft }]}>
                     <Text style={[styles.badgeText, { color: tab === 'enquiries' ? Colors.primary : Colors.accent }]}>
-                        {tab === 'enquiries' ? (item.status || 'New') : 'Requirement'}
+                        {tab === 'enquiries' ? (item.status ? t(`agent.${item.status.toLowerCase()}`, { defaultValue: item.status }) : t('agent.new')) : t('agent.requirements')}
                     </Text>
                 </View>
             </View>
@@ -78,7 +80,7 @@ const LeadsScreen = ({ navigation }) => {
                             disabled={updatingId === (item.id || item._id)}
                             onPress={() => handleStatusUpdate(item.id || item._id, s)}
                         >
-                            <Text style={[styles.statusChipText, item.status === s && styles.activeStatusChipText]}>{s}</Text>
+                            <Text style={[styles.statusChipText, item.status === s && styles.activeStatusChipText]}>{t(`agent.${s.toLowerCase()}`)}</Text>
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -101,7 +103,7 @@ const LeadsScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Leads Manager</Text>
+                <Text style={styles.headerTitle}>{t('agent.leadsManager')}</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -110,13 +112,13 @@ const LeadsScreen = ({ navigation }) => {
                     style={[styles.tab, tab === 'enquiries' && styles.activeTab]}
                     onPress={() => setTab('enquiries')}
                 >
-                    <Text style={[styles.tabText, tab === 'enquiries' && styles.activeTabText]}>Enquiries</Text>
+                    <Text style={[styles.tabText, tab === 'enquiries' && styles.activeTabText]}>{t('agent.enquiries')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.tab, tab === 'requirements' && styles.activeTab]}
                     onPress={() => setTab('requirements')}
                 >
-                    <Text style={[styles.tabText, tab === 'requirements' && styles.activeTabText]}>Requirements</Text>
+                    <Text style={[styles.tabText, tab === 'requirements' && styles.activeTabText]}>{t('agent.requirements')}</Text>
                 </TouchableOpacity>
             </View>
 
@@ -133,7 +135,7 @@ const LeadsScreen = ({ navigation }) => {
                     ListEmptyComponent={
                         <View style={styles.empty}>
                             <Icon name="file-tray-outline" size={60} color={Colors.border} />
-                            <Text style={styles.emptyText}>No leads found</Text>
+                            <Text style={styles.emptyText}>{t('agent.noLeads')}</Text>
                         </View>
                     }
                     onRefresh={fetchData}

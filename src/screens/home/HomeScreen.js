@@ -4,10 +4,13 @@ import {
     StatusBar, Dimensions, FlatList, ScrollView, Platform, Animated, Alert,
     RefreshControl, TextInput, KeyboardAvoidingView
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
+import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
+import LanguageSelector from '../../components/LanguageSelector';
 import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
 import { PropertyCardSkeleton } from '../../components/SkeletonLoader';
 import { getProperties } from '../../api/propertyApi';
@@ -40,6 +43,8 @@ const ActionCard = ({ title, desc, icon, color, onPress }) => {
 };
 
 const HomeScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [search, setSearch] = useState('');
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -88,7 +93,7 @@ const HomeScreen = ({ navigation }) => {
 
     const handleEnquirySubmit = async () => {
         if (!enquiryForm.name || !enquiryForm.phone || !enquiryForm.requirement) {
-            Alert.alert('Incomplete', 'Please fill all fields.');
+            Alert.alert(t('common.submit'), t('auth.missingFieldsDesc'));
             return;
         }
         setEnquiryLoading(true);
@@ -99,17 +104,17 @@ const HomeScreen = ({ navigation }) => {
                 message: enquiryForm.requirement,
                 city: enquiryForm.city || 'General',
             });
-            Alert.alert('Success', 'Your requirement has been sent!');
+            Alert.alert(t('common.submit'), t('home.enquirySuccess'));
             setEnquiryForm({ name: '', phone: '', requirement: '', city: '' });
         } catch (e) {
-            Alert.alert('Error', 'Failed to send. Try again.');
+            Alert.alert(t('common.error'), t('home.enquiryError'));
         } finally {
             setEnquiryLoading(false);
         }
     };
 
-    const featured = properties.filter(p => p.featured || p.isFeatured).map(normalizeProperty);
-    const recent = properties.slice(0, 5).map(normalizeProperty);
+    const featured = properties.filter(p => p.featured || p.isFeatured).map(p => normalizeProperty(p, t));
+    const recent = properties.slice(0, 5).map(p => normalizeProperty(p, t));
 
     return (
         <View style={styles.container}>
@@ -133,32 +138,36 @@ const HomeScreen = ({ navigation }) => {
                         <View style={styles.headerLeft}>
                             <Image source={require('../../assets/logo.png')} style={styles.headerLogo} resizeMode="contain" />
                             <View>
-                                <Text style={styles.welcomeText}>Welcome to</Text>
-                                <Text style={styles.appName}>Property Guru</Text>
+                                <Text style={styles.welcomeText}>{t('home.welcomeTo')}</Text>
+                                <Text style={styles.appName}>{t('common.appName')}</Text>
                             </View>
                         </View>
-                        <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
-                            <Icon name="person" size={20} color={Colors.textWhite} />
-                        </TouchableOpacity>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                            <LanguageSelector />
+                            <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
+                                <Icon name="person" size={20} color={Colors.textWhite} />
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                    <Text style={styles.headerTitle}>Find Your Premium{'\n'}Property</Text>
+                    <Text style={styles.headerTitle}>{t('home.greeting')}</Text>
 
                     <View style={styles.searchContainer}>
                         <SearchBar
                             value={search}
                             onChangeText={setSearch}
                             onFilterPress={() => navigation.navigate('Buy')}
+                            placeholder={t('common.search')}
                         />
                     </View>
                 </LinearGradient>
 
                 {/* Quick Actions with Animation */}
                 <Animated.View style={[styles.actionsSection, { opacity: actionsFade }]}>
-                    <ActionCard title="Buy" desc="Find homes" icon="home" color={Colors.primarySoft} onPress={() => navigation.navigate('Buy')} />
-                    <ActionCard title="Sell" desc="List & Earn" icon="cash" color={Colors.accentSoft} onPress={() => navigation.navigate('Sell')} />
-                    <ActionCard title="Enquiry" desc="Expert help" icon="chatbubble-ellipses" color="#F1F5F9" onPress={() => navigation.navigate('Enquiry')} />
-                    <ActionCard title="Franchise" desc="Join Us" icon="business" color="#ECFDF5" onPress={() => navigation.navigate('Franchise')} />
-                    <ActionCard title="Gallery" desc="View Photos" icon="images" color="#FFFBEB" onPress={() => navigation.navigate('Gallery')} />
+                    <ActionCard title={t('common.buy')} desc={t('home.buyDesc')} icon="home" color={Colors.primarySoft} onPress={() => navigation.navigate('Buy')} />
+                    <ActionCard title={t('home.sell')} desc={t('home.sellDesc')} icon="cash" color={Colors.accentSoft} onPress={() => navigation.navigate('Sell')} />
+                    <ActionCard title={t('home.enquiry')} desc={t('home.enquiryDescShort')} icon="chatbubble-ellipses" color="#F1F5F9" onPress={() => navigation.navigate('Enquiry')} />
+                    <ActionCard title={t('home.franchise')} desc={t('home.franchiseDesc')} icon="business" color="#ECFDF5" onPress={() => navigation.navigate('Franchise')} />
+                    <ActionCard title={t('home.gallery')} desc={t('home.galleryDesc')} icon="images" color="#FFFBEB" onPress={() => navigation.navigate('Gallery')} />
                 </Animated.View>
 
                 {/* Content Section */}
@@ -166,7 +175,7 @@ const HomeScreen = ({ navigation }) => {
                     {loading && !refreshing ? (
                         <View style={styles.section}>
                             <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>Loading Properties...</Text>
+                                <Text style={styles.sectionTitle}>{t('home.loadingProps')}</Text>
                             </View>
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
                                 <PropertyCardSkeleton horizontal />
@@ -180,10 +189,10 @@ const HomeScreen = ({ navigation }) => {
                                     <View style={styles.sectionHeader}>
                                         <View style={styles.sectionTitleRow}>
                                             <Icon name="star" size={20} color={Colors.accentLight} />
-                                            <Text style={styles.sectionTitle}>Featured Properties</Text>
+                                            <Text style={styles.sectionTitle}>{t('common.featured')}</Text>
                                         </View>
                                         <TouchableOpacity onPress={() => navigation.navigate('Buy')}>
-                                            <Text style={styles.viewAllText}>View All</Text>
+                                            <Text style={styles.viewAllText}>{t('common.viewAll')}</Text>
                                         </TouchableOpacity>
                                     </View>
                                     <FlatList
@@ -203,17 +212,17 @@ const HomeScreen = ({ navigation }) => {
                                 <View style={styles.sectionHeader}>
                                     <View style={styles.sectionTitleRow}>
                                         <Icon name="time" size={20} color={Colors.primary} />
-                                        <Text style={styles.sectionTitle}>Recent Listings</Text>
+                                        <Text style={styles.sectionTitle}>{t('home.recentListings')}</Text>
                                     </View>
                                     <TouchableOpacity onPress={() => navigation.navigate('Buy')}>
-                                        <Text style={styles.viewAllText}>View All</Text>
+                                        <Text style={styles.viewAllText}>{t('common.viewAll')}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={{ paddingHorizontal: 20 }}>
                                     {recent.length === 0 ? (
                                         <View style={styles.emptyContainer}>
                                             <Icon name="documents-outline" size={48} color={Colors.textLight} />
-                                            <Text style={styles.emptyText}>No premium properties found yet</Text>
+                                            <Text style={styles.emptyText}>{t('home.noPremiumFound')}</Text>
                                         </View>
                                     ) : (
                                         recent.map((property, idx) => (
@@ -227,16 +236,16 @@ const HomeScreen = ({ navigation }) => {
                             <View style={[styles.section, styles.enquirySection]}>
                                 <View style={styles.enquiryCard}>
                                     <LinearGradient colors={[Colors.primary, Colors.primaryDark]} style={styles.enquiryDecoration} />
-                                    <Text style={styles.enquiryTitle}>Premium Enquiry</Text>
-                                    <Text style={styles.enquirySubtitle}>Let our elite agents find your perfect match.</Text>
+                                    <Text style={styles.enquiryTitle}>{t('home.premiumEnquiry')}</Text>
+                                    <Text style={styles.enquirySubtitle}>{t('home.enquirySubtitle')}</Text>
 
-                                    <TextInput style={styles.enquiryInput} placeholder="Your Full Name" placeholderTextColor={Colors.textLight} value={enquiryForm.name} onChangeText={(v) => setEnquiryForm(prev => ({ ...prev, name: v }))} />
-                                    <TextInput style={styles.enquiryInput} placeholder="Phone Number" placeholderTextColor={Colors.textLight} keyboardType="phone-pad" value={enquiryForm.phone} onChangeText={(v) => setEnquiryForm(prev => ({ ...prev, phone: v }))} />
-                                    <TextInput style={[styles.enquiryInput, { height: 90, paddingTop: 14 }]} placeholder="What exactly are you looking for?" placeholderTextColor={Colors.textLight} multiline value={enquiryForm.requirement} onChangeText={(v) => setEnquiryForm(prev => ({ ...prev, requirement: v }))} />
+                                    <TextInput style={styles.enquiryInput} placeholder={t('home.fullName')} placeholderTextColor={Colors.textLight} value={enquiryForm.name} onChangeText={(v) => setEnquiryForm(prev => ({ ...prev, name: v }))} />
+                                    <TextInput style={styles.enquiryInput} placeholder={t('home.phoneNumber')} placeholderTextColor={Colors.textLight} keyboardType="phone-pad" value={enquiryForm.phone} onChangeText={(v) => setEnquiryForm(prev => ({ ...prev, phone: v }))} />
+                                    <TextInput style={[styles.enquiryInput, { height: 90, paddingTop: 14 }]} placeholder={t('home.lookingFor')} placeholderTextColor={Colors.textLight} multiline value={enquiryForm.requirement} onChangeText={(v) => setEnquiryForm(prev => ({ ...prev, requirement: v }))} />
 
                                     <TouchableOpacity style={styles.enquirySubmitBtn} onPress={handleEnquirySubmit} disabled={enquiryLoading}>
                                         <LinearGradient colors={Colors.gradientAccent} style={styles.enquiryBtnGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                                            <Text style={styles.enquirySubmitText}>Request Callback</Text>
+                                            <Text style={styles.enquirySubmitText}>{t('home.requestCallback')}</Text>
                                             <Icon name="arrow-forward" size={18} color="#FFF" />
                                         </LinearGradient>
                                     </TouchableOpacity>
@@ -255,7 +264,7 @@ const styles = StyleSheet.create({
     scrollContent: { paddingBottom: 20 },
     header: {
         paddingHorizontal: 24,
-        paddingTop: Platform.OS === 'ios' ? 60 : 50,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 40,
         borderBottomLeftRadius: 40,
         borderBottomRightRadius: 40,

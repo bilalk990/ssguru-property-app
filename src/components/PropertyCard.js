@@ -9,6 +9,7 @@ import {
     Animated,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useTranslation } from 'react-i18next';
 import Colors from '../constants/colors';
 import { formatPrice } from '../utils/helpers';
 
@@ -38,16 +39,17 @@ const getImageUri = (images) => {
 };
 
 // Normalize backend property fields to what UI expects
-export const normalizeProperty = (item) => {
+export const normalizeProperty = (item, t) => {
+    const translate = t || ((key) => key.split('.').pop() || key); // Fallback for when t is not provided
     if (!item || typeof item !== 'object') {
         console.warn('normalizeProperty received invalid item:', item);
         return {
             _id: String(Math.random()),
-            title: 'Invalid Property',
-            type: 'Property',
+            title: translate('property.notFound'),
+            type: translate('common.property'),
             city: '',
             area: '',
-            price: 'Price on request',
+            price: translate('property.priceOnRequest'),
             sqft: '',
             bedrooms: 0,
             bathrooms: 0,
@@ -63,18 +65,18 @@ export const normalizeProperty = (item) => {
     return {
         ...item,
         _id: item._id || item.id || String(Math.random()),
-        title: item.title || 'Untitled Property',
-        type: item.type || item.category || item.sellingType || 'Property',
+        title: item.title || translate('property.notFound'),
+        type: item.type || item.category || item.sellingType || translate('common.property'),
         city: item.city || (typeof item.district === 'object' ? item.district?.name : '') || (typeof item.district === 'string' && item.district.length < 30 ? item.district : '') || '',
         area: item.area?.name || item.area || '',
         price: item.price
-            ? (typeof item.price === 'string' && (item.price.startsWith('PKR') || item.price.startsWith('₹'))
+            ? (typeof item.price === 'string' && (item.price.includes('PKR') || item.price.includes('₹'))
                 ? item.price.replace('PKR', '₹')
                 : formatPrice(Number(item.price)))
-            : 'Price on request',
+            : translate('property.priceOnRequest'),
         sqft: item.sqft
-            ? (typeof item.sqft === 'string' && item.sqft.includes('sqft') ? item.sqft : `${item.sqft} sqft`)
-            : (item.areaSize ? `${item.areaSize} sqft` : ''),
+            ? (typeof item.sqft === 'string' && (item.sqft.includes('sqft') || item.sqft.includes('Sq.Ft')) ? item.sqft : `${item.sqft} ${translate('common.sqft')}`)
+            : (item.areaSize ? `${item.areaSize} ${translate('common.sqft')}` : ''),
         bedrooms: item.bedrooms || 0,
         bathrooms: item.bathrooms || 0,
         featured: item.featured || item.isFeatured || false,
@@ -83,13 +85,14 @@ export const normalizeProperty = (item) => {
         // Agent info - backend has contactNumber on property and contact on agent
         agentPhone: item.contactNumber || (typeof item.agent === 'object' ? item.agent?.contact || item.agent?.phone : '') || item.agentPhone || '',
         agentAvatar: item.agentAvatar || (typeof item.agent === 'object' ? item.agent?.avatar : '') || '',
-        agentName: typeof item.agent === 'object' ? item.agent?.name : (item.agent || 'Agent'),
+        agentName: typeof item.agent === 'object' ? item.agent?.name : (item.agent || translate('common.agent')),
         videoUrl: item.videoUrl || item.video || '',
     };
 };
 
 const PropertyCard = ({ property: rawProperty, onPress, style, horizontal = false }) => {
-    const property = normalizeProperty(rawProperty);
+    const { t } = useTranslation();
+    const property = normalizeProperty(rawProperty, t);
     const scaleAnim = React.useRef(new Animated.Value(1)).current;
     const imageUri = getImageUri(property.images);
 
@@ -114,7 +117,7 @@ const PropertyCard = ({ property: rawProperty, onPress, style, horizontal = fals
                         <View style={styles.locationRow}>
                             <Icon name="location-outline" size={12} color={Colors.textSecondary} style={{ marginRight: 4 }} />
                             <Text style={styles.locationText} numberOfLines={1}>
-                                {[property.area, property.city].filter(Boolean).join(', ') || 'Location N/A'}
+                                {[property.area, property.city].filter(Boolean).join(', ') || t('common.locationNA')}
                             </Text>
                         </View>
                         <View style={styles.horizontalFooter}>
@@ -142,7 +145,7 @@ const PropertyCard = ({ property: rawProperty, onPress, style, horizontal = fals
                     {property.featured && (
                         <View style={styles.featuredBadge}>
                             <Icon name="star" size={10} color={Colors.textWhite} style={{ marginRight: 4 }} />
-                            <Text style={styles.featuredText}>Featured</Text>
+                            <Text style={styles.featuredText}>{t('common.featured')}</Text>
                         </View>
                     )}
                 </View>
@@ -151,7 +154,7 @@ const PropertyCard = ({ property: rawProperty, onPress, style, horizontal = fals
                     <View style={styles.locationRow}>
                         <Icon name="location-outline" size={14} color={Colors.textSecondary} style={{ marginRight: 4 }} />
                         <Text style={styles.locationText} numberOfLines={1}>
-                            {[property.area, property.city].filter(Boolean).join(', ') || 'Location N/A'}
+                            {[property.area, property.city].filter(Boolean).join(', ') || t('common.locationNA')}
                         </Text>
                     </View>
                     <View style={styles.infoRow}>

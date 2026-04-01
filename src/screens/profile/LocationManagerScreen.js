@@ -13,12 +13,16 @@ import {
     Modal,
     ScrollView
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import { getDistricts, createDistrict, getAreas, createArea, deleteArea, updateArea } from '../../api/districtApi';
 import CustomButton from '../../components/CustomButton';
 
 const LocationManagerScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [tab, setTab] = useState('districts'); // 'districts' or 'areas'
     const [districts, setDistricts] = useState([]);
     const [areas, setAreas] = useState([]);
@@ -54,7 +58,7 @@ const LocationManagerScreen = ({ navigation }) => {
                 await createDistrict(newName);
             } else {
                 if (!selectedDistrictId) {
-                    Alert.alert('Required', 'Please select a district for this area.');
+                    Alert.alert(t('common.notice'), t('property.districtLabel'));
                     return;
                 }
                 await createArea(newName, selectedDistrictId);
@@ -63,7 +67,7 @@ const LocationManagerScreen = ({ navigation }) => {
             setModalVisible(false);
             fetchData();
         } catch (error) {
-            Alert.alert('Error', 'Failed to add item.');
+            Alert.alert(t('common.error'), t('common.error'));
         }
     };
 
@@ -85,22 +89,22 @@ const LocationManagerScreen = ({ navigation }) => {
             setEditingItem(null);
             fetchData();
         } catch (error) {
-            Alert.alert('Error', 'Failed to update area.');
+            Alert.alert(t('common.error'), t('common.error'));
         }
     };
 
     const handleDelete = (id, type) => {
-        Alert.alert(`Delete ${type}`, 'Are you sure?', [
-            { text: 'Cancel', style: 'cancel' },
+        Alert.alert(t('profile.deleteConfirmTitle', { item: type }), t('profile.deleteConfirmDesc'), [
+            { text: t('common.cancel'), style: 'cancel' },
             {
-                text: 'Delete',
+                text: t('common.delete'),
                 style: 'destructive',
                 onPress: async () => {
                     try {
                         if (type === 'Area') await deleteArea(id);
                         fetchData();
                     } catch (error) {
-                        Alert.alert('Error', 'Action not supported or failed.');
+                        Alert.alert(t('common.error'), t('common.error'));
                     }
                 }
             }
@@ -112,7 +116,7 @@ const LocationManagerScreen = ({ navigation }) => {
             <View style={styles.itemInfo}>
                 <Text style={styles.itemName}>{item.name}</Text>
                 {tab === 'areas' && (
-                    <Text style={styles.itemSub}>{districts.find(d => (d.id || d._id) === item.districtId)?.name || 'District'}</Text>
+                    <Text style={styles.itemSub}>{districts.find(d => (d.id || d._id) === item.districtId)?.name || t('property.districtLabel')}</Text>
                 )}
             </View>
             <View style={styles.actions}>
@@ -135,7 +139,7 @@ const LocationManagerScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Location Manager</Text>
+                <Text style={styles.headerTitle}>{t('profile.manageLocations')}</Text>
                 <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addHeaderBtn}>
                     <Icon name="add-circle" size={28} color={Colors.primary} />
                 </TouchableOpacity>
@@ -146,13 +150,13 @@ const LocationManagerScreen = ({ navigation }) => {
                     style={[styles.tab, tab === 'districts' && styles.activeTab]}
                     onPress={() => setTab('districts')}
                 >
-                    <Text style={[styles.tabText, tab === 'districts' && styles.activeTabText]}>Districts</Text>
+                    <Text style={[styles.tabText, tab === 'districts' && styles.activeTabText]}>{t('property.districtLabel')}s</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.tab, tab === 'areas' && styles.activeTab]}
                     onPress={() => setTab('areas')}
                 >
-                    <Text style={[styles.tabText, tab === 'areas' && styles.activeTabText]}>Areas</Text>
+                    <Text style={[styles.tabText, tab === 'areas' && styles.activeTabText]}>{t('common.area')}s</Text>
                 </TouchableOpacity>
             </View>
 
@@ -180,16 +184,16 @@ const LocationManagerScreen = ({ navigation }) => {
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Add New {tab === 'districts' ? 'District' : 'Area'}</Text>
+                        <Text style={styles.modalTitle}>{t('profile.addNew')} {tab === 'districts' ? t('property.districtLabel') : t('common.area')}</Text>
                         <TextInput
                             style={styles.modalInput}
-                            placeholder="Name (e.g. Rawalpindi)"
+                            placeholder={t('home.locationPlaceholder')}
                             value={newName}
                             onChangeText={setNewName}
                         />
                         {tab === 'areas' && (
                             <View style={styles.districtPicker}>
-                                <Text style={styles.pickerLabel}>Select District:</Text>
+                                <Text style={styles.pickerLabel}>{t('property.districtLabel')}:</Text>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
                                     {districts.map(d => (
                                         <TouchableOpacity
@@ -207,10 +211,10 @@ const LocationManagerScreen = ({ navigation }) => {
                         )}
                         <View style={styles.modalButtons}>
                             <TouchableOpacity style={styles.cancelBtn} onPress={() => setModalVisible(false)}>
-                                <Text style={styles.cancelText}>Cancel</Text>
+                                <Text style={styles.cancelText}>{t('common.cancel')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.confirmBtn} onPress={handleAdd}>
-                                <Text style={styles.confirmText}>Add</Text>
+                                <Text style={styles.confirmText}>{t('common.submit')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -226,19 +230,19 @@ const LocationManagerScreen = ({ navigation }) => {
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Edit Area</Text>
+                        <Text style={styles.modalTitle}>{t('common.edit')} {t('common.area')}</Text>
                         <TextInput
                             style={styles.modalInput}
-                            placeholder="Area Name"
+                            placeholder={t('home.locationPlaceholder')}
                             value={newName}
                             onChangeText={setNewName}
                         />
                         <View style={styles.modalButtons}>
                             <TouchableOpacity style={styles.cancelBtn} onPress={() => setEditModalVisible(false)}>
-                                <Text style={styles.cancelText}>Cancel</Text>
+                                <Text style={styles.cancelText}>{t('common.cancel')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.confirmBtn} onPress={handleUpdate}>
-                                <Text style={styles.confirmText}>Update</Text>
+                                <Text style={styles.confirmText}>{t('profile.update')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -255,7 +259,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: 50,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 16,
         backgroundColor: Colors.background,
         borderBottomWidth: 1,

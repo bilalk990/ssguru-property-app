@@ -3,6 +3,8 @@ import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity, Image,
     Platform, RefreshControl, Animated
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -12,6 +14,8 @@ import { normalizeProperty } from '../../components/PropertyCard';
 import { PropertyCardSkeleton } from '../../components/SkeletonLoader';
 
 const DashboardScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [user, setUser] = useState(null);
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -33,7 +37,7 @@ const DashboardScreen = ({ navigation }) => {
                 const userId = userData.id || userData._id;
                 const response = await getPropertiesByAgent(userId);
                 const props = response.data?.data || response.data || [];
-                setProperties(Array.isArray(props) ? props.map(normalizeProperty) : []);
+                setProperties(Array.isArray(props) ? props.map(p => normalizeProperty(p, t)) : []);
             }
         } catch (error) {
             console.error('Dashboard fetch error:', error);
@@ -46,7 +50,7 @@ const DashboardScreen = ({ navigation }) => {
                 Animated.spring(slideAnim, { toValue: 0, tension: 40, friction: 7, useNativeDriver: true })
             ]).start();
         }
-    }, [fadeAnim, slideAnim]);
+    }, [fadeAnim, slideAnim, t]);
 
     useEffect(() => {
         fetchDashboardData();
@@ -70,8 +74,8 @@ const DashboardScreen = ({ navigation }) => {
                     end={{ x: 1, y: 1 }}>
                     <View style={styles.headerContent}>
                         <View>
-                            <Text style={styles.welcomeText}>Welcome Back, Agent</Text>
-                            <Text style={styles.userName}>{user?.name || 'Loading...'}</Text>
+                            <Text style={styles.welcomeText}>{t('dashboard.welcomeBack')}</Text>
+                            <Text style={styles.userName}>{user?.name || '...'}</Text>
                         </View>
                         <TouchableOpacity
                             style={styles.profileButton}
@@ -92,20 +96,20 @@ const DashboardScreen = ({ navigation }) => {
                                 <Icon name="home" size={24} color={Colors.primary} />
                             </View>
                             <Text style={styles.statValue}>{properties.length}</Text>
-                            <Text style={styles.statLabel}>My Properties</Text>
+                            <Text style={styles.statLabel}>{t('dashboard.myPortfolio')}</Text>
                         </View>
                         <View style={styles.statCard}>
                             <View style={[styles.statIconBox, { backgroundColor: Colors.accentSoft }]}>
                                 <Icon name="bar-chart" size={24} color={Colors.accentLight} />
                             </View>
                             <Text style={styles.statValue}>{user?.enquiriesMade || 0}</Text>
-                            <Text style={styles.statLabel}>Enquiries</Text>
+                            <Text style={styles.statLabel}>{t('agent.enquiries')}</Text>
                         </View>
                     </View>
 
                     {/* Buy / Sell Actions */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Agent Actions</Text>
+                        <Text style={styles.sectionTitle}>{t('profile.agentTools')}</Text>
 
                         <View style={styles.actionGrid}>
                             <TouchableOpacity
@@ -115,8 +119,8 @@ const DashboardScreen = ({ navigation }) => {
                                 <View style={[styles.actionIconBox, { backgroundColor: Colors.primarySoft }]}>
                                     <Icon name="search" size={26} color={Colors.primary} />
                                 </View>
-                                <Text style={styles.actionTitle}>Browse DB</Text>
-                                <Text style={styles.actionCount}>Find listings</Text>
+                                <Text style={styles.actionTitle}>{t('dashboard.browseDb')}</Text>
+                                <Text style={styles.actionCount}>{t('dashboard.findListings')}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -130,8 +134,8 @@ const DashboardScreen = ({ navigation }) => {
                                 <View style={[styles.actionIconBox, { backgroundColor: '#E8F5E9' }]}>
                                     <Icon name="add-circle" size={26} color="#2E7D32" />
                                 </View>
-                                <Text style={styles.actionTitle}>List Property</Text>
-                                <Text style={styles.actionCount}>Add new asset</Text>
+                                <Text style={styles.actionTitle}>{t('dashboard.listNewProperty')}</Text>
+                                <Text style={styles.actionCount}>{t('dashboard.addAsset')}</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -144,8 +148,8 @@ const DashboardScreen = ({ navigation }) => {
                                 <Icon name="business" size={20} color={Colors.primary} />
                             </View>
                             <View style={{ flex: 1, marginLeft: 16 }}>
-                                <Text style={styles.actionTitle}>My Portfolio</Text>
-                                <Text style={styles.actionCount}>{properties.length} active assets</Text>
+                                <Text style={styles.actionTitle}>{t('dashboard.myPortfolio')}</Text>
+                                <Text style={styles.actionCount}>{t('dashboard.activeAssets', { count: properties.length })}</Text>
                             </View>
                             <View style={styles.goIcon}>
                                 <Icon name="arrow-forward" size={18} color={Colors.textWhite} />
@@ -156,10 +160,10 @@ const DashboardScreen = ({ navigation }) => {
                     {/* Recent Properties */}
                     <View style={styles.section}>
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>Recent Assets</Text>
+                            <Text style={styles.sectionTitle}>{t('dashboard.recentAssets')}</Text>
                             {properties.length > 0 && (
                                 <TouchableOpacity onPress={() => navigation.navigate('MyProperties')}>
-                                    <Text style={styles.viewAllText}>View All</Text>
+                                    <Text style={styles.viewAllText}>{t('common.viewAll')}</Text>
                                 </TouchableOpacity>
                             )}
                         </View>
@@ -172,13 +176,13 @@ const DashboardScreen = ({ navigation }) => {
                         ) : properties.length === 0 ? (
                             <View style={styles.emptyState}>
                                 <Icon name="analytics-outline" size={64} color={Colors.textLight} />
-                                <Text style={styles.emptyTitle}>Portfolio Empty</Text>
-                                <Text style={styles.emptyText}>Start generating leads by adding assets.</Text>
+                                <Text style={styles.emptyTitle}>{t('dashboard.portfolioEmpty')}</Text>
+                                <Text style={styles.emptyText}>{t('dashboard.portfolioEmptyDesc')}</Text>
                                 <TouchableOpacity
                                     style={styles.emptyButton}
                                     onPress={() => navigation.navigate('AddProperty')}>
                                     <LinearGradient colors={Colors.gradientPrimary} style={styles.emptyBtnGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-                                        <Text style={styles.emptyButtonText}>List New Property</Text>
+                                        <Text style={styles.emptyButtonText}>{t('dashboard.listNewProperty')}</Text>
                                     </LinearGradient>
                                 </TouchableOpacity>
                             </View>
@@ -211,7 +215,7 @@ const DashboardScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.backgroundSecondary },
     header: {
-        paddingTop: Platform.OS === 'ios' ? 70 : 50,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 40,
         paddingHorizontal: 24,
         borderBottomLeftRadius: 40,

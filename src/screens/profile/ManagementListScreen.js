@@ -11,9 +11,13 @@ import {
     Image,
     Modal,
     TextInput,
-    ScrollView
+    ScrollView,
+    Platform
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 import * as ImagePicker from 'react-native-image-picker';
 import Colors from '../../constants/colors';
 import { getUsers, deleteUser, updateUser } from '../../api/userApi';
@@ -22,6 +26,8 @@ import { getFranchises, toggleFranchiseStatus, deleteFranchise, createFranchise,
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ManagementListScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const { mode } = route.params; // 'users', 'agents', 'franchises'
     const [user, setUser] = React.useState(null);
     const [data, setData] = useState([]);
@@ -83,7 +89,7 @@ const ManagementListScreen = ({ navigation, route }) => {
     };
 
     const handleCreate = async () => {
-        if (!formData.name) return Alert.alert('Error', 'Name is required');
+        if (!formData.name) return Alert.alert(t('common.error'), t('auth.missingFieldsDesc'));
         setSubmitting(true);
         try {
             const fd = new FormData();
@@ -115,16 +121,16 @@ const ManagementListScreen = ({ navigation, route }) => {
 
             if (mode === 'agents' && user?.role === 'franchise') {
                 await addAgentToFranchise(user.id || user._id, fd);
-                Alert.alert('Success', 'Agent added successfully');
+                Alert.alert(t('common.success'), t('profile.successfullyCreated'));
             } else {
                 await createFranchise(fd);
-                Alert.alert('Success', 'Franchise created successfully');
+                Alert.alert(t('common.success'), t('profile.successfullyCreated'));
             }
             setShowCreateModal(false);
             setFormData({ name: '', email: '', phone: '', address: '', image: null, password: '' });
             fetchData();
         } catch (e) {
-            Alert.alert('Error', e.response?.data?.message || `Failed to create ${mode === 'agents' ? 'agent' : 'franchise'}`);
+            Alert.alert(t('common.error'), e.response?.data?.message || `${t('common.error')}: ${mode === 'agents' ? t('common.agent') : t('home.franchise')}`);
         } finally {
             setSubmitting(false);
         }
@@ -143,7 +149,7 @@ const ManagementListScreen = ({ navigation, route }) => {
     };
 
     const handleUpdate = async () => {
-        if (!formData.name) return Alert.alert('Error', 'Name is required');
+        if (!formData.name) return Alert.alert(t('common.error'), t('auth.missingFieldsDesc'));
         setSubmitting(true);
         try {
             const id = editingItem.id || editingItem._id;
@@ -174,12 +180,12 @@ const ManagementListScreen = ({ navigation, route }) => {
                 res = await updateFranchise(id, updates);
             }
 
-            Alert.alert('Success', 'Updated successfully');
+            Alert.alert(t('common.success'), t('profile.successfullyUpdated'));
             setShowEditModal(false);
             setEditingItem(null);
             fetchData();
         } catch (e) {
-            Alert.alert('Error', e.response?.data?.message || 'Failed to update item.');
+            Alert.alert(t('common.error'), e.response?.data?.message || t('profile.profileUpdateError'));
         } finally {
             setSubmitting(false);
         }
@@ -191,15 +197,15 @@ const ManagementListScreen = ({ navigation, route }) => {
             else if (mode === 'franchises') await toggleFranchiseStatus(item.id || item._id);
             fetchData();
         } catch (e) {
-            Alert.alert('Error', 'Failed to toggle status.');
+            Alert.alert(t('common.error'), t('common.error'));
         }
     };
 
     const handleDelete = (id) => {
-        Alert.alert(`Delete ${mode.slice(0, -1)}`, 'This action cannot be undone.', [
-            { text: 'Cancel', style: 'cancel' },
+        Alert.alert(t('profile.deleteConfirmTitle', { item: mode.slice(0, -1) }), t('profile.deleteConfirmDesc'), [
+            { text: t('common.cancel'), style: 'cancel' },
             {
-                text: 'Delete',
+                text: t('common.delete'),
                 style: 'destructive',
                 onPress: async () => {
                     try {
@@ -211,7 +217,7 @@ const ManagementListScreen = ({ navigation, route }) => {
                         else await deleteFranchise(id);
                         setData(prev => prev.filter(i => (i.id || i._id) !== id));
                     } catch (e) {
-                        Alert.alert('Error', 'Failed to delete item.');
+                        Alert.alert(t('common.error'), t('common.error'));
                     }
                 }
             }
@@ -226,19 +232,19 @@ const ManagementListScreen = ({ navigation, route }) => {
             />
             <View style={styles.content}>
                 <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.subtitle}>{item.email || item.phone || item.address || 'No contact'}</Text>
+                <Text style={styles.subtitle}>{item.email || item.phone || item.address || t('profile.noContact')}</Text>
                 <View style={styles.statusRow}>
                     <View style={[styles.statusBadge, { backgroundColor: item.isActive ? Colors.success + '15' : Colors.error + '15' }]}>
                         <Text style={[styles.statusText, { color: item.isActive ? Colors.success : Colors.error }]}>
-                            {item.isActive ? 'Active' : 'Blocked'}
+                            {item.isActive ? t('profile.active') : t('profile.blocked')}
                         </Text>
                     </View>
                     <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editBtn}>
-                        <Text style={styles.editText}>Edit</Text>
+                        <Text style={styles.editText}>{t('common.edit')}</Text>
                     </TouchableOpacity>
                     {mode !== 'users' && (
                         <TouchableOpacity onPress={() => handleToggle(item)} style={styles.toggleBtn}>
-                            <Text style={styles.toggleText}>Toggle</Text>
+                            <Text style={styles.toggleText}>{t('profile.toggle')}</Text>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -251,20 +257,25 @@ const ManagementListScreen = ({ navigation, route }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor={Colors.background} barStyle="dark-content" />
-            <View style={styles.header}>
+            <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
+            <LinearGradient
+                colors={Colors.gradientPrimary}
+                style={[styles.header, { paddingTop: Math.max(insets.top, 50) }]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                    <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
+                    <Icon name="arrow-back" size={24} color={Colors.textWhite} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Manage {mode.charAt(0).toUpperCase() + mode.slice(1)}</Text>
+                <Text style={styles.headerTitle}>
+                    {t('profile.manage')} {mode === 'users' ? t('profile.totalUsers') : mode === 'agents' ? t('profile.totalAgents') : t('home.franchise')}
+                </Text>
                 {(mode === 'franchises' && user?.role === 'admin') || (mode === 'agents' && user?.role === 'franchise') ? (
                     <TouchableOpacity onPress={() => setShowCreateModal(true)} style={styles.addBtn}>
-                        <Icon name="add" size={24} color={Colors.primary} />
+                        <Icon name="add" size={28} color={Colors.textWhite} />
                     </TouchableOpacity>
                 ) : (
                     <View style={{ width: 44 }} />
                 )}
-            </View>
+            </LinearGradient>
 
             {loading ? (
                 <View style={styles.centered}>
@@ -280,7 +291,7 @@ const ManagementListScreen = ({ navigation, route }) => {
                     refreshing={loading}
                     ListEmptyComponent={
                         <View style={styles.empty}>
-                            <Text style={styles.emptyText}>No records found</Text>
+                            <Text style={styles.emptyText}>{t('profile.noRecords')}</Text>
                         </View>
                     }
                 />
@@ -291,7 +302,7 @@ const ManagementListScreen = ({ navigation, route }) => {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Add New {mode === 'agents' ? 'Agent' : 'Franchise'}</Text>
+                            <Text style={styles.modalTitle}>{t('profile.addNew')} {mode === 'agents' ? t('common.agent') : t('corporate.franchise')}</Text>
                             <TouchableOpacity onPress={() => setShowCreateModal(false)}>
                                 <Icon name="close" size={24} color={Colors.textPrimary} />
                             </TouchableOpacity>
@@ -306,33 +317,33 @@ const ManagementListScreen = ({ navigation, route }) => {
                             </TouchableOpacity>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Branch Name"
+                                placeholder={t('profile.branchName')}
                                 value={formData.name}
                                 onChangeText={t => setFormData({ ...formData, name: t })}
                             />
                             <TextInput
                                 style={styles.input}
-                                placeholder="Email Address"
+                                placeholder={t('auth.email')}
                                 value={formData.email}
                                 onChangeText={t => setFormData({ ...formData, email: t })}
                                 keyboardType="email-address"
                             />
                             <TextInput
                                 style={styles.input}
-                                placeholder="Phone Number"
+                                placeholder={t('auth.phone')}
                                 value={formData.phone}
                                 onChangeText={t => setFormData({ ...formData, phone: t })}
                                 keyboardType="phone-pad"
                             />
                             <TextInput
                                 style={styles.input}
-                                placeholder="Address / Location"
+                                placeholder={t('profile.addressLocation')}
                                 value={formData.address}
                                 onChangeText={t => setFormData({ ...formData, address: t })}
                             />
                             <TextInput
                                 style={styles.input}
-                                placeholder="Password"
+                                placeholder={t('auth.password')}
                                 value={formData.password}
                                 onChangeText={t => setFormData({ ...formData, password: t })}
                                 secureTextEntry
@@ -345,7 +356,7 @@ const ManagementListScreen = ({ navigation, route }) => {
                                 {submitting ? (
                                     <ActivityIndicator color={Colors.textWhite} />
                                 ) : (
-                                    <Text style={styles.submitBtnText}>Create {mode === 'agents' ? 'Agent' : 'Franchise'}</Text>
+                                    <Text style={styles.submitBtnText}>{t('profile.create')} {mode === 'agents' ? t('common.agent') : t('corporate.franchise')}</Text>
                                 )}
                             </TouchableOpacity>
                         </ScrollView>
@@ -358,7 +369,7 @@ const ManagementListScreen = ({ navigation, route }) => {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Edit {mode.slice(0, -1)}</Text>
+                            <Text style={styles.modalTitle}>{t('common.edit')} {mode.slice(0, -1)}</Text>
                             <TouchableOpacity onPress={() => setShowEditModal(false)}>
                                 <Icon name="close" size={24} color={Colors.textPrimary} />
                             </TouchableOpacity>
@@ -375,14 +386,14 @@ const ManagementListScreen = ({ navigation, route }) => {
                             )}
                             <TextInput
                                 style={styles.input}
-                                placeholder="Name"
+                                placeholder={t('auth.name')}
                                 value={formData.name}
                                 onChangeText={t => setFormData({ ...formData, name: t })}
                             />
                             {mode === 'users' && (
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Email"
+                                    placeholder={t('auth.email')}
                                     value={formData.email}
                                     onChangeText={t => setFormData({ ...formData, email: t })}
                                 />
@@ -395,7 +406,7 @@ const ManagementListScreen = ({ navigation, route }) => {
                                 {submitting ? (
                                     <ActivityIndicator color={Colors.textWhite} />
                                 ) : (
-                                    <Text style={styles.submitBtnText}>Update {mode.slice(0, -1)}</Text>
+                                    <Text style={styles.submitBtnText}>{t('profile.update')} {mode.slice(0, -1)}</Text>
                                 )}
                             </TouchableOpacity>
                         </ScrollView>
@@ -413,15 +424,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: 50,
-        paddingBottom: 16,
-        backgroundColor: Colors.background,
-        borderBottomWidth: 1,
-        borderBottomColor: Colors.border
+        paddingBottom: 20,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        elevation: 10,
+        shadowColor: Colors.primaryDark,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12
     },
     backBtn: { padding: 8 },
     addBtn: { padding: 8 },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+    headerTitle: { fontSize: 20, fontWeight: '800', color: Colors.textWhite },
     list: { padding: 16 },
     card: {
         flexDirection: 'row',

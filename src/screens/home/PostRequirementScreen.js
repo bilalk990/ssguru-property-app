@@ -10,12 +10,16 @@ import {
     TouchableOpacity,
     Platform
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
 import { addRequirement } from '../../api/requirementApi';
 
 const PostRequirementScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [form, setForm] = useState({
         name: '',
         phone: '',
@@ -32,7 +36,7 @@ const PostRequirementScreen = ({ navigation }) => {
 
     const handleSubmit = async () => {
         if (!form.name || !form.phone || !form.details) {
-            Alert.alert('Incomplete Form', 'Please fill name, phone and basic details.');
+            Alert.alert(t('home.incompleteForm'), t('home.fillBasicDetails'));
             return;
         }
 
@@ -44,13 +48,13 @@ const PostRequirementScreen = ({ navigation }) => {
                 requirement: `${form.details}${form.budget ? '\nBudget: ' + form.budget : ''}${form.location ? '\nLocation: ' + form.location : ''}`,
             });
             Alert.alert(
-                'Submitted Successfully! ✅',
-                "Your requirement has been posted. Agents will contact you with matching properties.",
-                [{ text: 'Great!', onPress: () => navigation.goBack() }]
+                t('home.postSuccess'),
+                t('home.postSuccessDesc'),
+                [{ text: t('common.ok'), onPress: () => navigation.goBack() }]
             );
         } catch (error) {
             console.error('Submit Requirement Error:', error);
-            Alert.alert('Error', 'Failed to post requirement. Please try again.');
+            Alert.alert(t('common.error'), t('home.enquiryError'));
         } finally {
             setLoading(false);
         }
@@ -65,25 +69,25 @@ const PostRequirementScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Post Requirement</Text>
+                <Text style={styles.headerTitle}>{t('home.postRequirement')}</Text>
                 <View style={{ width: 44 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <View style={styles.infoBox}>
                     <Icon name="bulb-outline" size={24} color={Colors.primary} />
-                    <Text style={styles.infoText}>Can't find what you're looking for? Post it here and our experts will find it for you.</Text>
+                    <Text style={styles.infoText}>{t('home.postRequirementDesc')}</Text>
                 </View>
 
-                <Text style={styles.label}>Your Name *</Text>
+                <Text style={styles.label}>{t('home.fullName')} *</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Enter your name"
+                    placeholder={t('home.fullName')}
                     value={form.name}
                     onChangeText={v => updateField('name', v)}
                 />
 
-                <Text style={styles.label}>Phone Number *</Text>
+                <Text style={styles.label}>{t('home.phoneNumber')} *</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="+91 00000 00000"
@@ -94,29 +98,29 @@ const PostRequirementScreen = ({ navigation }) => {
 
                 <View style={styles.row}>
                     <View style={{ flex: 1 }}>
-                        <Text style={styles.label}>Budget Range</Text>
+                        <Text style={styles.label}>{t('home.budgetRange')}</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="e.g. 50L - 1Cr"
+                            placeholder={t('home.budgetPlaceholder')}
                             value={form.budget}
                             onChangeText={v => updateField('budget', v)}
                         />
                     </View>
                     <View style={{ flex: 1, marginLeft: 15 }}>
-                        <Text style={styles.label}>Location</Text>
+                        <Text style={styles.label}>{t('common.location')}</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="e.g. Bandra, Mumbai"
+                            placeholder={t('home.locationPlaceholder')}
                             value={form.location}
                             onChangeText={v => updateField('location', v)}
                         />
                     </View>
                 </View>
 
-                <Text style={styles.label}>Specific Requirement *</Text>
+                <Text style={styles.label}>{t('home.specificRequirement')} *</Text>
                 <TextInput
                     style={[styles.input, styles.textArea]}
-                    placeholder="Describe size, floor, facing, amenities etc."
+                    placeholder={t('home.requirementPlaceholder')}
                     multiline
                     numberOfLines={6}
                     textAlignVertical="top"
@@ -125,7 +129,7 @@ const PostRequirementScreen = ({ navigation }) => {
                 />
 
                 <CustomButton
-                    title="Post Requirement"
+                    title={t('home.postRequirement')}
                     onPress={handleSubmit}
                     loading={loading}
                     style={styles.submitBtn}
@@ -142,7 +146,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: 50,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: Colors.border

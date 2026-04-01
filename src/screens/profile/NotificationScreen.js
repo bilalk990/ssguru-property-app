@@ -13,7 +13,13 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import { getNotifications, deleteNotification } from '../../api/notificationApi';
 
+import { useTranslation } from 'react-i18next';
+import LinearGradient from 'react-native-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 const NotificationScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -33,17 +39,17 @@ const NotificationScreen = ({ navigation }) => {
     }, []);
 
     const handleDelete = (id) => {
-        Alert.alert('Delete Notification', 'Are you sure?', [
-            { text: 'Cancel', style: 'cancel' },
+        Alert.alert(t('profile.notifications'), t('common.areYouSure'), [
+            { text: t('common.cancel'), style: 'cancel' },
             {
-                text: 'Delete',
+                text: t('common.delete'),
                 style: 'destructive',
                 onPress: async () => {
                     try {
                         await deleteNotification(id);
                         setNotifications(prev => prev.filter(n => (n.id || n._id) !== id));
                     } catch (e) {
-                        Alert.alert('Error', 'Failed to delete notification.');
+                        Alert.alert(t('common.error'), t('common.error'));
                     }
                 }
             }
@@ -72,14 +78,18 @@ const NotificationScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor={Colors.background} barStyle="dark-content" />
-            <View style={styles.header}>
+            <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
+
+            <LinearGradient
+                colors={Colors.gradientPrimary}
+                style={[styles.header, { paddingTop: Math.max(insets.top, 50) }]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                    <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
+                    <Icon name="arrow-back" size={24} color={Colors.textWhite} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Notifications</Text>
+                <Text style={styles.headerTitle}>{t('profile.notifications')}</Text>
                 <View style={{ width: 44 }} />
-            </View>
+            </LinearGradient>
 
             {loading ? (
                 <View style={styles.centered}>
@@ -94,7 +104,7 @@ const NotificationScreen = ({ navigation }) => {
                     ListEmptyComponent={
                         <View style={styles.empty}>
                             <Icon name="notifications-off-outline" size={60} color={Colors.border} />
-                            <Text style={styles.emptyText}>No notifications yet</Text>
+                            <Text style={styles.emptyText}>{t('common.noNotifications')}</Text>
                         </View>
                     }
                 />
@@ -104,47 +114,56 @@ const NotificationScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Colors.background },
+    container: { flex: 1, backgroundColor: Colors.backgroundSecondary },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: 50,
-        paddingBottom: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: Colors.border
+        paddingBottom: 20,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        elevation: 10,
+        shadowColor: Colors.primaryDark,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12
     },
     backBtn: { padding: 8 },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+    headerTitle: { fontSize: 20, fontWeight: '800', color: Colors.textWhite },
     list: { padding: 16 },
     notificationCard: {
         flexDirection: 'row',
-        backgroundColor: Colors.backgroundSecondary,
+        backgroundColor: Colors.backgroundCard,
         padding: 16,
-        borderRadius: 16,
+        borderRadius: 20,
         marginBottom: 12,
         alignItems: 'center',
+        elevation: 4,
+        shadowColor: Colors.shadowPremium,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
         borderWidth: 1,
-        borderColor: Colors.border
+        borderColor: Colors.borderLight
     },
     iconContainer: {
         width: 48,
         height: 48,
-        borderRadius: 24,
-        backgroundColor: '#FFF',
+        borderRadius: 16,
+        backgroundColor: Colors.surfaceSecondary,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16
     },
     content: { flex: 1 },
-    notiTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
-    notiDesc: { fontSize: 13, color: Colors.textSecondary, marginTop: 4 },
-    notiTime: { fontSize: 11, color: Colors.textLight, marginTop: 6 },
+    notiTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+    notiDesc: { fontSize: 14, color: Colors.textSecondary, marginTop: 4, lineHeight: 20 },
+    notiTime: { fontSize: 11, color: Colors.textLight, marginTop: 8 },
     deleteBtn: { padding: 8 },
-    centered: { flex: 1, justifyContent: 'center' },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     empty: { alignItems: 'center', marginTop: 100 },
-    emptyText: { color: Colors.textLight, fontSize: 16, marginTop: 10 }
+    emptyText: { color: Colors.textLight, fontSize: 16, marginTop: 12, fontWeight: '600' }
 });
 
 export default NotificationScreen;

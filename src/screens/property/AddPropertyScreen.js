@@ -11,6 +11,7 @@ import {
     Platform,
     Image,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -21,6 +22,8 @@ import { propertyTypes } from '../../constants/appConstants';
 import authStore from '../../store/authStore';
 
 const AddPropertyScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const editMode = route.params?.editMode || false;
     const propertyData = route.params?.propertyData || null;
 
@@ -112,7 +115,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
         if (result.assets && result.assets.length > 0) {
             const asset = result.assets[0];
             if (asset.fileSize > 30 * 1024 * 1024) {
-                Alert.alert('File too large', 'Video must be under 30MB');
+                Alert.alert(t('common.error'), t('property.uploadVideoDesc'));
                 return;
             }
             setVideo(asset.uri);
@@ -122,11 +125,11 @@ const AddPropertyScreen = ({ navigation, route }) => {
     const handlePayment = async () => {
         // Validation
         if (!form.title || !form.price || !form.city || !form.area || !form.description) {
-            Alert.alert('Missing Fields', 'Please fill all required fields.');
+            Alert.alert(t('auth.missingFields'), t('auth.missingFieldsDesc'));
             return;
         }
         if (images.length === 0) {
-            Alert.alert('No Images', 'Please add at least one property image.');
+            Alert.alert(t('common.error'), t('property.imagesLabel'));
             return;
         }
 
@@ -137,11 +140,11 @@ const AddPropertyScreen = ({ navigation, route }) => {
     const handleSubmit = async (paymentId = null) => {
         // Validation
         if (!form.title || !form.price || !form.city || !form.area || !form.description) {
-            Alert.alert('Missing Fields', 'Please fill all required fields.');
+            Alert.alert(t('auth.missingFields'), t('auth.missingFieldsDesc'));
             return;
         }
         if (images.length === 0) {
-            Alert.alert('No Images', 'Please add at least one property image.');
+            Alert.alert(t('common.notice'), t('property.imagesLabel'));
             return;
         }
 
@@ -188,8 +191,8 @@ const AddPropertyScreen = ({ navigation, route }) => {
             }
 
             Alert.alert(
-                'Success! 🎉',
-                editMode ? 'Your property has been updated.' : 'Your property has been listed successfully.',
+                t('common.success'),
+                editMode ? t('property.updateSuccess') : t('property.addSuccess'),
                 [
                     {
                         text: 'OK',
@@ -200,8 +203,8 @@ const AddPropertyScreen = ({ navigation, route }) => {
         } catch (error) {
             console.error('Add Property Error:', error);
             Alert.alert(
-                'Submission Failed',
-                error?.response?.data?.message || 'Failed to list property. Please try again.'
+                t('common.error'),
+                error?.response?.data?.message || t('common.error')
             );
         } finally {
             setLoading(false);
@@ -221,7 +224,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
                     onPress={() => navigation.goBack()}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{editMode ? 'Edit Property' : 'List Your Property'}</Text>
+                <Text style={styles.headerTitle}>{editMode ? t('property.editTitle') : t('property.addTitle')}</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -257,11 +260,11 @@ const AddPropertyScreen = ({ navigation, route }) => {
 
                 {currentStep === 1 && (
                     <View style={styles.stepContent}>
-                        <Text style={styles.stepTitle}>Media & Basics</Text>
-                        <Text style={styles.stepDesc}>Upload photos and video of your property</Text>
+                        <Text style={styles.stepTitle}>{t('property.mediaBasics')}</Text>
+                        <Text style={styles.stepDesc}>{t('property.mediaBasicsDesc')}</Text>
 
                         {/* Image Upload */}
-                        <Text style={styles.sectionLabel}>Property Images (Max 4) *</Text>
+                        <Text style={styles.sectionLabel}>{t('property.imagesLabel')}</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageScroll}>
                             <TouchableOpacity
                                 style={styles.addImageButton}
@@ -269,7 +272,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
                                 disabled={images.length >= 4}
                             >
                                 <Icon name="camera-outline" size={28} color={images.length >= 4 ? Colors.textLight : Colors.primary} />
-                                <Text style={[styles.addImageText, images.length >= 4 && { color: Colors.textLight }]}>Add Photo</Text>
+                                <Text style={[styles.addImageText, images.length >= 4 && { color: Colors.textLight }]}>{t('property.addPhoto')}</Text>
                             </TouchableOpacity>
                             {images.map((img, index) => (
                                 <View key={index} style={styles.imagePreview}>
@@ -282,25 +285,25 @@ const AddPropertyScreen = ({ navigation, route }) => {
                         </ScrollView>
 
                         {/* Video Upload Section */}
-                        <Text style={styles.sectionLabel}>Property Video (Optional)</Text>
+                        <Text style={styles.sectionLabel}>{t('property.videoLabel')}</Text>
                         <TouchableOpacity style={styles.videoUploadBox} onPress={handlePickVideo}>
                             {video ? (
                                 <View style={styles.videoSelected}>
                                     <Icon name="checkmark-circle" size={32} color={Colors.primary} />
-                                    <Text style={styles.videoUploadText}>Video Selected!</Text>
+                                    <Text style={styles.videoSelectedText}>{t('property.videoSelected')}</Text>
                                     <TouchableOpacity onPress={() => setVideo(null)}>
-                                        <Text style={{ color: Colors.error, fontWeight: '700', marginTop: 5 }}>Remove</Text>
+                                        <Text style={{ color: Colors.error, fontWeight: '700', marginTop: 5 }}>{t('common.delete')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             ) : (
                                 <>
                                     <Icon name="videocam-outline" size={32} color={Colors.primary} />
-                                    <Text style={styles.videoUploadText}>Upload Property Video (Max 30MB)</Text>
+                                    <Text style={styles.videoUploadText}>{t('property.uploadVideoDesc')}</Text>
                                 </>
                             )}
                         </TouchableOpacity>
 
-                        <Text style={styles.sectionLabel}>Selling Type *</Text>
+                        <Text style={styles.sectionLabel}>{t('property.sellingType')} *</Text>
                         <View style={styles.typeContainer}>
                             {['Sell', 'Rent', 'Lease'].map(type => (
                                 <TouchableOpacity
@@ -308,21 +311,21 @@ const AddPropertyScreen = ({ navigation, route }) => {
                                     style={[styles.typeChip, form.sellingType === type && styles.typeChipActive]}
                                     onPress={() => updateField('sellingType', type)}
                                 >
-                                    <Text style={[styles.typeChipText, form.sellingType === type && styles.typeChipTextActive]}>{type}</Text>
+                                    <Text style={[styles.typeChipText, form.sellingType === type && styles.typeChipTextActive]}>{t(`common.${type.toLowerCase()}`)}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
-                        <CustomButton title="Next: Property Details" onPress={nextStep} style={styles.nextButton} />
+                        <CustomButton title={t('property.nextDetails')} onPress={nextStep} style={styles.nextButton} />
                     </View>
                 )}
 
                 {currentStep === 2 && (
                     <View style={styles.stepContent}>
-                        <Text style={styles.stepTitle}>Property Details</Text>
-                        <Text style={styles.stepDesc}>Tell us more about your property</Text>
+                        <Text style={styles.stepTitle}>{t('property.basicInfo')}</Text>
+                        <Text style={styles.stepDesc}>{t('property.detailsDesc')}</Text>
 
-                        <Text style={styles.sectionLabel}>Category *</Text>
+                        <Text style={styles.sectionLabel}>{t('property.category')} *</Text>
                         <View style={styles.typeContainer}>
                             {['Residential', 'Commercial', 'Agricultural', 'Industrial'].map(cat => (
                                 <TouchableOpacity
@@ -330,42 +333,42 @@ const AddPropertyScreen = ({ navigation, route }) => {
                                     style={[styles.typeChip, form.type === cat && styles.typeChipActive]}
                                     onPress={() => updateField('type', cat)}
                                 >
-                                    <Text style={[styles.typeChipText, form.type === cat && styles.typeChipTextActive]}>{cat}</Text>
+                                    <Text style={[styles.typeChipText, form.type === cat && styles.typeChipTextActive]}>{t(`common.${cat.toLowerCase()}`)}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
-                        <Text style={styles.sectionLabel}>Property Title *</Text>
+                        <Text style={styles.sectionLabel}>{t('property.titleLabel')} *</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="e.g. 3 BHK Luxury Apartment"
+                            placeholder={t('property.titlePlaceholder')}
                             value={form.title}
                             onChangeText={v => updateField('title', v)}
                         />
 
-                        <Text style={styles.sectionLabel}>Price (₹) *</Text>
+                        <Text style={styles.sectionLabel}>{t('property.priceLabel')} (₹) *</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="e.g. 4500000"
+                            placeholder={t('property.pricePlaceholder')}
                             keyboardType="numeric"
                             value={form.price}
                             onChangeText={v => updateField('price', v)}
                         />
 
-                        <Text style={styles.sectionLabel}>Area Size (Sq.Ft) *</Text>
+                        <Text style={styles.sectionLabel}>{t('property.areaLabel')} (Sq.Ft) *</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="e.g. 5000"
+                            placeholder={t('property.areaPlaceholder')}
                             keyboardType="numeric"
                             value={form.sqft}
                             onChangeText={v => updateField('sqft', v)}
                         />
 
-                        <Text style={styles.sectionLabel}>Add Features (e.g. Park Facing) *</Text>
+                        <Text style={styles.sectionLabel}>{t('property.featuresLabel')}</Text>
                         <View style={styles.featureInputRow}>
                             <TextInput
                                 style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                                placeholder="Enter feature..."
+                                placeholder={t('property.featurePlaceholder')}
                                 value={newFeature}
                                 onChangeText={setNewFeature}
                             />
@@ -387,28 +390,28 @@ const AddPropertyScreen = ({ navigation, route }) => {
 
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={styles.prevButton} onPress={prevStep}>
-                                <Text style={styles.prevButtonText}>Back</Text>
+                                <Text style={styles.prevButtonText}>{t('common.back')}</Text>
                             </TouchableOpacity>
-                            <CustomButton title="Next: Location" onPress={nextStep} style={{ flex: 1 }} />
+                            <CustomButton title={t('property.nextLocation')} onPress={nextStep} style={{ flex: 1 }} />
                         </View>
                     </View>
                 )}
 
                 {currentStep === 3 && (
                     <View style={styles.stepContent}>
-                        <Text style={styles.stepTitle}>Location & Finish</Text>
-                        <Text style={styles.stepDesc}>Finalize your property listing</Text>
+                        <Text style={styles.stepTitle}>{t('property.locationFinish')}</Text>
+                        <Text style={styles.stepDesc}>{t('property.locationFinishDesc')}</Text>
 
-                        <Text style={styles.sectionLabel}>City/District *</Text>
+                        <Text style={styles.sectionLabel}>{t('property.cityDistrict')}</Text>
                         <TextInput style={styles.input} value={form.city} onChangeText={v => updateField('city', v)} />
 
-                        <Text style={styles.sectionLabel}>Area *</Text>
-                        <TextInput style={styles.input} placeholder="e.g. Freeganj" value={form.area} onChangeText={v => updateField('area', v)} />
+                        <Text style={styles.sectionLabel}>{t('property.area')}</Text>
+                        <TextInput style={styles.input} placeholder={t('property.areaPlaceholder')} value={form.area} onChangeText={v => updateField('area', v)} />
 
-                        <Text style={styles.sectionLabel}>Description *</Text>
+                        <Text style={styles.sectionLabel}>{t('common.description')} *</Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
-                            placeholder="Describe your property..."
+                            placeholder={t('property.descPlaceholder')}
                             multiline
                             value={form.description}
                             onChangeText={v => updateField('description', v)}
@@ -416,10 +419,10 @@ const AddPropertyScreen = ({ navigation, route }) => {
 
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={styles.prevButton} onPress={prevStep}>
-                                <Text style={styles.prevButtonText}>Back</Text>
+                                <Text style={styles.prevButtonText}>{t('common.back')}</Text>
                             </TouchableOpacity>
                             <CustomButton
-                                title={editMode ? 'Save Changes' : 'Submit Listing'}
+                                title={editMode ? t('common.save') : t('common.submit')}
                                 onPress={handlePayment}
                                 loading={loading}
                                 style={{ flex: 1 }}
@@ -428,7 +431,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
                     </View>
                 )}
 
-                <View style={{ height: 30 }} />
+                <View style={{ height: 120 + insets.bottom }} />
             </ScrollView>
         </View>
     );
@@ -441,7 +444,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: Platform.OS === 'ios' ? 60 : 30,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 10,
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: Colors.border,

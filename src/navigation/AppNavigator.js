@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useTranslation } from 'react-i18next';
 import Colors from '../constants/colors';
 
 // ... existing screens imports ...
@@ -135,6 +136,7 @@ const Stack = createNativeStackNavigator();
 
 // Bottom Tabs with Premium Floating UI
 const AppNavigator = () => {
+    const { t } = useTranslation();
     const insets = useSafeAreaInsets();
 
     return (
@@ -146,10 +148,10 @@ const AppNavigator = () => {
                 tabBarIcon: ({ focused }) => {
                     let iconName;
                     let label;
-                    if (route.name === 'Home') { iconName = 'home'; label = 'Home'; }
-                    else if (route.name === 'Buy') { iconName = 'search'; label = 'Search'; }
-                    else if (route.name === 'Sell') { iconName = 'add-circle'; label = 'Sell'; }
-                    else if (route.name === 'Profile') { iconName = 'person'; label = 'Profile'; }
+                    if (route.name === 'Home') { iconName = 'home'; label = t('common.home'); }
+                    else if (route.name === 'Buy') { iconName = 'search'; label = t('common.searchTab'); }
+                    else if (route.name === 'Sell') { iconName = 'add-circle'; label = t('common.sellTab'); }
+                    else if (route.name === 'Profile') { iconName = 'person'; label = t('common.profileTab'); }
                     return <TabIcon label={label} icon={iconName} focused={focused} />;
                 },
                 tabBarStyle: {

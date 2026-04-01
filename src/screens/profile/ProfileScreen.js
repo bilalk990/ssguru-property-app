@@ -8,9 +8,10 @@ import {
     Image,
     Alert,
     StatusBar,
-    Platform,
     ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,6 +23,8 @@ import { applyForFranchise } from '../../api/franchiseApi';
 import { getPropertiesByAgent } from '../../api/propertyApi';
 
 const ProfileScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [propertyCount, setPropertyCount] = useState(0);
@@ -73,12 +76,12 @@ const ProfileScreen = ({ navigation }) => {
 
     const handleApply = async () => {
         Alert.alert(
-            "Franchise Application",
-            "Submit your franchise application?",
+            t('home.franchise'),
+            t('home.franchiseEnquirySubtitle'),
             [
-                { text: "Cancel", style: "cancel" },
+                { text: t('common.cancel'), style: "cancel" },
                 {
-                    text: "Apply",
+                    text: t('common.submit'),
                     onPress: async () => {
                         try {
                             const userDataStr = await AsyncStorage.getItem('userData');
@@ -88,9 +91,9 @@ const ProfileScreen = ({ navigation }) => {
                                 phone: userData.contact || userData.phone || '',
                                 message: "Applying for a new franchise branch."
                             });
-                            Alert.alert("Success", "Your franchise application has been submitted!");
+                            Alert.alert(t('common.success'), t('home.enquirySuccess'));
                         } catch (e) {
-                            Alert.alert("Error", "Failed to submit application.");
+                            Alert.alert(t('common.error'), t('home.enquiryError'));
                         }
                     }
                 }
@@ -111,46 +114,46 @@ const ProfileScreen = ({ navigation }) => {
     const menuItems = [
         ...(userData.role === 'admin' ? [{
             icon: 'bar-chart-outline',
-            title: 'Admin Dashboard',
-            subtitle: 'Platform analytics & stats',
+            title: t('profile.adminDashboard'),
+            subtitle: t('profile.adminDashboardSubtitle'),
             onPress: () => navigation.navigate('AdminDashboard'),
         }] : []),
         ...(userData.role === 'franchise' ? [{
             icon: 'grid-outline',
-            title: 'Franchise Dashboard',
-            subtitle: 'Success tracking',
+            title: t('profile.franchiseDashboard'),
+            subtitle: t('profile.franchiseDashboardSubtitle'),
             onPress: () => navigation.navigate('FranchiseDashboard'),
         }] : []),
         ...(userData.role === 'admin' ? [
             {
                 icon: 'location-outline',
-                title: 'Location Manager',
-                subtitle: 'Districts & Areas',
+                title: t('profile.locationManager'),
+                subtitle: t('profile.locationManagerSubtitle'),
                 onPress: () => navigation.navigate('LocationManager'),
             },
         ] : []),
         {
             icon: 'business-outline',
-            title: 'My Properties',
-            subtitle: `${propertyCount} listings`,
+            title: t('profile.myProperties'),
+            subtitle: `${propertyCount} ${t('profile.listings')}`,
             onPress: () => navigation.navigate('MyProperties'),
         },
         {
             icon: 'add-circle-outline',
-            title: 'Post Requirement',
-            subtitle: 'Tell us what you need',
+            title: t('profile.postRequirement'),
+            subtitle: t('profile.postRequirementSubtitle'),
             onPress: () => navigation.navigate('PostRequirement'),
         },
         {
             icon: 'notifications-outline',
-            title: 'Notifications',
-            subtitle: 'Alerts & updates',
+            title: t('profile.notifications'),
+            subtitle: t('profile.notificationsSubtitle'),
             onPress: () => navigation.navigate('Notification'),
         },
         {
             icon: 'shield-checkmark-outline',
-            title: 'Support & Legal',
-            subtitle: 'Help, Terms & Privacy',
+            title: t('profile.support'),
+            subtitle: t('profile.supportSubtitle'),
             onPress: () => navigation.navigate('AboutContact'),
         },
     ];
@@ -173,11 +176,11 @@ const ProfileScreen = ({ navigation }) => {
                             source={{ uri: userData.avatar || 'https://i.pravatar.cc/150' }}
                             style={styles.avatar}
                         />
-                        <Text style={styles.userName}>{userData.name || 'Guest User'}</Text>
+                        <Text style={styles.userName}>{userData.name || t('profile.guestUser')}</Text>
                         <Text style={styles.userPhone}>
                             {userData.contact || userData.phone ||
                                 (userData.email && !userData.email.includes('@noemail.local') ? userData.email : '') ||
-                                'No contact info'}
+                                t('profile.noContact')}
                         </Text>
                         <TouchableOpacity
                             style={styles.editProfileBtn}
@@ -191,17 +194,17 @@ const ProfileScreen = ({ navigation }) => {
                     <View style={styles.statsRow}>
                         <View style={styles.statItem}>
                             <Text style={styles.statValue}>{propertyCount}</Text>
-                            <Text style={styles.statLabel}>Listed</Text>
+                            <Text style={styles.statLabel}>{t('profile.listed')}</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
                             <Text style={styles.statValue}>{userData.enquiriesMade || 0}</Text>
-                            <Text style={styles.statLabel}>Enquiries</Text>
+                            <Text style={styles.statLabel}>{t('home.enquiry')}</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
                             <Icon name="star" size={24} color={Colors.accentMuted} />
-                            <Text style={styles.statLabel}>{userData.role === 'agent' ? 'Expert' : 'Premium'}</Text>
+                            <Text style={styles.statLabel}>{userData.role === 'agent' ? t('home.enquiryDescShort') : 'Premium'}</Text>
                         </View>
                     </View>
                 </LinearGradient>
@@ -214,7 +217,7 @@ const ProfileScreen = ({ navigation }) => {
                         <View style={[styles.quickIconBox, { backgroundColor: Colors.primarySoft }]}>
                             <Icon name="add-circle-outline" size={24} color={Colors.primary} />
                         </View>
-                        <Text style={styles.quickText}>Add{'\n'}Property</Text>
+                        <Text style={styles.quickText}>{t('profile.addProperty').replace(' ', '\n')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.quickAction}
@@ -222,7 +225,7 @@ const ProfileScreen = ({ navigation }) => {
                         <View style={[styles.quickIconBox, { backgroundColor: '#E8F5E9' }]}>
                             <Icon name="business-outline" size={24} color="#2E7D32" />
                         </View>
-                        <Text style={styles.quickText}>My{'\n'}Properties</Text>
+                        <Text style={styles.quickText}>{t('profile.myProperties').replace(' ', '\n')}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -251,12 +254,12 @@ const ProfileScreen = ({ navigation }) => {
                 {/* Logout */}
                 <TouchableOpacity style={styles.logoutButton} onPress={async () => {
                     Alert.alert(
-                        'Logout',
-                        'Are you sure you want to logout?',
+                        t('auth.logout'),
+                        t('auth.logoutConfirm'),
                         [
-                            { text: 'Cancel', style: 'cancel' },
+                            { text: t('common.cancel'), style: 'cancel' },
                             {
-                                text: 'Logout',
+                                text: t('auth.logout'),
                                 style: 'destructive',
                                 onPress: async () => {
                                     try {
@@ -276,11 +279,11 @@ const ProfileScreen = ({ navigation }) => {
                     );
                 }}>
                     <Icon name="log-out-outline" size={20} color={Colors.error} />
-                    <Text style={styles.logoutText}>Logout</Text>
+                    <Text style={styles.logoutText}>{t('auth.logout')}</Text>
                 </TouchableOpacity>
 
                 {/* App Version */}
-                <Text style={styles.versionText}>SS Property Guru v1.0.0</Text>
+                <Text style={styles.versionText}>{t('common.appName')} v1.0.0</Text>
 
                 <View style={{ height: 30 }} />
             </ScrollView>
@@ -295,7 +298,7 @@ const styles = StyleSheet.create({
     },
     // Header
     header: {
-        paddingTop: Platform.OS === 'ios' ? 70 : 50,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 35,
         borderBottomLeftRadius: 36,
         borderBottomRightRadius: 36,

@@ -14,6 +14,10 @@ import Colors from '../../constants/colors';
 import { getFranchiseStats } from '../../api/dashboardApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { useTranslation } from 'react-i18next';
+import LinearGradient from 'react-native-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 const { width } = Dimensions.get('window');
 
 const StatItem = ({ label, value, color, icon }) => (
@@ -29,6 +33,8 @@ const StatItem = ({ label, value, color, icon }) => (
 );
 
 const FranchiseDashboardScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [franchiseId, setFranchiseId] = useState(null);
@@ -60,55 +66,59 @@ const FranchiseDashboardScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar backgroundColor={Colors.background} barStyle="dark-content" />
+            <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
 
-            <View style={styles.header}>
+            <LinearGradient
+                colors={Colors.gradientPrimary}
+                style={[styles.header, { paddingTop: Math.max(insets.top, 50) }]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                    <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
+                    <Icon name="arrow-back" size={24} color={Colors.textWhite} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Franchise Dashboard</Text>
+                <Text style={styles.headerTitle}>{t('profile.franchiseDashboard')}</Text>
                 <View style={{ width: 44 }} />
-            </View>
+            </LinearGradient>
 
             {loading ? (
                 <View style={styles.centered}>
                     <ActivityIndicator size="large" color={Colors.primary} />
                 </View>
             ) : (
-                <ScrollView contentContainerStyle={styles.content}>
+                <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
                     <View style={styles.welcomeCard}>
-                        <Text style={styles.welcomeTitle}>Branch Insights</Text>
-                        <Text style={styles.welcomeSub}>Performance overview for your franchise territory.</Text>
+                        <Text style={styles.welcomeTitle}>{t('profile.branchInsights')}</Text>
+                        <Text style={styles.welcomeSub}>{t('profile.performanceOverview')}</Text>
                     </View>
 
                     <View style={styles.statsGrid}>
                         <StatItem
-                            label="Our Properties"
+                            label={t('profile.ourProperties')}
                             value={stats?.totalProperties || 0}
                             color={Colors.primary}
                             icon="business"
                         />
                         <StatItem
-                            label="Branch Agents"
+                            label={t('profile.branchAgents')}
                             value={stats?.totalAgents || 0}
                             color={Colors.accent}
                             icon="people"
                         />
                         <StatItem
-                            label="Active Enquiries"
+                            label={t('profile.activeEnquiries')}
                             value={stats?.totalEnquiries || 0}
                             color="#673AB7"
                             icon="chatbubbles"
                         />
                         <StatItem
-                            label="Sales Value"
-                            value={`Rs ${stats?.totalSalesValue || '0M'}`}
+                            label={t('profile.salesValue')}
+                            value={`₹ ${stats?.totalSalesValue || '0'}`}
                             color="#2E7D32"
                             icon="trending-up"
                         />
                     </View>
 
-                    <Text style={styles.sectionTitle}>Quick Actions</Text>
+                    <Text style={styles.sectionTitle}>{t('profile.managementTools')}</Text>
                     <View style={styles.tools}>
                         <TouchableOpacity
                             style={styles.toolBtn}
@@ -117,7 +127,7 @@ const FranchiseDashboardScreen = ({ navigation }) => {
                             <View style={styles.toolIconBox}>
                                 <Icon name="people-outline" size={24} color={Colors.primary} />
                             </View>
-                            <Text style={styles.toolLabel}>Manage{'\n'}Agents</Text>
+                            <Text style={styles.toolLabel}>{t('profile.manageAgents').replace(' ', '\n')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -127,7 +137,7 @@ const FranchiseDashboardScreen = ({ navigation }) => {
                             <View style={[styles.toolIconBox, { backgroundColor: '#FFF3E0' }]}>
                                 <Icon name="flash-outline" size={24} color="#E65100" />
                             </View>
-                            <Text style={styles.toolLabel}>View{'\n'}Leads</Text>
+                            <Text style={styles.toolLabel}>{t('profile.viewLeads').replace(' ', '\n')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -137,7 +147,7 @@ const FranchiseDashboardScreen = ({ navigation }) => {
                             <View style={[styles.toolIconBox, { backgroundColor: '#E8F5E9' }]}>
                                 <Icon name="add-circle-outline" size={24} color="#2E7D32" />
                             </View>
-                            <Text style={styles.toolLabel}>New{'\n'}Listing</Text>
+                            <Text style={styles.toolLabel}>{t('profile.newListing').replace(' ', '\n')}</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -153,13 +163,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: 50,
-        paddingBottom: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: Colors.border
+        paddingBottom: 24,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        elevation: 8,
+        shadowColor: Colors.primaryDark,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10
     },
     backBtn: { padding: 8 },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+    headerTitle: { fontSize: 20, fontWeight: '800', color: Colors.textWhite },
     content: { padding: 20 },
     welcomeCard: { marginBottom: 30 },
     welcomeTitle: { fontSize: 24, fontWeight: '800', color: Colors.textPrimary },

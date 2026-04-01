@@ -9,6 +9,8 @@ import {
     ActivityIndicator,
     Dimensions
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import { getAdminStats } from '../../api/dashboardApi';
@@ -28,6 +30,8 @@ const StatCard = ({ title, value, icon, color }) => (
 );
 
 const AdminDashboardScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -60,7 +64,7 @@ const AdminDashboardScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Platform Insights</Text>
+                <Text style={styles.headerTitle}>{t('profile.platformInsights')}</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -70,28 +74,28 @@ const AdminDashboardScreen = ({ navigation }) => {
                 </View>
             ) : (
                 <ScrollView contentContainerStyle={styles.scrollContent}>
-                    <Text style={styles.sectionTitle}>Overview</Text>
+                    <Text style={styles.sectionTitle}>{t('common.overview')}</Text>
                     <View style={styles.statsGrid}>
                         <StatCard
-                            title="Total Properties"
+                            title={t('profile.totalProperties')}
                             value={stats?.totalProperties || 0}
                             icon="business"
                             color={Colors.primary}
                         />
                         <StatCard
-                            title="Total Agents"
+                            title={t('profile.totalAgents')}
                             value={stats?.totalAgents || 0}
                             icon="people"
                             color={Colors.accent}
                         />
                         <StatCard
-                            title="New Enquiries"
+                            title={t('profile.newEnquiries')}
                             value={stats?.totalEnquiries || 0}
                             icon="chatbubbles"
                             color="#673AB7"
                         />
                         <StatCard
-                            title="Active Users"
+                            title={t('profile.activeUsers')}
                             value={stats?.totalUsers || 0}
                             icon="person"
                             color="#FF9800"
@@ -99,13 +103,13 @@ const AdminDashboardScreen = ({ navigation }) => {
                     </View>
 
                     <View style={styles.infoSection}>
-                        <Text style={styles.infoHeading}>Management Tools</Text>
+                        <Text style={styles.infoHeading}>{t('profile.managementTools')}</Text>
                         <TouchableOpacity
                             style={styles.toolItem}
                             onPress={() => navigation.navigate('ManagementList', { mode: 'users' })}
                         >
                             <Icon name="people-outline" size={22} color={Colors.textPrimary} />
-                            <Text style={styles.toolText}>Manage Users</Text>
+                            <Text style={styles.toolText}>{t('profile.manageUsers')}</Text>
                             <Icon name="chevron-forward" size={18} color={Colors.textLight} />
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -113,7 +117,7 @@ const AdminDashboardScreen = ({ navigation }) => {
                             onPress={() => navigation.navigate('ManagementList', { mode: 'agents' })}
                         >
                             <Icon name="shield-checkmark-outline" size={22} color={Colors.textPrimary} />
-                            <Text style={styles.toolText}>Manage Agents</Text>
+                            <Text style={styles.toolText}>{t('profile.manageAgents')}</Text>
                             <Icon name="chevron-forward" size={18} color={Colors.textLight} />
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -121,7 +125,7 @@ const AdminDashboardScreen = ({ navigation }) => {
                             onPress={() => navigation.navigate('ManagementList', { mode: 'franchises' })}
                         >
                             <Icon name="business-outline" size={22} color={Colors.textPrimary} />
-                            <Text style={styles.toolText}>Manage Franchises</Text>
+                            <Text style={styles.toolText}>{t('profile.manageFranchises')}</Text>
                             <Icon name="chevron-forward" size={18} color={Colors.textLight} />
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -129,7 +133,7 @@ const AdminDashboardScreen = ({ navigation }) => {
                             onPress={() => navigation.navigate('LocationManager')}
                         >
                             <Icon name="location-outline" size={22} color={Colors.textPrimary} />
-                            <Text style={styles.toolText}>Manage Locations</Text>
+                            <Text style={styles.toolText}>{t('profile.manageLocations')}</Text>
                             <Icon name="chevron-forward" size={18} color={Colors.textLight} />
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -137,7 +141,7 @@ const AdminDashboardScreen = ({ navigation }) => {
                             onPress={() => navigation.navigate('StreamManager')}
                         >
                             <Icon name="videocam-outline" size={22} color={Colors.textPrimary} />
-                            <Text style={styles.toolText}>Manage Live Tour</Text>
+                            <Text style={styles.toolText}>{t('profile.manageLiveTour')}</Text>
                             <Icon name="chevron-forward" size={18} color={Colors.textLight} />
                         </TouchableOpacity>
                     </View>
@@ -154,7 +158,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: 50,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: Colors.border

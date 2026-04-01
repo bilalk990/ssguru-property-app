@@ -31,7 +31,7 @@ const FloatingLabelInput = ({
 
     const labelStyle = {
         position: 'absolute',
-        left: icon ? 44 : 16,
+        left: icon ? 44 : (prefix ? 48 : 16),
         top: animatedValue.interpolate({
             inputRange: [0, 1],
             outputRange: [22, 6],
@@ -71,8 +71,10 @@ const FloatingLabelInput = ({
                 />
             )}
 
-            {prefix && (isFocused || value) && (
-                <Animated.Text style={styles.prefix}>{prefix}</Animated.Text>
+            {prefix && (
+                <Animated.Text style={[styles.prefix, { opacity: animatedValue }]}>
+                    {prefix}
+                </Animated.Text>
             )}
 
             <Animated.Text style={labelStyle}>

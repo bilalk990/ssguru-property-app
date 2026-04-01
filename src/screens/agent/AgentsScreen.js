@@ -10,11 +10,13 @@ import {
     ActivityIndicator,
     Linking
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { getAgents } from '../../api/agentApi';
 
 const AgentsScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -36,7 +38,7 @@ const AgentsScreen = ({ navigation }) => {
     }, [fetchAgents]);
 
     const handleWhatsApp = (contact) => {
-        const message = "Hi, I saw your profile on SS Property Guru.";
+        const message = t('agent.whatsappMessage');
         const cleanPhone = contact ? contact.replace(/\s/g, '') : '1234567890';
         Linking.openURL(`whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`);
     };
@@ -44,9 +46,9 @@ const AgentsScreen = ({ navigation }) => {
     const renderAgent = ({ item }) => (
         <TouchableOpacity
             style={styles.agentCard}
-            onPress={() => navigation.navigate('Projects', { 
+            onPress={() => navigation.navigate('Projects', {
                 agentId: item.id || item._id,
-                agentName: item.name 
+                agentName: item.name
             })}
         >
             <Image
@@ -55,10 +57,10 @@ const AgentsScreen = ({ navigation }) => {
             />
             <View style={styles.agentInfo}>
                 <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.role}>{item.role || 'Elite Property Consultant'}</Text>
+                <Text style={styles.role}>{item.role || t('agent.eliteConsultant')}</Text>
                 <View style={styles.statsRow}>
                     <Icon name="business-outline" size={14} color={Colors.primary} />
-                    <Text style={styles.statsText}>{item.propertiesCount || item.properties?.length || 0} Listings</Text>
+                    <Text style={styles.statsText}>{t('agent.listingsCount', { count: item.propertiesCount || item.properties?.length || 0 })}</Text>
                 </View>
             </View>
             <TouchableOpacity
@@ -77,7 +79,7 @@ const AgentsScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Our Agents</Text>
+                <Text style={styles.headerTitle}>{t('agent.ourAgents')}</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -94,7 +96,7 @@ const AgentsScreen = ({ navigation }) => {
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={
                         <View style={{ alignItems: 'center', marginTop: 50 }}>
-                            <Text style={{ color: Colors.textSecondary }}>No agents found</Text>
+                            <Text style={{ color: Colors.textSecondary }}>{t('agent.noAgents')}</Text>
                         </View>
                     }
                 />

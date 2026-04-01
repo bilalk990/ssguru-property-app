@@ -7,8 +7,11 @@ import {
     StatusBar,
     Dimensions,
     ActivityIndicator,
-    Alert
+    Alert,
+    Platform
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview'; // Common for social streams
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
@@ -17,6 +20,8 @@ import { getCurrentStream } from '../../api/streamApi';
 const { width, height } = Dimensions.get('window');
 
 const LiveTourScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [streamUrl, setStreamUrl] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -27,13 +32,13 @@ const LiveTourScreen = ({ navigation }) => {
                 if (res.data?.data?.youtubeUrl || res.data?.youtubeUrl) {
                     setStreamUrl(res.data?.data?.youtubeUrl || res.data?.youtubeUrl);
                 } else {
-                    Alert.alert("Notice", "No live tour is active at the moment.", [
-                        { text: "Go Back", onPress: () => navigation.goBack() }
+                    Alert.alert(t('common.notice'), t('home.noLiveTour'), [
+                        { text: t('common.back'), onPress: () => navigation.goBack() }
                     ]);
                 }
             } catch (error) {
                 console.error('Fetch Stream Error:', error);
-                Alert.alert("Error", "Could not load live tour.");
+                Alert.alert(t('common.error'), t('home.liveTourError'));
             } finally {
                 setLoading(false);
             }
@@ -46,7 +51,7 @@ const LiveTourScreen = ({ navigation }) => {
             <StatusBar backgroundColor="#000" barStyle="light-content" />
 
             {/* Overlay Header */}
-            <View style={styles.overlayHeader}>
+            <View style={[styles.overlayHeader, { top: Math.max(insets.top, 20) }]}>
                 <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}
@@ -55,14 +60,14 @@ const LiveTourScreen = ({ navigation }) => {
                 </TouchableOpacity>
                 <View style={styles.liveBadge}>
                     <View style={styles.dot} />
-                    <Text style={styles.liveText}>LIVE TOUR</Text>
+                    <Text style={styles.liveText}>{t('home.liveTourBadge')}</Text>
                 </View>
             </View>
 
             {loading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={Colors.primary} />
-                    <Text style={styles.loadingText}>Connecting to tour...</Text>
+                    <Text style={styles.loadingText}>{t('home.connectingToTour')}</Text>
                 </View>
             ) : streamUrl ? (
                 <WebView
@@ -76,8 +81,8 @@ const LiveTourScreen = ({ navigation }) => {
 
             {/* Bottom Info */}
             <View style={styles.bottomInfo}>
-                <Text style={styles.title}>SS Property Guru Live</Text>
-                <Text style={styles.subtitle}>Watching real-time walkthrough with our elite agents.</Text>
+                <Text style={styles.title}>{t('common.appName')} Live</Text>
+                <Text style={styles.subtitle}>{t('home.liveTourDesc')}</Text>
             </View>
         </View>
     );

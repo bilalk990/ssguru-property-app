@@ -10,6 +10,8 @@ import {
     TouchableOpacity,
     Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import CustomButton from '../../components/CustomButton';
@@ -18,6 +20,8 @@ import { getDistricts } from '../../api/districtApi';
 import { propertyTypes } from '../../constants/appConstants';
 
 const EnquiryFormScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [form, setForm] = useState({
         name: '',
         phone: '',
@@ -46,7 +50,7 @@ const EnquiryFormScreen = ({ navigation }) => {
 
     const handleSubmit = async () => {
         if (!form.name || !form.phone || !form.city || !form.requirement) {
-            Alert.alert('Missing Fields', 'Please fill all required fields.');
+            Alert.alert(t('auth.missingFields'), t('auth.missingFieldsDesc'));
             return;
         }
 
@@ -60,12 +64,12 @@ const EnquiryFormScreen = ({ navigation }) => {
                 message: form.requirement,
             });
             Alert.alert(
-                'Enquiry Submitted! 🎉',
-                'We have received your property requirement. Our team will contact you soon.',
-                [{ text: 'OK', onPress: () => navigation.goBack() }],
+                t('home.enquirySuccess'),
+                t('home.enquirySubtitle'),
+                [{ text: t('common.ok'), onPress: () => navigation.goBack() }],
             );
         } catch (error) {
-            Alert.alert('Error', 'Failed to submit enquiry. Please try again.');
+            Alert.alert(t('common.error'), t('home.enquiryError'));
         } finally {
             setLoading(false);
         }
@@ -82,7 +86,7 @@ const EnquiryFormScreen = ({ navigation }) => {
                     onPress={() => navigation.goBack()}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Submit Enquiry</Text>
+                <Text style={styles.headerTitle}>{t('home.enquiry')}</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -95,24 +99,23 @@ const EnquiryFormScreen = ({ navigation }) => {
                     <View style={styles.infoIconWrapper}>
                         <Icon name="chatbubbles-outline" size={36} color={Colors.primary} />
                     </View>
-                    <Text style={styles.infoTitle}>Tell Us What You Need</Text>
+                    <Text style={styles.infoTitle}>{t('home.premiumEnquiry')}</Text>
                     <Text style={styles.infoDesc}>
-                        Share your property requirement and our team will connect you with
-                        the right options.
+                        {t('home.enquirySubtitle')}
                     </Text>
                 </View>
 
                 {/* Form */}
-                <Text style={styles.label}>Full Name *</Text>
+                <Text style={styles.label}>{t('home.fullName')} *</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Enter your name"
+                    placeholder={t('home.fullName')}
                     placeholderTextColor={Colors.textLight}
                     value={form.name}
                     onChangeText={v => updateField('name', v)}
                 />
 
-                <Text style={styles.label}>Phone Number *</Text>
+                <Text style={styles.label}>{t('home.phoneNumber')} *</Text>
                 <View style={styles.phoneContainer}>
                     <View style={styles.countryCode}>
                         <Text style={styles.flag}>🇮🇳</Text>
@@ -120,7 +123,7 @@ const EnquiryFormScreen = ({ navigation }) => {
                     </View>
                     <TextInput
                         style={[styles.input, styles.phoneInput]}
-                        placeholder="Enter phone number"
+                        placeholder={t('home.phoneNumber')}
                         placeholderTextColor={Colors.textLight}
                         keyboardType="phone-pad"
                         maxLength={10}
@@ -129,10 +132,10 @@ const EnquiryFormScreen = ({ navigation }) => {
                     />
                 </View>
 
-                <Text style={styles.label}>Email Address (Optional)</Text>
+                <Text style={styles.label}>{t('auth.email')} ({t('common.optional')})</Text>
                 <TextInput
                     style={styles.input}
-                    placeholder="Enter your email"
+                    placeholder={t('auth.email')}
                     placeholderTextColor={Colors.textLight}
                     keyboardType="email-address"
                     autoCapitalize="none"
@@ -140,7 +143,7 @@ const EnquiryFormScreen = ({ navigation }) => {
                     onChangeText={v => updateField('email', v)}
                 />
 
-                <Text style={styles.label}>District of Interest *</Text>
+                <Text style={styles.label}>{t('property.districtLabel')} *</Text>
                 <View style={styles.cityContainer}>
                     {districts.map(district => (
                         <TouchableOpacity
@@ -161,10 +164,10 @@ const EnquiryFormScreen = ({ navigation }) => {
                     ))}
                 </View>
 
-                <Text style={styles.label}>Your Requirement *</Text>
+                <Text style={styles.label}>{t('profile.postRequirement')} *</Text>
                 <TextInput
                     style={[styles.input, styles.textArea]}
-                    placeholder="Describe what kind of property you're looking for (budget, size, type, etc.)"
+                    placeholder={t('home.lookingFor')}
                     placeholderTextColor={Colors.textLight}
                     multiline
                     numberOfLines={5}
@@ -174,7 +177,7 @@ const EnquiryFormScreen = ({ navigation }) => {
                 />
 
                 <CustomButton
-                    title="Submit Enquiry"
+                    title={t('home.enquiry')}
                     onPress={handleSubmit}
                     loading={loading}
                     size="large"
@@ -198,7 +201,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: Platform.OS === 'ios' ? 60 : 16,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 10,
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: Colors.border,

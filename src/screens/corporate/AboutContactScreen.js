@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Linking, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { submitEnquiry } from '../../api/propertyApi';
 import CustomButton from '../../components/CustomButton';
 
 const AboutContactScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     const [form, setForm] = useState({ name: '', phone: '', details: '' });
     const [loading, setLoading] = useState(false);
 
@@ -14,7 +16,7 @@ const AboutContactScreen = ({ navigation }) => {
 
     const handleEnquiry = async () => {
         if (!form.name || !form.phone || !form.details) {
-            Alert.alert('Required', 'Please fill in all fields.');
+            Alert.alert(t('corporate.incomplete'), t('corporate.fillMandatory'));
             return;
         }
         setLoading(true);
@@ -26,10 +28,10 @@ const AboutContactScreen = ({ navigation }) => {
                 city: 'General',
                 message: form.details,
             });
-            Alert.alert('Success', 'Your requirement has been submitted. Our team will contact you soon.');
+            Alert.alert(t('common.success'), t('corporate.teamContactSoon'));
             setForm({ name: '', phone: '', details: '' });
         } catch (e) {
-            Alert.alert('Error', 'Failed to submit enquiry. Please try again.');
+            Alert.alert(t('common.error'), t('home.enquiryError'));
         } finally {
             setLoading(false);
         }
@@ -42,28 +44,26 @@ const AboutContactScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Support & About</Text>
+                <Text style={styles.headerTitle}>{t('corporate.supportAbout')}</Text>
                 <View style={{ width: 44 }} />
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>About SS Property Guru</Text>
+                    <Text style={styles.sectionTitle}>{t('corporate.aboutTitle')}</Text>
                     <Text style={styles.paragraph}>
-                        SS Property Guru is a premier real estate platform dedicated to connecting buyers and sellers
-                        with the most lucrative opportunities. Our mission is to provide transparency and expert guidance
-                        in every transaction.
+                        {t('corporate.aboutDesc')}
                     </Text>
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Contact Us</Text>
+                    <Text style={styles.sectionTitle}>{t('corporate.contactUs')}</Text>
                     <TouchableOpacity style={styles.contactItem} onPress={handleCall}>
                         <View style={styles.iconBox}>
                             <Icon name="call-outline" size={24} color={Colors.primary} />
                         </View>
                         <View>
-                            <Text style={styles.contactLabel}>Phone</Text>
+                            <Text style={styles.contactLabel}>{t('corporate.mobileNumber')}</Text>
                             <Text style={styles.contactValue}>+91 7400763089</Text>
                         </View>
                     </TouchableOpacity>
@@ -73,32 +73,32 @@ const AboutContactScreen = ({ navigation }) => {
                             <Icon name="mail-outline" size={24} color={Colors.primary} />
                         </View>
                         <View>
-                            <Text style={styles.contactLabel}>Email</Text>
+                            <Text style={styles.contactLabel}>{t('corporate.emailAddress')}</Text>
                             <Text style={styles.contactValue}>sspropertyguru1@gmail.com</Text>
                         </View>
                     </TouchableOpacity>
                 </View>
 
                 <View style={[styles.section, styles.enquiryCard]}>
-                    <Text style={styles.sectionTitle}>Submit Your Requirement</Text>
-                    <Text style={styles.paragraph}>Can't find what you're looking for? Let us know your requirements.</Text>
+                    <Text style={styles.sectionTitle}>{t('corporate.submitRequirement')}</Text>
+                    <Text style={styles.paragraph}>{t('corporate.cantFind')}</Text>
 
                     <TextInput
                         style={styles.input}
-                        placeholder="Your Name"
+                        placeholder={t('corporate.fullName')}
                         value={form.name}
                         onChangeText={(v) => setForm({ ...form, name: v })}
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Phone Number"
+                        placeholder={t('corporate.mobileNumber')}
                         keyboardType="phone-pad"
                         value={form.phone}
                         onChangeText={(v) => setForm({ ...form, phone: v })}
                     />
                     <TextInput
                         style={[styles.input, styles.textArea]}
-                        placeholder="Requirement Details (Area, Budget, etc.)"
+                        placeholder={t('corporate.requirementDetails')}
                         multiline
                         numberOfLines={4}
                         value={form.details}
@@ -106,7 +106,7 @@ const AboutContactScreen = ({ navigation }) => {
                     />
 
                     <CustomButton
-                        title="Submit Requirement"
+                        title={t('common.submit')}
                         onPress={handleEnquiry}
                         loading={loading}
                         style={styles.submitBtn}
@@ -114,13 +114,13 @@ const AboutContactScreen = ({ navigation }) => {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Legal</Text>
+                    <Text style={styles.sectionTitle}>{t('corporate.legal')}</Text>
                     <TouchableOpacity style={styles.legalItem}>
-                        <Text style={styles.legalText}>Privacy Policy</Text>
+                        <Text style={styles.legalText}>{t('auth.privacyPolicy')}</Text>
                         <Icon name="chevron-forward" size={18} color={Colors.textLight} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.legalItem}>
-                        <Text style={styles.legalText}>Terms & Conditions</Text>
+                        <Text style={styles.legalText}>{t('auth.terms')}</Text>
                         <Icon name="chevron-forward" size={18} color={Colors.textLight} />
                     </TouchableOpacity>
                 </View>

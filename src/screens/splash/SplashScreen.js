@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet, StatusBar, Dimensions, Animated, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Colors from '../../constants/colors';
 import authStore from '../../store/authStore';
@@ -7,6 +8,7 @@ import authStore from '../../store/authStore';
 const { width } = Dimensions.get('window');
 
 const SplashScreen = ({ navigation }) => {
+    const insets = useSafeAreaInsets();
     const scaleAnim = useRef(new Animated.Value(0.6)).current;
     const opacityAnim = useRef(new Animated.Value(0)).current;
     const progressAnim = useRef(new Animated.Value(0)).current;
@@ -37,9 +39,9 @@ const SplashScreen = ({ navigation }) => {
                 const loggedIn = await authStore.isLoggedIn();
                 if (loggedIn) {
                     // User logged in → Go to Dashboard (Sell tab)
-                    navigation.replace('MainApp', { 
-                        screen: 'Sell', 
-                        params: { screen: 'Dashboard' } 
+                    navigation.replace('MainApp', {
+                        screen: 'Sell',
+                        params: { screen: 'Dashboard' }
                     });
                 } else {
                     // User NOT logged in → Go to Login page
@@ -124,7 +126,7 @@ const styles = StyleSheet.create({
     },
     footer: {
         position: 'absolute',
-        bottom: Platform.OS === 'ios' ? 60 : 40,
+        bottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 40) : 40,
         width: '100%',
         alignItems: 'center',
     },

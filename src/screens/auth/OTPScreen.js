@@ -12,6 +12,8 @@ import {
     ScrollView,
     Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // 6 boxes + 5 gaps, fit within screen with 48px horizontal padding
@@ -26,6 +28,8 @@ import authStore from '../../store/authStore';
 const OTP_LENGTH = 6;
 
 const OTPScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const { email, mode, prefillOtp } = route.params || {};
     const buildOtpArray = (val) => {
         if (!val) return ['', '', '', '', '', ''];
@@ -67,7 +71,7 @@ const OTPScreen = ({ route, navigation }) => {
     const handleVerify = async () => {
         const otpString = otp.join('');
         if (otpString.length < OTP_LENGTH) {
-            Alert.alert('Invalid OTP', 'Please enter the complete OTP.');
+            Alert.alert(t('auth.invalidOTP'), t('auth.invalidOTPDesc'));
             return;
         }
 
@@ -75,13 +79,13 @@ const OTPScreen = ({ route, navigation }) => {
         try {
             if (mode === 'forgot') {
                 if (!password || password !== confirmPassword) {
-                    Alert.alert('Password Error', 'Passwords must match and not be empty.');
+                    Alert.alert(t('auth.passwordError'), t('auth.passwordErrorDesc'));
                     setLoading(false);
                     return;
                 }
                 await resetPassword({ email, otp: otpString, password, confirmPassword });
-                Alert.alert('Success', 'Password reset successfully. Please login.', [
-                    { text: 'Login', onPress: () => navigation.navigate('Login') }
+                Alert.alert(t('common.submit'), t('auth.verifiedDesc'), [
+                    { text: t('auth.login'), onPress: () => navigation.navigate('Login') }
                 ]);
             } else {
                 const response = await verifyOtp(email, otpString);
@@ -90,20 +94,20 @@ const OTPScreen = ({ route, navigation }) => {
                 if (token && userData) {
                     await authStore.saveAuthData(token, userData);
                     // Navigate to Dashboard (Sell tab)
-                    navigation.replace('MainApp', { 
-                        screen: 'Sell', 
-                        params: { screen: 'Dashboard' } 
+                    navigation.replace('MainApp', {
+                        screen: 'Sell',
+                        params: { screen: 'Dashboard' }
                     });
                 } else {
-                    Alert.alert('Verified', 'Your account has been verified. Please login.', [
-                        { text: 'Login', onPress: () => navigation.navigate('Login') }
+                    Alert.alert(t('auth.verified'), t('auth.verifiedDesc'), [
+                        { text: t('auth.login'), onPress: () => navigation.navigate('Login') }
                     ]);
                 }
             }
         } catch (error) {
             Alert.alert(
-                'Verification Failed',
-                error?.response?.data?.message || 'Invalid OTP or session expired.',
+                t('auth.verificationFailed'),
+                error?.response?.data?.message || t('auth.invalidOTPDesc'),
             );
         } finally {
             setLoading(false);
@@ -114,7 +118,7 @@ const OTPScreen = ({ route, navigation }) => {
         try {
             await forgotPassword(email);
             setTimer(30);
-            Alert.alert('OTP Sent', 'A new verification code has been sent.');
+            Alert.alert(t('auth.otpSent'), t('auth.otpSentDesc'));
         } catch (error) {
             const message = error.response?.data?.message || 'Failed to resend OTP. Please try again later.';
             Alert.alert('Error', message);
@@ -145,10 +149,10 @@ const OTPScreen = ({ route, navigation }) => {
                         />
                     </View>
                     <Text style={styles.title}>
-                        {mode === 'forgot' ? 'Reset Password' : 'Verify Email'}
+                        {mode === 'forgot' ? t('auth.resetPassword') : t('auth.verifyEmail')}
                     </Text>
                     <Text style={styles.subtitle}>
-                        Enter the code sent to{'\n'}
+                        {t('auth.otpSubtitle')}{'\n'}
                         <Text style={styles.phoneText}>{email}</Text>
                     </Text>
                 </View>
@@ -172,7 +176,7 @@ const OTPScreen = ({ route, navigation }) => {
 
                 {mode === 'forgot' && (
                     <View style={styles.forgotFields}>
-                        <Text style={styles.label}>New Password</Text>
+                        <Text style={styles.label}>{t('auth.password')}</Text>
                         <TextInput
                             style={styles.fieldInput}
                             placeholder="••••••••"
@@ -181,7 +185,7 @@ const OTPScreen = ({ route, navigation }) => {
                             value={password}
                             onChangeText={setPassword}
                         />
-                        <Text style={[styles.label, { marginTop: 15 }]}>Confirm Password</Text>
+                        <Text style={[styles.label, { marginTop: 15 }]}>{t('auth.confirmPassword')}</Text>
                         <TextInput
                             style={styles.fieldInput}
                             placeholder="••••••••"
@@ -194,7 +198,7 @@ const OTPScreen = ({ route, navigation }) => {
                 )}
 
                 <CustomButton
-                    title={mode === 'forgot' ? "Reset & Continue" : "Verify & Login"}
+                    title={mode === 'forgot' ? t('auth.resetAndContinue') : t('auth.verifyAndLogin')}
                     onPress={handleVerify}
                     loading={loading}
                     size="large"
@@ -205,11 +209,11 @@ const OTPScreen = ({ route, navigation }) => {
                 <View style={styles.resendSection}>
                     {timer > 0 ? (
                         <Text style={styles.timerText}>
-                            Resend code in <Text style={styles.timerBold}>{timer}s</Text>
+                            {t('auth.resendIn')}<Text style={styles.timerBold}>{timer}s</Text>
                         </Text>
                     ) : (
                         <TouchableOpacity onPress={handleResend}>
-                            <Text style={styles.resendText}>Resend Code</Text>
+                            <Text style={styles.resendText}>{t('auth.resendCode')}</Text>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -229,7 +233,7 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     header: {
-        paddingTop: Platform.OS === 'ios' ? 60 : 20,
+        paddingTop: insets.top + 10,
         marginBottom: 20,
     },
     backButton: {

@@ -8,6 +8,7 @@ import {
     StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useTranslation } from 'react-i18next';
 import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
 import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
@@ -15,8 +16,11 @@ import { PropertyCardSkeleton } from '../../components/SkeletonLoader';
 import { getProperties, getPropertiesByAgent } from '../../api/propertyApi';
 import { getDistricts, getAreas } from '../../api/districtApi';
 import { ScrollView, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const BuyPropertyScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const initialAgentId = route.params?.agentId || null;
     const agentName = route.params?.agentName || null;
 
@@ -87,7 +91,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                 <View style={styles.screenHeaderTitle}>
                     <Icon name="business" size={24} color={Colors.primary} />
                     <Text style={styles.screenTitle}>
-                        {agentName ? `${agentName}'s Properties` : 'Properties'}
+                        {agentName ? t('property.agentListings', { name: agentName }) : t('common.featured')}
                     </Text>
                 </View>
                 <SearchBar
@@ -104,7 +108,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                                 style={[styles.chip, !selectedDistrict && styles.chipActive]}
                                 onPress={() => { setSelectedDistrict(null); setSelectedArea(null); }}
                             >
-                                <Text style={[styles.chipText, !selectedDistrict && styles.chipTextActive]}>All Cities</Text>
+                                <Text style={[styles.chipText, !selectedDistrict && styles.chipTextActive]}>{t('common.viewAll')}</Text>
                             </TouchableOpacity>
                             {districts.map(dist => (
                                 <TouchableOpacity
@@ -123,7 +127,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                                     style={[styles.chip, !selectedArea && styles.chipActive]}
                                     onPress={() => setSelectedArea(null)}
                                 >
-                                    <Text style={[styles.chipText, !selectedArea && styles.chipTextActive]}>All Areas</Text>
+                                    <Text style={[styles.chipText, !selectedArea && styles.chipTextActive]}>{t('common.viewAll')}</Text>
                                 </TouchableOpacity>
                                 {filteredAreas.map(area => (
                                     <TouchableOpacity
@@ -162,14 +166,14 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                     showsVerticalScrollIndicator={false}
                     ListHeaderComponent={
                         <Text style={styles.resultCount}>
-                            {properties.length} {properties.length === 1 ? 'premium property' : 'premium properties'} found
+                            {t('property.resultCount', { count: properties.length })}
                         </Text>
                     }
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                             <Icon name="search-outline" size={56} color={Colors.textLight} />
-                            <Text style={styles.emptyTitle}>No matching properties</Text>
-                            <Text style={styles.emptyText}>Try adjusting your premium search criteria</Text>
+                            <Text style={styles.emptyTitle}>{t('home.noPremiumFound')}</Text>
+                            <Text style={styles.emptyText}>{t('property.searchAdjust')}</Text>
                         </View>
                     }
                 />
@@ -183,7 +187,7 @@ const styles = StyleSheet.create({
     topBar: {
         backgroundColor: Colors.background,
         paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'ios' ? 60 : 20,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 20,
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
@@ -224,7 +228,7 @@ const styles = StyleSheet.create({
     chipTextActive: {
         color: Colors.textWhite,
     },
-    listContent: { padding: 20, paddingBottom: 100 },
+    listContent: { padding: 20, paddingBottom: 120 + insets.bottom },
     resultCount: { fontSize: 14, color: Colors.textSecondary, fontWeight: '600', marginBottom: 16 },
     emptyContainer: { alignItems: 'center', paddingVertical: 80 },
     emptyTitle: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, marginTop: 20, marginBottom: 8 },

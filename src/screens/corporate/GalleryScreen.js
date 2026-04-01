@@ -10,6 +10,7 @@ import {
     Dimensions,
     ActivityIndicator
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { getProperties } from '../../api/propertyApi';
@@ -18,6 +19,7 @@ const { width } = Dimensions.get('window');
 const columnWidth = (width - 50) / 2;
 
 const GalleryScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -60,7 +62,7 @@ const GalleryScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Premium Gallery</Text>
+                <Text style={styles.headerTitle}>{t('corporate.premiumGallery')}</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -78,7 +80,7 @@ const GalleryScreen = ({ navigation }) => {
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={
                         <View style={{ alignItems: 'center', marginTop: 50 }}>
-                            <Text style={{ color: Colors.textSecondary }}>No gallery items found</Text>
+                            <Text style={{ color: Colors.textSecondary }}>{t('corporate.noGallery')}</Text>
                         </View>
                     }
                 />

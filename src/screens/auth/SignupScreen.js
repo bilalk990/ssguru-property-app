@@ -3,6 +3,8 @@ import {
     View, Text, StyleSheet, StatusBar, KeyboardAvoidingView,
     Platform, ScrollView, Alert, TouchableOpacity, Animated
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import LinearGradient from 'react-native-linear-gradient';
 import Colors from '../../constants/colors';
 import FloatingLabelInput from '../../components/FloatingLabelInput';
@@ -10,6 +12,8 @@ import AnimatedButton from '../../components/AnimatedButton';
 import { signup } from '../../api/authApi';
 
 const SignupScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -58,16 +62,16 @@ const SignupScreen = ({ navigation }) => {
         const trimmedPhone = (phone || '').trim();
 
         if (!trimmedName || !trimmedEmail || !trimmedPhone) {
-            return Alert.alert('Missing Fields', 'Please fill in your name, email, and phone number.');
+            return Alert.alert(t('auth.missingFields'), t('auth.missingFieldsDesc'));
         }
 
         const emailRegex = /\S+@\S+\.\S+/;
         if (!emailRegex.test(trimmedEmail)) {
-            return Alert.alert('Invalid Email', 'Please enter a valid email address.');
+            return Alert.alert(t('auth.invalidEmail'), t('auth.invalidEmailDesc'));
         }
 
         if (trimmedPhone.length < 10) {
-            return Alert.alert('Invalid Phone', 'Please enter a valid 10-digit number.');
+            return Alert.alert(t('auth.invalidPhone'), t('auth.invalidPhoneDesc'));
         }
 
         setLoading(true);
@@ -80,10 +84,10 @@ const SignupScreen = ({ navigation }) => {
             }
         } catch (error) {
             console.error('Signup Error:', error.response?.data);
-            let message = 'Failed to create account. Please try again.';
-            if (error.response?.status === 409) message = 'This phone or email is already registered. Please login.';
+            let message = t('auth.failedToCreateAccount');
+            if (error.response?.status === 409) message = t('auth.alreadyRegistered');
             else if (error.response?.data?.message) message = error.response.data.message;
-            Alert.alert('Signup Error', message);
+            Alert.alert(t('common.error'), message);
         } finally {
             setLoading(false);
         }
@@ -100,14 +104,14 @@ const SignupScreen = ({ navigation }) => {
                 </View>
 
                 <Animated.View style={[styles.header, { opacity: headerAnim, transform: [{ translateY: headerSlide }] }]}>
-                    <Text style={styles.title}>Create Account</Text>
-                    <Text style={styles.subtitle}>Enter your details to get started</Text>
+                    <Text style={styles.title}>{t('auth.createAccount')}</Text>
+                    <Text style={styles.subtitle}>{t('auth.signupSubtitle')}</Text>
                 </Animated.View>
 
                 <View style={styles.card}>
                     <Animated.View style={{ opacity: nameAnim, transform: [{ translateY: nameSlide }] }}>
                         <FloatingLabelInput
-                            label="Full Name"
+                            label={t('auth.name')}
                             value={name}
                             onChangeText={setName}
                             icon="person-outline"
@@ -117,7 +121,7 @@ const SignupScreen = ({ navigation }) => {
 
                     <Animated.View style={{ opacity: emailAnim, transform: [{ translateY: emailSlide }] }}>
                         <FloatingLabelInput
-                            label="Email Address"
+                            label={t('auth.email')}
                             value={email}
                             onChangeText={setEmail}
                             icon="mail-outline"
@@ -128,7 +132,7 @@ const SignupScreen = ({ navigation }) => {
 
                     <Animated.View style={{ opacity: phoneAnim, transform: [{ translateY: phoneSlide }] }}>
                         <FloatingLabelInput
-                            label="Phone Number"
+                            label={t('auth.phone')}
                             value={phone}
                             onChangeText={setPhone}
                             icon="call-outline"
@@ -141,15 +145,15 @@ const SignupScreen = ({ navigation }) => {
 
                     <Animated.View style={{ opacity: btnAnim, transform: [{ translateY: btnSlide }] }}>
                         <AnimatedButton
-                            title="Create Account"
+                            title={t('auth.createAccount')}
                             onPress={handleSignup}
                             loading={loading}
                         />
 
                         <View style={styles.loginContainer}>
-                            <Text style={styles.alreadyAccountText}>Already have an account? </Text>
+                            <Text style={styles.alreadyAccountText}>{t('auth.alreadyHaveAccount')}</Text>
                             <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.7}>
-                                <Text style={styles.loginLink}>Sign In</Text>
+                                <Text style={styles.loginLink}>{t('auth.signIn')}</Text>
                             </TouchableOpacity>
                         </View>
                     </Animated.View>
@@ -157,9 +161,9 @@ const SignupScreen = ({ navigation }) => {
 
                 <Animated.View style={[styles.footer, { opacity: btnAnim }]}>
                     <Text style={styles.footerText}>
-                        By signing up, you agree to our{' '}
-                        <Text style={styles.link}>Terms</Text> and{' '}
-                        <Text style={styles.link}>Privacy Policy</Text>
+                        {t('auth.agreeToSignup')}
+                        <Text style={styles.link}>{t('auth.terms')}</Text>{t('auth.and')}
+                        <Text style={styles.link}>{t('auth.privacyPolicy')}</Text>
                     </Text>
                 </Animated.View>
 
@@ -170,7 +174,7 @@ const SignupScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.background },
-    scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 60 },
+    scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: insets.top + 20, paddingBottom: 40 },
     topDecoration: { position: 'absolute', top: -150, right: -150, zIndex: -1 },
     decorCircle: { width: 400, height: 400, borderRadius: 200, opacity: 0.5 },
     header: { marginBottom: 30, marginTop: 20 },

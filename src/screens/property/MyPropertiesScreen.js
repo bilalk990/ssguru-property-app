@@ -11,6 +11,8 @@ import {
     Image,
     ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
 import Loader from '../../components/Loader';
@@ -18,6 +20,8 @@ import { normalizeProperty } from '../../components/PropertyCard';
 import { getMyProperties, deleteProperty, updateProperty } from '../../api/propertyApi';
 
 const MyPropertiesScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState(null);
@@ -27,7 +31,7 @@ const MyPropertiesScreen = ({ navigation }) => {
         try {
             const response = await getMyProperties();
             const listings = response.data?.data || response.data?.properties || response.data || [];
-            setProperties(Array.isArray(listings) ? listings.map(normalizeProperty) : []);
+            setProperties(Array.isArray(listings) ? listings.map(item => normalizeProperty(item, t)) : []);
         } catch (error) {
             console.error('MyProperties Fetch Error:', error);
         } finally {
@@ -47,9 +51,9 @@ const MyPropertiesScreen = ({ navigation }) => {
             fd.append('isLive', String(newStatus));
             await updateProperty(item.id || item._id, fd);
             setProperties(prev => prev.map(p => String(p._id || p.id) === String(item._id || item.id) ? { ...p, isLive: newStatus } : p));
-            Alert.alert('Success', `Property is now ${newStatus ? 'Live' : 'Hidden'}`);
+            Alert.alert(t('common.success'), `${t('common.details')} ${newStatus ? t('common.live') : t('common.hidden')}`);
         } catch (error) {
-            Alert.alert('Error', 'Failed to update property status');
+            Alert.alert(t('common.error'), t('home.enquiryError'));
         } finally {
             setUpdatingId(null);
         }
@@ -57,20 +61,20 @@ const MyPropertiesScreen = ({ navigation }) => {
 
     const handleDelete = id => {
         Alert.alert(
-            'Delete Property',
-            'Are you sure you want to delete this listing?',
+            t('common.delete'),
+            t('common.deleteConfirm'),
             [
-                { text: 'Cancel', style: 'cancel' },
+                { text: t('common.cancel'), style: 'cancel' },
                 {
-                    text: 'Delete',
+                    text: t('common.delete'),
                     style: 'destructive',
                     onPress: async () => {
                         try {
                             await deleteProperty(id);
                             setProperties(prev => prev.filter(p => String(p._id || p.id) !== String(id)));
-                            Alert.alert('Deleted', 'Property has been removed.');
+                            Alert.alert(t('common.success'), t('common.success'));
                         } catch (error) {
-                            Alert.alert('Error', 'Failed to delete property.');
+                            Alert.alert(t('common.error'), t('home.enquiryError'));
                         }
                     },
                 },
@@ -99,7 +103,7 @@ const MyPropertiesScreen = ({ navigation }) => {
                             <ActivityIndicator size="small" color={Colors.primary} />
                         ) : (
                             <Text style={[styles.statusText, { color: item.isLive ? Colors.primary : Colors.textSecondary }]}>
-                                {item.isLive ? 'Live' : 'Hidden'}
+                                {item.isLive ? t('common.live') : t('common.hidden')}
                             </Text>
                         )}
                     </TouchableOpacity>
@@ -120,20 +124,20 @@ const MyPropertiesScreen = ({ navigation }) => {
                             navigation.navigate('PropertyDetail', { property: item })
                         }>
                         <Icon name="eye-outline" size={16} color={Colors.textSecondary} />
-                        <Text style={styles.actionText}>View</Text>
+                        <Text style={styles.actionText}>{t('common.viewAll').split(' ')[0]}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.actionButton, styles.editAction]}
                         onPress={() => navigation.navigate('AddProperty', { editMode: true, propertyData: item })}
                     >
                         <Icon name="create-outline" size={16} color={Colors.primary} />
-                        <Text style={[styles.actionText, styles.editText]}>Edit</Text>
+                        <Text style={[styles.actionText, styles.editText]}>{t('common.edit')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.actionButton, styles.deleteAction]}
                         onPress={() => handleDelete(item.id || item._id)}>
                         <Icon name="trash-outline" size={16} color={Colors.error} />
-                        <Text style={[styles.actionText, styles.deleteText]}>Delete</Text>
+                        <Text style={[styles.actionText, styles.deleteText]}>{t('common.delete')}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -151,7 +155,7 @@ const MyPropertiesScreen = ({ navigation }) => {
                     onPress={() => navigation.goBack()}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>My Properties</Text>
+                <Text style={styles.headerTitle}>{t('profile.myProperties')}</Text>
                 <TouchableOpacity
                     style={styles.addButton}
                     onPress={() => navigation.navigate('AddProperty')}>
@@ -160,7 +164,7 @@ const MyPropertiesScreen = ({ navigation }) => {
             </View>
 
             {loading ? (
-                <Loader message="Loading your properties..." fullScreen={false} />
+                <Loader message={t('home.loadingProps')} fullScreen={false} />
             ) : (
                 <FlatList
                     data={properties}
@@ -173,14 +177,14 @@ const MyPropertiesScreen = ({ navigation }) => {
                             <View style={styles.emptyIconBox}>
                                 <Icon name="business-outline" size={60} color={Colors.primarySoft} />
                             </View>
-                            <Text style={styles.emptyTitle}>No properties listed</Text>
+                            <Text style={styles.emptyTitle}>{t('home.noPremiumFound')}</Text>
                             <Text style={styles.emptyText}>
-                                Start listing your properties to reach thousands of buyers
+                                {t('home.sellDesc')}
                             </Text>
                             <TouchableOpacity
                                 style={styles.addFirstButton}
                                 onPress={() => navigation.navigate('AddProperty')}>
-                                <Text style={styles.addFirstText}>+ Add Your First Property</Text>
+                                <Text style={styles.addFirstText}>+ {t('profile.addProperty')}</Text>
                             </TouchableOpacity>
                         </View>
                     }
@@ -200,7 +204,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: Platform.OS === 'ios' ? 60 : 16,
+        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 10,
         paddingBottom: 16,
         backgroundColor: Colors.background,
         borderBottomWidth: 1,
