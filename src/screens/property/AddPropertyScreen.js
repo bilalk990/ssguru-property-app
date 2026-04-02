@@ -14,6 +14,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useTranslation } from 'react-i18next';
+import RazorpayCheckout from 'react-native-razorpay';
+import { createPaymentOrder, verifyPayment } from '../../api/paymentApi';
 import { launchImageLibrary } from 'react-native-image-picker';
 import CustomButton from '../../components/CustomButton';
 import { addProperty, updateProperty } from '../../api/propertyApi';
@@ -133,8 +136,64 @@ const AddPropertyScreen = ({ navigation, route }) => {
             return;
         }
 
-        // Skip payment for now - directly submit
-        handleSubmit();
+        if (editMode) {
+            // No payment for editing for now, or you can add if needed
+            return handleSubmit();
+        }
+
+        setLoading(true);
+        try {
+            // 1. Create order on backend (Amount ₹20)
+            const orderRes = await createPaymentOrder(20);
+            const order = orderRes.data.data;
+
+            const options = {
+                description: 'Property Listing Fee',
+                image: 'https://i.imgur.com/3g7nmJC.png',
+                currency: 'INR',
+                key: 'rzp_test_SYariAnXgfrjBS', // Test Key
+                amount: order.amount,
+                name: 'SS Property Guru',
+                order_id: order.id,
+                prefill: {
+                    email: authStore.user?.email || '',
+                    contact: authStore.user?.contact || '',
+                    name: authStore.user?.name || ''
+                },
+                theme: { color: Colors.primary }
+            };
+
+            RazorpayCheckout.open(options).then(async (data) => {
+                // 2. Verify payment on backend
+                try {
+                    const verifyRes = await verifyPayment({
+                        razorpay_order_id: data.razorpay_order_id,
+                        razorpay_payment_id: data.razorpay_payment_id,
+                        razorpay_signature: data.razorpay_signature
+                    });
+
+                    if (verifyRes.data.success) {
+                        // 3. Submit property with paymentId
+                        handleSubmit(data.razorpay_payment_id);
+                    } else {
+                        Alert.alert(t('common.error'), t('common.error'));
+                        setLoading(false);
+                    }
+                } catch (err) {
+                    Alert.alert(t('common.error'), 'Payment verification failed');
+                    setLoading(false);
+                }
+            }).catch((error) => {
+                console.log('Razorpay Error:', error);
+                Alert.alert('Payment Cancelled', error.description || 'User cancelled the payment');
+                setLoading(false);
+            });
+
+        } catch (error) {
+            console.error('Payment Initialization Error:', error);
+            Alert.alert(t('common.error'), 'Failed to initialize payment');
+            setLoading(false);
+        }
     };
 
     const handleSubmit = async (paymentId = null) => {
