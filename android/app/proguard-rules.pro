@@ -8,3 +8,11 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# Razorpay rules
+-keepattributes *Annotation*
+-keepclassmembers class * {
+  @android.webkit.JavascriptInterface <methods>;
+}
+-keep class com.razorpay.** {*;}
+-dontwarn com.razorpay.**
