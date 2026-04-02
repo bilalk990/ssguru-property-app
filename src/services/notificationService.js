@@ -37,6 +37,7 @@ class NotificationService {
             console.log('[NotificationService] Initialized successfully');
         } catch (error) {
             console.error('[NotificationService] Initialization error:', error);
+            // Don't throw - just log and continue
         }
     }
 

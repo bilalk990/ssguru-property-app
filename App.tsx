@@ -15,8 +15,12 @@ const RootStack = createNativeStackNavigator();
 
 const App = () => {
   useEffect(() => {
-    // Initialize push notifications
-    notificationService.initialize();
+    // Initialize push notifications (wrapped in try-catch to prevent crashes)
+    try {
+      notificationService.initialize();
+    } catch (error) {
+      console.log('[App] Notification service init failed:', error);
+    }
   }, []);
 
   return (
