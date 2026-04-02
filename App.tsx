@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import notificationService from './src/services/notificationService';
+import './src/i18n/i18n'; // Initialize i18n
 
 // Screens
 import SplashScreen from './src/screens/splash/SplashScreen';
