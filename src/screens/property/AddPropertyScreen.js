@@ -277,7 +277,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
             <StatusBar backgroundColor={Colors.background} barStyle="dark-content" />
 
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 10 }]}>
                 <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}>
@@ -503,7 +503,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 10,
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: Colors.border,

@@ -43,13 +43,14 @@ const languageDetector = {
     },
 };
 
+// Full i18n initialization
 i18n
     .use(languageDetector)
     .use(initReactI18next)
     .init({
         resources,
         fallbackLng: 'en',
-        compatibilityJSON: 'v3', // Required for React Native
+        compatibilityJSON: 'v3',
         interpolation: {
             escapeValue: false,
         },
