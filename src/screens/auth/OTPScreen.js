@@ -132,7 +132,7 @@ const OTPScreen = ({ route, navigation }) => {
             <StatusBar backgroundColor={Colors.background} barStyle="dark-content" />
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                <View style={styles.header}>
+                <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
                     <TouchableOpacity
                         style={styles.backButton}
                         onPress={() => navigation.goBack()}>
@@ -233,7 +233,6 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     header: {
-        paddingTop: insets.top + 10,
         marginBottom: 20,
     },
     backButton: {

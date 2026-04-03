@@ -87,7 +87,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
         <View style={styles.container}>
             <StatusBar backgroundColor={Colors.background} barStyle="dark-content" />
 
-            <View style={styles.topBar}>
+            <View style={[styles.topBar, { paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20 }]}>
                 <View style={styles.screenHeaderTitle}>
                     <Icon name="business" size={24} color={Colors.primary} />
                     <Text style={styles.screenTitle}>
@@ -162,7 +162,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                         </View>
                     )}
                     keyExtractor={(item, idx) => String(item._id || item.id || idx)}
-                    contentContainerStyle={styles.listContent}
+                    contentContainerStyle={[styles.listContent, { paddingBottom: 120 + insets.bottom }]}
                     showsVerticalScrollIndicator={false}
                     ListHeaderComponent={
                         <Text style={styles.resultCount}>
@@ -187,7 +187,6 @@ const styles = StyleSheet.create({
     topBar: {
         backgroundColor: Colors.background,
         paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 20,
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
@@ -228,7 +227,7 @@ const styles = StyleSheet.create({
     chipTextActive: {
         color: Colors.textWhite,
     },
-    listContent: { padding: 20, paddingBottom: 120 + insets.bottom },
+    listContent: { padding: 20 },
     resultCount: { fontSize: 14, color: Colors.textSecondary, fontWeight: '600', marginBottom: 16 },
     emptyContainer: { alignItems: 'center', paddingVertical: 80 },
     emptyTitle: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, marginTop: 20, marginBottom: 8 },

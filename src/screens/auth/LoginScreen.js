@@ -71,7 +71,7 @@ const LoginScreen = ({ navigation }) => {
         <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
                 {/* Decorative Background */}
                 <View style={styles.topDecoration}>
@@ -134,7 +134,7 @@ const LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.background },
-    scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: insets.top + 20 },
+    scrollContent: { flexGrow: 1, paddingHorizontal: 24 },
     topDecoration: { position: 'absolute', top: -100, right: -100, zIndex: -1 },
     decorCircle: { width: 300, height: 300, borderRadius: 150, opacity: 0.6 },
     decorCircleSmall: { width: 150, height: 150, borderRadius: 75, position: 'absolute', bottom: 50, left: -50, opacity: 0.4 },

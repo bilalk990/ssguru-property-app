@@ -131,7 +131,7 @@ const HomeScreen = ({ navigation }) => {
                 {/* Premium Gradient Header */}
                 <LinearGradient
                     colors={Colors.gradientPrimary}
-                    style={styles.header}
+                    style={[styles.header, { paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20 }]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}>
                     <View style={styles.headerTop}>
@@ -264,7 +264,6 @@ const styles = StyleSheet.create({
     scrollContent: { paddingBottom: 20 },
     header: {
         paddingHorizontal: 24,
-        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 40,
         borderBottomLeftRadius: 40,
         borderBottomRightRadius: 40,

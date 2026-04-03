@@ -168,7 +168,7 @@ const ProfileScreen = ({ navigation }) => {
                 {/* Premium Profile Header */}
                 <LinearGradient
                     colors={Colors.gradientPrimary}
-                    style={styles.header}
+                    style={[styles.header, { paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20 }]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}>
                     <View style={styles.profileSection}>
@@ -298,7 +298,6 @@ const styles = StyleSheet.create({
     },
     // Header
     header: {
-        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 35,
         borderBottomLeftRadius: 36,
         borderBottomRightRadius: 36,

@@ -69,7 +69,7 @@ const DashboardScreen = ({ navigation }) => {
                 {/* Premium Header */}
                 <LinearGradient
                     colors={Colors.gradientPrimary}
-                    style={styles.header}
+                    style={[styles.header, { paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20 }]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}>
                     <View style={styles.headerContent}>
@@ -215,7 +215,6 @@ const DashboardScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.backgroundSecondary },
     header: {
-        paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 20,
         paddingBottom: 40,
         paddingHorizontal: 24,
         borderBottomLeftRadius: 40,

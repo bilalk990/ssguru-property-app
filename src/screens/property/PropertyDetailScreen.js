@@ -137,13 +137,13 @@ const PropertyDetailScreen = ({ route, navigation }) => {
 
                     {/* Back Button */}
                     <TouchableOpacity
-                        style={styles.backButton}
+                        style={[styles.backButton, { top: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 15 }]}
                         onPress={() => navigation.goBack()}>
                         <Icon name="arrow-back" size={24} color={Colors.textWhite} />
                     </TouchableOpacity>
 
                     {/* Action Buttons - Share & Favorite */}
-                    <View style={styles.topRightActions}>
+                    <View style={[styles.topRightActions, { top: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 15 }]}>
                         <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
                             <Icon name="share-social-outline" size={20} color={Colors.textWhite} />
                         </TouchableOpacity>
@@ -157,7 +157,7 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                     </View>
 
                     {/* Image Counter Badge */}
-                    <View style={styles.imageCounter}>
+                    <View style={[styles.imageCounter, { top: Platform.OS === 'ios' ? Math.max(insets.top + 60, 110) : insets.top + 75 }]}>
                         <Icon name="images-outline" size={14} color={Colors.textWhite} />
                         <Text style={styles.imageCounterText}>
                             {activeImageIndex + 1}/{images.length}
@@ -311,7 +311,6 @@ const styles = StyleSheet.create({
     },
     backButton: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 15,
         left: 20,
         width: 45,
         height: 45,
@@ -324,7 +323,6 @@ const styles = StyleSheet.create({
     },
     topRightActions: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? Math.max(insets.top, 50) : insets.top + 15,
         right: 20,
         flexDirection: 'row',
         gap: 10,
@@ -341,7 +339,6 @@ const styles = StyleSheet.create({
     },
     imageCounter: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? Math.max(insets.top + 60, 110) : insets.top + 75,
         right: 20,
         backgroundColor: 'rgba(0,0,0,0.5)',
         paddingHorizontal: 15,

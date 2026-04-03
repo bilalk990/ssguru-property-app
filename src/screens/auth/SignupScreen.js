@@ -97,7 +97,7 @@ const SignupScreen = ({ navigation }) => {
         <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
                 <View style={styles.topDecoration}>
                     <LinearGradient colors={[Colors.primarySoft, Colors.background]} style={styles.decorCircle} />
@@ -174,7 +174,7 @@ const SignupScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.background },
-    scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: insets.top + 20, paddingBottom: 40 },
+    scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40 },
     topDecoration: { position: 'absolute', top: -150, right: -150, zIndex: -1 },
     decorCircle: { width: 400, height: 400, borderRadius: 200, opacity: 0.5 },
     header: { marginBottom: 30, marginTop: 20 },
