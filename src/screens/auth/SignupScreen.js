@@ -10,6 +10,7 @@ import Colors from '../../constants/colors';
 import FloatingLabelInput from '../../components/FloatingLabelInput';
 import AnimatedButton from '../../components/AnimatedButton';
 import { signup } from '../../api/authApi';
+import GetLocation from 'react-native-get-location';
 
 const SignupScreen = ({ navigation }) => {
     const { t } = useTranslation();
@@ -76,7 +77,29 @@ const SignupScreen = ({ navigation }) => {
 
         setLoading(true);
         try {
-            const response = await signup({ name: trimmedName, email: trimmedEmail, contact: trimmedPhone });
+            // Get current location (automatically)
+            let locationData = { latitude: 0, longitude: 0 };
+            try {
+                const location = await GetLocation.getCurrentPosition({
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                });
+                locationData = {
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                };
+                console.log('Location Captured:', locationData);
+            } catch (err) {
+                console.warn('Location Capture Failed:', err.code, err.message);
+                // Continue with signup even if location fails
+            }
+
+            const response = await signup({
+                name: trimmedName,
+                email: trimmedEmail,
+                contact: trimmedPhone,
+                ...locationData
+            });
             if (response.data) {
                 const devOtp = response.data?.data?.devOtp;
                 navigation.navigate('OTP', { email: trimmedPhone, mode: 'verify', prefillOtp: devOtp || null });
