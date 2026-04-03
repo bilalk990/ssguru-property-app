@@ -142,11 +142,8 @@ const HomeScreen = ({ navigation }) => {
                                 <Text style={styles.appName}>{t('common.appName')}</Text>
                             </View>
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <View style={{ position: 'absolute', top: -10, right: 0 }}>
                             <LanguageSelector />
-                            <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('Profile')}>
-                                <Icon name="person" size={20} color={Colors.textWhite} />
-                            </TouchableOpacity>
                         </View>
                     </View>
                     <Text style={styles.headerTitle}>{t('home.greeting')}</Text>
