@@ -37,6 +37,7 @@ const LanguageSelector = () => {
                 style={styles.selectorButton}
                 onPress={() => setModalVisible(true)}
                 activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
                 <View style={styles.iconCircle}>
                     <Icon name="language" size={18} color={Colors.textWhite} />
@@ -102,11 +103,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(255,255,255,0.12)',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 16,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.15)',
+        minWidth: 90,
     },
     iconCircle: {
         width: 22,
