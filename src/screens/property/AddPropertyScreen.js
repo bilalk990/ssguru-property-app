@@ -37,9 +37,8 @@ const AddPropertyScreen = ({ navigation, route }) => {
         city: propertyData?.city || 'Ujjain',
         area: propertyData?.area || '',
         description: propertyData?.description || '',
-        type: propertyData?.type || 'Residential',
         category: propertyData?.category || 'House',
-        sellingType: propertyData?.sellingType || 'Sell',
+        sellingType: propertyData?.sellingType || 'Sale',
         bedrooms: propertyData?.bedrooms?.toString() || '',
         bathrooms: propertyData?.bathrooms?.toString() || '',
         sqft: propertyData?.sqft?.toString() || '',
@@ -364,7 +363,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
 
                         <Text style={styles.sectionLabel}>{t('property.sellingType')} *</Text>
                         <View style={styles.typeContainer}>
-                            {['Sell', 'Rent', 'Lease'].map(type => (
+                            {['Sale', 'Rent', 'Lease'].map(type => (
                                 <TouchableOpacity
                                     key={type}
                                     style={[styles.typeChip, form.sellingType === type && styles.typeChipActive]}
@@ -386,13 +385,13 @@ const AddPropertyScreen = ({ navigation, route }) => {
 
                         <Text style={styles.sectionLabel}>{t('property.category')} *</Text>
                         <View style={styles.typeContainer}>
-                            {['Residential', 'Commercial', 'Agricultural', 'Industrial'].map(cat => (
+                            {propertyTypes.filter(c => c !== 'All Types').map(cat => (
                                 <TouchableOpacity
                                     key={cat}
-                                    style={[styles.typeChip, form.type === cat && styles.typeChipActive]}
-                                    onPress={() => updateField('type', cat)}
+                                    style={[styles.typeChip, form.category === cat && styles.typeChipActive]}
+                                    onPress={() => updateField('category', cat)}
                                 >
-                                    <Text style={[styles.typeChipText, form.type === cat && styles.typeChipTextActive]}>{t(`common.${cat.toLowerCase()}`)}</Text>
+                                    <Text style={[styles.typeChipText, form.category === cat && styles.typeChipTextActive]}>{cat}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>

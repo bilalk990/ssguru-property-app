@@ -29,7 +29,16 @@ const MyPropertiesScreen = ({ navigation }) => {
     const fetchMyProperties = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await getMyProperties();
+            const storedUser = await AsyncStorage.getItem('userData');
+            const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+            const userId = parsedUser?.id || parsedUser?._id;
+
+            if (!userId) {
+                setLoading(false);
+                return;
+            }
+
+            const response = await getMyProperties(userId);
             const listings = response.data?.data || response.data?.properties || response.data || [];
             setProperties(Array.isArray(listings) ? listings.map(item => normalizeProperty(item, t)) : []);
         } catch (error) {
@@ -37,7 +46,7 @@ const MyPropertiesScreen = ({ navigation }) => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [t]);
 
     useEffect(() => {
         fetchMyProperties();

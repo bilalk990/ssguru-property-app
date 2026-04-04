@@ -5,12 +5,13 @@
 
 export const propertyTypes = [
     'All Types',
-    'Apartment',
-    'House',
-    'Villa',
-    'Penthouse',
-    'Commercial',
+    'Property',
     'Plot',
+    'House',
+    'Flat',
+    'Agricultural Land',
+    'Commercial Space',
+    'Property Land',
 ];
 
 export const priceRanges = [

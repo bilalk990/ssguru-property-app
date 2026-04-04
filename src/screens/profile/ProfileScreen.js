@@ -203,8 +203,8 @@ const ProfileScreen = ({ navigation }) => {
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statItem}>
-                            <Icon name="star" size={24} color={Colors.accentMuted} />
-                            <Text style={styles.statLabel}>{userData.role === 'agent' ? t('home.enquiryDescShort') : 'Premium'}</Text>
+                            <Icon name="person-circle-outline" size={24} color={Colors.accentMuted} />
+                            <Text style={styles.statLabel}>{userData.role === 'agent' ? t('home.enquiryDescShort') : t('profile.newUser') || 'New User'}</Text>
                         </View>
                     </View>
                 </LinearGradient>

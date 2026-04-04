@@ -95,8 +95,7 @@ const OTPScreen = ({ route, navigation }) => {
                     await authStore.saveAuthData(token, userData);
                     // Navigate to Dashboard (Sell tab)
                     navigation.replace('MainApp', {
-                        screen: 'Sell',
-                        params: { screen: 'Dashboard' }
+                        screen: 'Home'
                     });
                 } else {
                     Alert.alert(t('auth.verified'), t('auth.verifiedDesc'), [

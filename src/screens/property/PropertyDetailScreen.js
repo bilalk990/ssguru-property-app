@@ -70,11 +70,16 @@ const PropertyDetailScreen = ({ route, navigation }) => {
 
     const handleWhatsApp = async () => {
         if (!await checkAuthAndProceed()) return;
-        const message = t('property.whatsappMessage', {
-            title: property.title,
-            price: property.price,
-            location: `${property.area}, ${property.city}`
-        });
+
+        const propertyTitle = property.title || 'Property';
+        const propertyPrice = property.price || 'Contact for price';
+        const propertyLocation = `${property.area || ''}, ${property.city || ''}`;
+        const propertyId = property._id ? `(ID: ${property._id.slice(-8).toUpperCase()})` : '';
+
+        const greeting = "Hello SS Property Guru Admin,\n\n";
+        const body = `I am interested in this property: *${propertyTitle}*\nPrice: *${propertyPrice}*\nLocation: *${propertyLocation}*\n${propertyId}\n\nPlease provide more details.`;
+
+        const message = greeting + body;
         Linking.openURL(`whatsapp://send?phone=${ADMIN_PHONE}&text=${encodeURIComponent(message)}`);
     };
 

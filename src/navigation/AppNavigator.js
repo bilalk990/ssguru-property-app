@@ -28,6 +28,8 @@ import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import LocationManagerScreen from '../screens/profile/LocationManagerScreen';
 import StreamManagerScreen from '../screens/profile/StreamManagerScreen';
 import FranchiseDashboardScreen from '../screens/profile/FranchiseDashboardScreen';
+import LeadsScreen from '../screens/agent/LeadsScreen';
+import AgentsScreen from '../screens/agent/AgentsScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
@@ -100,6 +102,8 @@ const HomeStack = () => (
         <HomeStackNav.Screen name="Gallery" component={GalleryScreen} />
         <HomeStackNav.Screen name="Franchise" component={FranchiseScreen} />
         <HomeStackNav.Screen name="AboutContact" component={AboutContactScreen} />
+        <HomeStackNav.Screen name="Agents" component={AgentsScreen} />
+        <HomeStackNav.Screen name="PostRequirement" component={PostRequirementScreen} />
     </HomeStackNav.Navigator>
 );
 
@@ -122,6 +126,8 @@ const SellStack = () => (
 const ProfileStack = () => (
     <ProfileStackNav.Navigator screenOptions={{ headerShown: false }}>
         <ProfileStackNav.Screen name="ProfileMain" component={ProfileScreen} />
+        <ProfileStackNav.Screen name="EditProfile" component={EditProfileScreen} />
+        <ProfileStackNav.Screen name="Notification" component={NotificationScreen} />
         <ProfileStackNav.Screen name="MyProperties" component={MyPropertiesScreen} />
         <ProfileStackNav.Screen name="AddProperty" component={AddPropertyScreen} />
         <ProfileStackNav.Screen name="Enquiry" component={EnquiryFormScreen} />
@@ -129,6 +135,14 @@ const ProfileStack = () => (
         <ProfileStackNav.Screen name="Gallery" component={GalleryScreen} />
         <ProfileStackNav.Screen name="Franchise" component={FranchiseScreen} />
         <ProfileStackNav.Screen name="AboutContact" component={AboutContactScreen} />
+        <ProfileStackNav.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+        <ProfileStackNav.Screen name="FranchiseDashboard" component={FranchiseDashboardScreen} />
+        <ProfileStackNav.Screen name="LocationManager" component={LocationManagerScreen} />
+        <ProfileStackNav.Screen name="StreamManager" component={StreamManagerScreen} />
+        <ProfileStackNav.Screen name="ManagementList" component={ManagementListScreen} />
+        <ProfileStackNav.Screen name="Leads" component={LeadsScreen} />
+        <ProfileStackNav.Screen name="Agents" component={AgentsScreen} />
+        <ProfileStackNav.Screen name="PostRequirement" component={PostRequirementScreen} />
     </ProfileStackNav.Navigator>
 );
 
@@ -141,6 +155,7 @@ const AppNavigator = () => {
 
     return (
         <Tab.Navigator
+            initialRouteName="Home"
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarHideOnKeyboard: true,

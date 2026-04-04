@@ -142,9 +142,7 @@ const HomeScreen = ({ navigation }) => {
                                 <Text style={styles.appName}>{t('common.appName')}</Text>
                             </View>
                         </View>
-                        <View style={{ position: 'absolute', top: -10, right: 0 }}>
-                            <LanguageSelector />
-                        </View>
+                        <LanguageSelector />
                     </View>
                     <Text style={styles.headerTitle}>{t('home.greeting')}</Text>
 
@@ -156,6 +154,27 @@ const HomeScreen = ({ navigation }) => {
                             placeholder={t('common.search')}
                         />
                     </View>
+
+                    {/* Category Filter */}
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={styles.categoryScroll}
+                        contentContainerStyle={styles.categoryContent}>
+                        {['All Types', 'Plot', 'House', 'Flat', 'Agricultural Land'].map((cat) => (
+                            <TouchableOpacity
+                                key={cat}
+                                style={[styles.categoryChip, search === cat && styles.categoryChipActive]}
+                                onPress={() => {
+                                    setSearch(cat === 'All Types' ? '' : cat);
+                                    // Trigger search logic if needed
+                                }}>
+                                <Text style={[styles.categoryChipText, search === cat && styles.categoryChipTextActive]}>
+                                    {cat === 'All Types' ? t('common.all') : cat}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
                 </LinearGradient>
 
                 {/* Quick Actions with Animation */}
@@ -310,8 +329,36 @@ const styles = StyleSheet.create({
     enquirySubmitBtn: { marginTop: 10, borderRadius: 16, overflow: 'hidden', elevation: 6 },
     enquiryBtnGradient: { paddingVertical: 18, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 },
     enquirySubmitText: { color: Colors.textWhite, fontSize: 17, fontWeight: '800' },
-    emptyContainer: { alignItems: 'center', paddingVertical: 40, backgroundColor: Colors.surfaceSecondary, borderRadius: 20 },
     emptyText: { color: Colors.textSecondary, fontSize: 15, marginTop: 12, fontWeight: '500' },
+    // Category Filter Styles
+    categoryScroll: {
+        marginTop: 15,
+        marginHorizontal: -24, // Pull out of parent padding
+    },
+    categoryContent: {
+        paddingHorizontal: 24,
+        gap: 10,
+    },
+    categoryChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+    },
+    categoryChipActive: {
+        backgroundColor: Colors.textWhite,
+    },
+    categoryChipText: {
+        color: Colors.textWhite,
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    categoryChipTextActive: {
+        color: Colors.primary,
+        fontWeight: '700',
+    },
 });
 
 export default HomeScreen;

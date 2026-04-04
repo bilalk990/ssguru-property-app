@@ -45,10 +45,9 @@ export const deleteProperty = async (id) => {
     return apiClient.delete(`/properties/${id}`);
 };
 
-// My Properties (Frontend logic filter or backend endpoint if exists)
+// My Properties (Backend endpoint for properties by agent)
 export const getMyProperties = async (userId) => {
-    // Assuming we fetch filtered properties or there's a specific 'me' endpoint
-    return apiClient.get('/properties', { params: { userId } });
+    return apiClient.get(`/properties/agent/${userId}`);
 };
 
 // Enquiry / Lead Submission (Postman: /api/v1/enquiries)
