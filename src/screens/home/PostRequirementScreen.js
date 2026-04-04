@@ -152,7 +152,10 @@ const styles = StyleSheet.create({
     },
     backButton: { padding: 8 },
     headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-    scrollContent: { padding: 20 },
+    scrollContent: {
+        padding: 20,
+        paddingBottom: 120,
+    },
     infoBox: {
         flexDirection: 'row',
         backgroundColor: Colors.primarySoft,

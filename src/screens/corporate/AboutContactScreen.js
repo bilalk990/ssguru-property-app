@@ -143,7 +143,10 @@ const styles = StyleSheet.create({
     },
     backButton: { padding: 8 },
     headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-    content: { padding: 25 },
+    content: {
+        padding: 25,
+        paddingBottom: 120,
+    },
     section: { marginBottom: 35 },
     sectionTitle: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, marginBottom: 15 },
     paragraph: { fontSize: 15, color: Colors.textSecondary, lineHeight: 24 },

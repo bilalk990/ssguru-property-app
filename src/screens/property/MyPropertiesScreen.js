@@ -179,7 +179,7 @@ const MyPropertiesScreen = ({ navigation }) => {
                     data={properties}
                     renderItem={renderProperty}
                     keyExtractor={(item, idx) => String(item._id || item.id || idx)}
-                    contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
+                    contentContainerStyle={[styles.listContent, { paddingBottom: 120 }]}
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>

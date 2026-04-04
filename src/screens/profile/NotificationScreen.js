@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     },
     backBtn: { padding: 8 },
     headerTitle: { fontSize: 20, fontWeight: '800', color: Colors.textWhite },
-    list: { padding: 16 },
+    list: { padding: 16, paddingBottom: 120 },
     notificationCard: {
         flexDirection: 'row',
         backgroundColor: Colors.backgroundCard,

@@ -1,7 +1,8 @@
 {
     "common": {
         "appName": "SS Property Guru",
-        "search": "Search properties...",
+        "all": "All",
+        "search": "Search land, plots...",
         "buy": "Buy",
         "rent": "Rent",
         "commercial": "Commercial",
@@ -179,6 +180,7 @@
         "notificationsSubtitle": "Alerts & updates",
         "supportSubtitle": "Help, Terms & Privacy",
         "guestUser": "Guest User",
+        "newUser": "User",
         "noContact": "No contact info",
         "listed": "Listed",
         "agentTools": "Agent Tools",

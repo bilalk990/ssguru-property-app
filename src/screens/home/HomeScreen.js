@@ -161,13 +161,12 @@ const HomeScreen = ({ navigation }) => {
                         showsHorizontalScrollIndicator={false}
                         style={styles.categoryScroll}
                         contentContainerStyle={styles.categoryContent}>
-                        {['All Types', 'Plot', 'House', 'Flat', 'Agricultural Land'].map((cat) => (
+                        {propertyTypes.map((cat) => (
                             <TouchableOpacity
                                 key={cat}
                                 style={[styles.categoryChip, search === cat && styles.categoryChipActive]}
                                 onPress={() => {
                                     setSearch(cat === 'All Types' ? '' : cat);
-                                    // Trigger search logic if needed
                                 }}>
                                 <Text style={[styles.categoryChipText, search === cat && styles.categoryChipTextActive]}>
                                     {cat === 'All Types' ? t('common.all') : cat}
@@ -277,7 +276,7 @@ const HomeScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.backgroundSecondary },
-    scrollContent: { paddingBottom: 20 },
+    scrollContent: { paddingBottom: 120 },
     header: {
         paddingHorizontal: 24,
         paddingBottom: 40,
