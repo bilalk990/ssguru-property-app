@@ -200,9 +200,9 @@ const styles = StyleSheet.create({
     scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40 },
     topDecoration: { position: 'absolute', top: -150, right: -150, zIndex: -1 },
     decorCircle: { width: 400, height: 400, borderRadius: 200, opacity: 0.5 },
-    header: { marginBottom: 30, marginTop: 20 },
-    title: { fontSize: 34, fontWeight: '900', color: Colors.textPrimary, letterSpacing: -0.5 },
-    subtitle: { fontSize: 16, color: Colors.textSecondary, marginTop: 6, fontWeight: '500' },
+    header: { alignItems: 'center', marginTop: 30, marginBottom: 40 },
+    title: { fontSize: 32, fontWeight: '900', color: Colors.textPrimary, letterSpacing: -0.5, marginBottom: 8 },
+    subtitle: { fontSize: 15, color: Colors.textSecondary, textAlign: 'center', paddingHorizontal: 20, lineHeight: 22 },
     card: {
         backgroundColor: Colors.surface, borderRadius: 32, padding: 28, elevation: 6,
         shadowColor: Colors.shadowPremium, shadowOffset: { width: 0, height: 12 },
