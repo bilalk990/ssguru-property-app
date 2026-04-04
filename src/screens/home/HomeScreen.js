@@ -9,6 +9,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
+import { propertyTypes } from '../../constants/appConstants';
 import SearchBar from '../../components/SearchBar';
 import LanguageSelector from '../../components/LanguageSelector';
 import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
