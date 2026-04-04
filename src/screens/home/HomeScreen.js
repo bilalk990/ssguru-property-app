@@ -113,8 +113,19 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-    const featured = properties.filter(p => p.featured || p.isFeatured).map(p => normalizeProperty(p, t));
-    const recent = properties.slice(0, 5).map(p => normalizeProperty(p, t));
+    const filteredProperties = properties.filter(p => {
+        if (!search) return true;
+        const s = search.toLowerCase();
+        return (
+            p.title?.toLowerCase().includes(s) ||
+            p.category?.toLowerCase().includes(s) ||
+            p.district?.toLowerCase().includes(s) ||
+            p.area?.toLowerCase().includes(s)
+        );
+    });
+
+    const featured = filteredProperties.filter(p => p.featured || p.isFeatured).map(p => normalizeProperty(p, t));
+    const recent = filteredProperties.slice(0, 5).map(p => normalizeProperty(p, t));
 
     return (
         <View style={styles.container}>
