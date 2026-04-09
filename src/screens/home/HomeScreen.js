@@ -15,7 +15,6 @@ import LanguageSelector from '../../components/LanguageSelector';
 import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
 import { PropertyCardSkeleton } from '../../components/SkeletonLoader';
 import { getProperties } from '../../api/propertyApi';
-import { getCurrentStream } from '../../api/streamApi';
 import { createEnquiry } from '../../api/enquiryApi';
 
 const { width } = Dimensions.get('window');
@@ -193,8 +192,6 @@ const HomeScreen = ({ navigation }) => {
                     <ActionCard title={t('common.buy')} desc={t('home.buyDesc')} icon="home" color={Colors.primarySoft} onPress={() => navigation.navigate('Buy')} />
                     <ActionCard title={t('home.sell')} desc={t('home.sellDesc')} icon="cash" color={Colors.accentSoft} onPress={() => navigation.navigate('Sell')} />
                     <ActionCard title={t('home.enquiry')} desc={t('home.enquiryDescShort')} icon="chatbubble-ellipses" color="#F1F5F9" onPress={() => navigation.navigate('Enquiry')} />
-                    <ActionCard title={t('home.franchise')} desc={t('home.franchiseDesc')} icon="business" color="#ECFDF5" onPress={() => navigation.navigate('Franchise')} />
-                    <ActionCard title={t('home.gallery')} desc={t('home.galleryDesc')} icon="images" color="#FFFBEB" onPress={() => navigation.navigate('Gallery')} />
                 </Animated.View>
 
                 {/* Content Section */}
@@ -310,7 +307,7 @@ const styles = StyleSheet.create({
     searchContainer: { marginTop: 10 },
     actionsSection: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, paddingTop: 30, gap: 14, justifyContent: 'center' },
     actionCard: {
-        width: (width - 68) / 3,
+        width: (width - 54) / 2,
         backgroundColor: Colors.backgroundCard,
         borderRadius: 24,
         padding: 16,

@@ -186,7 +186,7 @@ const SignupScreen = ({ navigation }) => {
                     <Text style={styles.footerText}>
                         {t('auth.agreeToSignup')}
                         <Text style={styles.link}>{t('auth.terms')}</Text>{t('auth.and')}
-                        <Text style={styles.link}>{t('auth.privacyPolicy')}</Text>
+                        <Text style={styles.link} onPress={() => navigation.navigate('PrivacyPolicy')}>{t('auth.privacyPolicy')}</Text>
                     </Text>
                 </Animated.View>
 

@@ -18,15 +18,15 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 import GalleryScreen from '../screens/corporate/GalleryScreen';
 import FranchiseScreen from '../screens/corporate/FranchiseScreen';
 import AboutContactScreen from '../screens/corporate/AboutContactScreen';
+import PrivacyPolicyScreen from '../screens/corporate/PrivacyPolicyScreen';
 import EnquiryFormScreen from '../screens/home/EnquiryFormScreen';
-import LiveTourScreen from '../screens/home/LiveTourScreen';
 import PostRequirementScreen from '../screens/home/PostRequirementScreen';
 import AdminDashboardScreen from '../screens/profile/AdminDashboardScreen';
 import NotificationScreen from '../screens/profile/NotificationScreen';
 import ManagementListScreen from '../screens/profile/ManagementListScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import LocationManagerScreen from '../screens/profile/LocationManagerScreen';
-import StreamManagerScreen from '../screens/profile/StreamManagerScreen';
+
 import FranchiseDashboardScreen from '../screens/profile/FranchiseDashboardScreen';
 import LeadsScreen from '../screens/agent/LeadsScreen';
 import AgentsScreen from '../screens/agent/AgentsScreen';
@@ -38,6 +38,7 @@ const Tab = createBottomTabNavigator();
 const HomeStackNav = createNativeStackNavigator();
 const BuyStackNav = createNativeStackNavigator();
 const SellStackNav = createNativeStackNavigator();
+const EnquiryStackNav = createNativeStackNavigator();
 const ProfileStackNav = createNativeStackNavigator();
 
 // Premium Tab icon component
@@ -102,6 +103,7 @@ const HomeStack = () => (
         <HomeStackNav.Screen name="Gallery" component={GalleryScreen} />
         <HomeStackNav.Screen name="Franchise" component={FranchiseScreen} />
         <HomeStackNav.Screen name="AboutContact" component={AboutContactScreen} />
+        <HomeStackNav.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
         <HomeStackNav.Screen name="Agents" component={AgentsScreen} />
         <HomeStackNav.Screen name="PostRequirement" component={PostRequirementScreen} />
     </HomeStackNav.Navigator>
@@ -123,6 +125,13 @@ const SellStack = () => (
     </SellStackNav.Navigator>
 );
 
+const EnquiryStack = () => (
+    <EnquiryStackNav.Navigator screenOptions={{ headerShown: false }}>
+        <EnquiryStackNav.Screen name="EnquiryMain" component={PostRequirementScreen} />
+        <EnquiryStackNav.Screen name="PropertyDetail" component={PropertyDetailScreen} />
+    </EnquiryStackNav.Navigator>
+);
+
 const ProfileStack = () => (
     <ProfileStackNav.Navigator screenOptions={{ headerShown: false }}>
         <ProfileStackNav.Screen name="ProfileMain" component={ProfileScreen} />
@@ -135,10 +144,10 @@ const ProfileStack = () => (
         <ProfileStackNav.Screen name="Gallery" component={GalleryScreen} />
         <ProfileStackNav.Screen name="Franchise" component={FranchiseScreen} />
         <ProfileStackNav.Screen name="AboutContact" component={AboutContactScreen} />
+        <ProfileStackNav.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
         <ProfileStackNav.Screen name="AdminDashboard" component={AdminDashboardScreen} />
         <ProfileStackNav.Screen name="FranchiseDashboard" component={FranchiseDashboardScreen} />
         <ProfileStackNav.Screen name="LocationManager" component={LocationManagerScreen} />
-        <ProfileStackNav.Screen name="StreamManager" component={StreamManagerScreen} />
         <ProfileStackNav.Screen name="ManagementList" component={ManagementListScreen} />
         <ProfileStackNav.Screen name="Leads" component={LeadsScreen} />
         <ProfileStackNav.Screen name="Agents" component={AgentsScreen} />
@@ -166,6 +175,7 @@ const AppNavigator = () => {
                     if (route.name === 'Home') { iconName = 'home'; label = t('common.home'); }
                     else if (route.name === 'Buy') { iconName = 'search'; label = t('common.searchTab'); }
                     else if (route.name === 'Sell') { iconName = 'add-circle'; label = t('common.sellTab'); }
+                    else if (route.name === 'Enquiry') { iconName = 'chatbubble-ellipses'; label = t('home.enquiry'); }
                     else if (route.name === 'Profile') { iconName = 'person'; label = t('common.profileTab'); }
                     return <TabIcon label={label} icon={iconName} focused={focused} />;
                 },
@@ -192,6 +202,7 @@ const AppNavigator = () => {
             <Tab.Screen name="Home" component={HomeStack} />
             <Tab.Screen name="Buy" component={BuyStack} />
             <Tab.Screen name="Sell" component={SellStack} />
+            <Tab.Screen name="Enquiry" component={EnquiryStack} />
             <Tab.Screen name="Profile" component={ProfileStack} />
         </Tab.Navigator>
     );

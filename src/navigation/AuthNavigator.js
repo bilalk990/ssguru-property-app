@@ -4,6 +4,7 @@ import SplashScreen from '../screens/splash/SplashScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import SignupScreen from '../screens/auth/SignupScreen';
 import OTPScreen from '../screens/auth/OTPScreen';
+import PrivacyPolicyScreen from '../screens/corporate/PrivacyPolicyScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,7 @@ const AuthNavigator = () => {
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Signup" component={SignupScreen} />
             <Stack.Screen name="OTP" component={OTPScreen} />
+            <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
         </Stack.Navigator>
     );
 };

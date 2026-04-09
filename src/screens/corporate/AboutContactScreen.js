@@ -115,7 +115,7 @@ const AboutContactScreen = ({ navigation }) => {
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>{t('corporate.legal')}</Text>
-                    <TouchableOpacity style={styles.legalItem}>
+                    <TouchableOpacity style={styles.legalItem} onPress={() => navigation.navigate('PrivacyPolicy')}>
                         <Text style={styles.legalText}>{t('auth.privacyPolicy')}</Text>
                         <Icon name="chevron-forward" size={18} color={Colors.textLight} />
                     </TouchableOpacity>

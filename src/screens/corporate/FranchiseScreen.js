@@ -17,7 +17,7 @@ const FranchiseScreen = ({ navigation }) => {
     const { t } = useTranslation();
     const insets = useSafeAreaInsets();
     const [form, setForm] = useState({
-        name: '', phone: '', email: '', city: '', message: '', agreed: false
+        name: '', phone: '', agreed: false
     });
     const [loading, setLoading] = useState(false);
 
@@ -38,7 +38,7 @@ const FranchiseScreen = ({ navigation }) => {
     }, []);
 
     const handleSubmit = async () => {
-        if (!form.name || !form.phone || !form.email || !form.city) {
+        if (!form.name || !form.phone) {
             Alert.alert(t('corporate.incomplete'), t('corporate.fillMandatory'));
             return;
         }
@@ -52,14 +52,14 @@ const FranchiseScreen = ({ navigation }) => {
             await applyForFranchise({
                 name: form.name,
                 phone: form.phone,
-                email: form.email,
-                city: form.city,
-                message: form.message || 'Applying for Franchise.',
+                email: `${form.phone}@franchise.com`,
+                city: 'N/A',
+                message: 'Franchise application submitted.',
             });
             Alert.alert(t('common.success'), t('corporate.teamContactSoon'), [
                 { text: t('common.ok'), onPress: () => navigation.goBack() }
             ]);
-            setForm({ name: '', phone: '', email: '', city: '', message: '', agreed: false });
+            setForm({ name: '', phone: '', agreed: false });
         } catch (error) {
             Alert.alert(t('common.error'), t('home.enquiryError'));
         } finally {
@@ -100,38 +100,6 @@ const FranchiseScreen = ({ navigation }) => {
                             value={form.phone}
                             keyboardType="phone-pad"
                             onChangeText={txt => setForm({ ...form, phone: txt })}
-                        />
-                    </View>
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>{t('corporate.emailAddress')} *</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={form.email}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            onChangeText={txt => setForm({ ...form, email: txt })}
-                        />
-                    </View>
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>{t('corporate.city')} *</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={form.city}
-                            onChangeText={txt => setForm({ ...form, city: txt })}
-                        />
-                    </View>
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>{t('corporate.messageQuery')}</Text>
-                        <TextInput
-                            style={[styles.input, styles.textArea]}
-                            multiline
-                            numberOfLines={4}
-                            textAlignVertical="top"
-                            value={form.message}
-                            onChangeText={txt => setForm({ ...form, message: txt })}
                         />
                     </View>
 
