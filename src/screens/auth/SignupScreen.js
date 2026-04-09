@@ -16,7 +16,6 @@ const SignupScreen = ({ navigation }) => {
     const { t } = useTranslation();
     const insets = useSafeAreaInsets();
     const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -25,8 +24,6 @@ const SignupScreen = ({ navigation }) => {
     const headerSlide = useRef(new Animated.Value(-30)).current;
     const nameAnim = useRef(new Animated.Value(0)).current;
     const nameSlide = useRef(new Animated.Value(20)).current;
-    const emailAnim = useRef(new Animated.Value(0)).current;
-    const emailSlide = useRef(new Animated.Value(20)).current;
     const phoneAnim = useRef(new Animated.Value(0)).current;
     const phoneSlide = useRef(new Animated.Value(20)).current;
     const btnAnim = useRef(new Animated.Value(0)).current;
@@ -43,10 +40,6 @@ const SignupScreen = ({ navigation }) => {
                 Animated.spring(nameSlide, { toValue: 0, tension: 30, friction: 7, useNativeDriver: true })
             ]),
             Animated.parallel([
-                Animated.timing(emailAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
-                Animated.spring(emailSlide, { toValue: 0, tension: 30, friction: 7, useNativeDriver: true })
-            ]),
-            Animated.parallel([
                 Animated.timing(phoneAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
                 Animated.spring(phoneSlide, { toValue: 0, tension: 30, friction: 7, useNativeDriver: true })
             ]),
@@ -59,16 +52,10 @@ const SignupScreen = ({ navigation }) => {
 
     const handleSignup = async () => {
         const trimmedName = (name || '').trim();
-        const trimmedEmail = (email || '').trim();
         const trimmedPhone = (phone || '').trim();
 
-        if (!trimmedName || !trimmedEmail || !trimmedPhone) {
+        if (!trimmedName || !trimmedPhone) {
             return Alert.alert(t('auth.missingFields'), t('auth.missingFieldsDesc'));
-        }
-
-        const emailRegex = /\S+@\S+\.\S+/;
-        if (!emailRegex.test(trimmedEmail)) {
-            return Alert.alert(t('auth.invalidEmail'), t('auth.invalidEmailDesc'));
         }
 
         if (trimmedPhone.length < 10) {
@@ -96,7 +83,7 @@ const SignupScreen = ({ navigation }) => {
 
             const response = await signup({
                 name: trimmedName,
-                email: trimmedEmail,
+                email: `${trimmedPhone}@sspropertyguru.com`,
                 contact: trimmedPhone,
                 ...locationData
             });
@@ -138,17 +125,6 @@ const SignupScreen = ({ navigation }) => {
                             value={name}
                             onChangeText={setName}
                             icon="person-outline"
-                            style={{ marginBottom: 20 }}
-                        />
-                    </Animated.View>
-
-                    <Animated.View style={{ opacity: emailAnim, transform: [{ translateY: emailSlide }] }}>
-                        <FloatingLabelInput
-                            label={t('auth.email')}
-                            value={email}
-                            onChangeText={setEmail}
-                            icon="mail-outline"
-                            keyboardType="email-address"
                             style={{ marginBottom: 20 }}
                         />
                     </Animated.View>
