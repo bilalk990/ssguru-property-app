@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     View, Text, StyleSheet, Image, TouchableOpacity, TouchableWithoutFeedback,
     StatusBar, Dimensions, FlatList, ScrollView, Platform, Animated, Alert,
-    RefreshControl, TextInput, KeyboardAvoidingView
+    RefreshControl, TextInput, KeyboardAvoidingView, Modal
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -16,6 +17,7 @@ import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
 import { PropertyCardSkeleton } from '../../components/SkeletonLoader';
 import { getProperties } from '../../api/propertyApi';
 import { createEnquiry } from '../../api/enquiryApi';
+import { getCurrentStream } from '../../api/streamApi';
 
 const { width } = Dimensions.get('window');
 
@@ -51,6 +53,8 @@ const HomeScreen = ({ navigation }) => {
     const [refreshing, setRefreshing] = useState(false);
     const [enquiryForm, setEnquiryForm] = useState({ name: '', phone: '', requirement: '', city: '' });
     const [enquiryLoading, setEnquiryLoading] = useState(false);
+    const [showLivePopup, setShowLivePopup] = useState(false);
+    const [liveUrl, setLiveUrl] = useState('');
 
     // Premium Staggered Animations
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -90,6 +94,39 @@ const HomeScreen = ({ navigation }) => {
             Animated.spring(slideAnim, { toValue: 0, tension: 30, friction: 8, useNativeDriver: true })
         ]).start();
     }, [fadeAnim, slideAnim, fetchHomeData]);
+
+    // Check for live stream when screen is focused
+    useFocusEffect(
+        useCallback(() => {
+            checkLiveStream();
+        }, [])
+    );
+
+    const checkLiveStream = async () => {
+        try {
+            console.log('[HomeScreen] Checking live stream...');
+            const res = await getCurrentStream();
+            console.log('[HomeScreen] Stream response:', JSON.stringify(res.data, null, 2));
+            
+            const streamData = res.data?.data || res.data;
+            console.log('[HomeScreen] Stream data:', streamData);
+            
+            if (streamData?.youtubeUrl && streamData?.isActive) {
+                console.log('[HomeScreen] Live stream is active!');
+                setLiveUrl(streamData.youtubeUrl);
+                setTimeout(() => {
+                    setShowLivePopup(true);
+                }, 1000);
+            }
+        } catch (error) {
+            console.log('[HomeScreen] Live stream check failed:', error);
+        }
+    };
+
+    const handleWatchLive = () => {
+        setShowLivePopup(false);
+        navigation.navigate('LiveTour');
+    };
 
     const handleEnquirySubmit = async () => {
         if (!enquiryForm.name || !enquiryForm.phone || !enquiryForm.requirement) {
@@ -281,6 +318,42 @@ const HomeScreen = ({ navigation }) => {
                     )}
                 </Animated.View>
             </Animated.ScrollView>
+
+            {/* Live Tour Popup */}
+            <Modal
+                visible={showLivePopup}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowLivePopup(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.liveIndicator}>
+                            <View style={styles.liveDot} />
+                            <Text style={styles.liveText}>LIVE NOW</Text>
+                        </View>
+                        
+                        <Icon name="videocam" size={60} color="#FF0000" style={{ marginVertical: 20 }} />
+                        
+                        <Text style={styles.modalTitle}>Property Tour is Live!</Text>
+                        <Text style={styles.modalDesc}>
+                            Watch our live property tour happening right now
+                        </Text>
+
+                        <TouchableOpacity style={styles.watchButton} onPress={handleWatchLive}>
+                            <Text style={styles.watchButtonText}>Watch Live</Text>
+                            <Icon name="arrow-forward" size={20} color="#FFF" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity 
+                            style={styles.cancelButton} 
+                            onPress={() => setShowLivePopup(false)}
+                        >
+                            <Text style={styles.cancelButtonText}>Maybe Later</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -368,6 +441,92 @@ const styles = StyleSheet.create({
     categoryChipTextActive: {
         color: Colors.primary,
         fontWeight: '700',
+    },
+    // Modal styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: '#FFF',
+        borderRadius: 24,
+        padding: 30,
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 400,
+        elevation: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+    },
+    liveIndicator: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FF0000',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        gap: 6,
+    },
+    liveDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#FFF',
+    },
+    liveText: {
+        color: '#FFF',
+        fontSize: 12,
+        fontWeight: '900',
+        letterSpacing: 0.5,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: '800',
+        color: '#1F2937',
+        marginBottom: 10,
+        textAlign: 'center',
+    },
+    modalDesc: {
+        fontSize: 15,
+        color: '#6B7280',
+        textAlign: 'center',
+        lineHeight: 22,
+        marginBottom: 25,
+    },
+    watchButton: {
+        backgroundColor: '#FF0000',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 32,
+        borderRadius: 16,
+        width: '100%',
+        gap: 10,
+        elevation: 4,
+        shadowColor: '#FF0000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    watchButtonText: {
+        color: '#FFF',
+        fontSize: 17,
+        fontWeight: '800',
+    },
+    cancelButton: {
+        marginTop: 15,
+        paddingVertical: 12,
+    },
+    cancelButtonText: {
+        color: '#6B7280',
+        fontSize: 15,
+        fontWeight: '600',
     },
 });
 

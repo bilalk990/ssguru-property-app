@@ -36,18 +36,28 @@ const App = () => {
 
   const checkLiveStream = async () => {
     try {
+      console.log('[App] Checking live stream...');
       const res = await getCurrentStream();
+      console.log('[App] Stream response:', JSON.stringify(res.data, null, 2));
+      
       const streamData = res.data?.data || res.data;
+      console.log('[App] Stream data:', streamData);
+      console.log('[App] youtubeUrl:', streamData?.youtubeUrl);
+      console.log('[App] isActive:', streamData?.isActive);
       
       if (streamData?.youtubeUrl && streamData?.isActive) {
+        console.log('[App] Live stream is active! Showing popup...');
         setLiveUrl(streamData.youtubeUrl);
         // Show popup after 2 seconds delay
         setTimeout(() => {
           setShowLivePopup(true);
         }, 2000);
+      } else {
+        console.log('[App] No active live stream found');
       }
     } catch (error) {
       console.log('[App] Live stream check failed:', error);
+      console.log('[App] Error details:', error.response?.data);
     }
   };
 
