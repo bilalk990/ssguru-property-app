@@ -30,30 +30,50 @@ const LiveTourScreen = ({ navigation }) => {
 
     const fetchStream = async () => {
         try {
-            console.log('[LiveTourScreen] Fetching stream...');
             const res = await getCurrentStream();
-            console.log('[LiveTourScreen] Full response:', res);
-            console.log('[LiveTourScreen] Response data:', JSON.stringify(res.data, null, 2));
-            
             const streamData = res.data?.data || res.data?.stream || res.data;
-            console.log('[LiveTourScreen] Stream data:', streamData);
-            console.log('[LiveTourScreen] youtubeUrl:', streamData?.youtubeUrl);
-            console.log('[LiveTourScreen] isActive:', streamData?.isActive);
-            console.log('[LiveTourScreen] active:', streamData?.active);
-            
             const isStreamActive = streamData?.isActive === true || streamData?.active === true;
             
             if (streamData?.youtubeUrl && isStreamActive) {
-                console.log('[LiveTourScreen] ✅ Stream is ACTIVE');
-                setStreamUrl(streamData.youtubeUrl);
+                // Convert YouTube URL to embed format with clean player
+                let embedUrl = streamData.youtubeUrl;
+                let videoId = null;
+                
+                // Extract video ID from different YouTube URL formats
+                if (embedUrl.includes('youtube.com/watch?v=')) {
+                    videoId = embedUrl.split('v=')[1]?.split('&')[0];
+                } else if (embedUrl.includes('youtu.be/')) {
+                    videoId = embedUrl.split('youtu.be/')[1]?.split('?')[0];
+                } else if (embedUrl.includes('youtube.com/live/')) {
+                    videoId = embedUrl.split('/live/')[1]?.split('?')[0];
+                } else if (embedUrl.includes('/embed/')) {
+                    videoId = embedUrl.split('/embed/')[1]?.split('?')[0];
+                } else {
+                    const videoIdMatch = embedUrl.match(/[?&]v=([^&]+)/);
+                    if (videoIdMatch) videoId = videoIdMatch[1];
+                }
+                
+                // Build clean embed URL with parameters to hide YouTube UI
+                if (videoId) {
+                    embedUrl = `https://www.youtube.com/embed/${videoId}?` +
+                        'autoplay=1&' +           // Auto-play video
+                        'modestbranding=1&' +     // Minimal YouTube branding
+                        'rel=0&' +                // Don't show related videos
+                        'showinfo=0&' +           // Hide video info
+                        'controls=1&' +           // Show player controls
+                        'fs=1&' +                 // Allow fullscreen
+                        'playsinline=1&' +        // Play inline on iOS
+                        'iv_load_policy=3&' +     // Hide video annotations
+                        'disablekb=1&' +          // Disable keyboard controls
+                        'cc_load_policy=0';       // Hide closed captions
+                }
+                
+                setStreamUrl(embedUrl);
                 setIsActive(true);
             } else {
-                console.log('[LiveTourScreen] ❌ Stream is INACTIVE');
                 setIsActive(false);
             }
         } catch (error) {
-            console.error('[LiveTourScreen] Fetch Stream Error:', error);
-            console.log('[LiveTourScreen] Error response:', error.response?.data);
             setIsActive(false);
         } finally {
             setLoading(false);
@@ -89,9 +109,18 @@ const LiveTourScreen = ({ navigation }) => {
                 <WebView
                     source={{ uri: streamUrl }}
                     style={styles.webview}
-                    allowsFullscreenVideo
-                    javaScriptEnabled
-                    domStorageEnabled
+                    allowsFullscreenVideo={true}
+                    javaScriptEnabled={true}
+                    domStorageEnabled={true}
+                    mediaPlaybackRequiresUserAction={false}
+                    allowsInlineMediaPlayback={true}
+                    scalesPageToFit={true}
+                    startInLoadingState={true}
+                    renderLoading={() => (
+                        <View style={styles.centerContainer}>
+                            <ActivityIndicator size="large" color="#FF0000" />
+                        </View>
+                    )}
                 />
             ) : (
                 <View style={styles.centerContainer}>

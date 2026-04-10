@@ -93,65 +93,25 @@ const HomeScreen = ({ navigation }) => {
             Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
             Animated.spring(slideAnim, { toValue: 0, tension: 30, friction: 8, useNativeDriver: true })
         ]).start();
-    }, [fadeAnim, slideAnim, fetchHomeData]);
-
-    // Check for live stream when screen is focused
-    useFocusEffect(
-        useCallback(() => {
+        
+        // Check live stream in background after UI loads
+        setTimeout(() => {
             checkLiveStream();
-        }, [])
-    );
+        }, 2000);
+    }, [fadeAnim, slideAnim, fetchHomeData]);
 
     const checkLiveStream = async () => {
         try {
-            console.log('[HomeScreen] Checking live stream...');
             const res = await getCurrentStream();
-            console.log('[HomeScreen] Full response:', res);
-            console.log('[HomeScreen] Response status:', res.status);
-            console.log('[HomeScreen] Response data:', JSON.stringify(res.data, null, 2));
-            
-            // Try multiple possible response formats
-            let streamData = null;
-            
-            // Format 1: res.data.data
-            if (res.data?.data) {
-                streamData = res.data.data;
-                console.log('[HomeScreen] Using format: res.data.data');
-            }
-            // Format 2: res.data directly
-            else if (res.data?.youtubeUrl) {
-                streamData = res.data;
-                console.log('[HomeScreen] Using format: res.data');
-            }
-            // Format 3: res.data.stream
-            else if (res.data?.stream) {
-                streamData = res.data.stream;
-                console.log('[HomeScreen] Using format: res.data.stream');
-            }
-            
-            console.log('[HomeScreen] Extracted stream data:', streamData);
-            console.log('[HomeScreen] youtubeUrl:', streamData?.youtubeUrl);
-            console.log('[HomeScreen] isActive:', streamData?.isActive);
-            console.log('[HomeScreen] active:', streamData?.active);
-            
-            // Check both isActive and active fields
+            const streamData = res.data?.data || res.data?.stream || res.data;
             const isStreamActive = streamData?.isActive === true || streamData?.active === true;
             
             if (streamData?.youtubeUrl && isStreamActive) {
-                console.log('[HomeScreen] ✅ Live stream is ACTIVE! Showing popup...');
                 setLiveUrl(streamData.youtubeUrl);
-                setTimeout(() => {
-                    setShowLivePopup(true);
-                }, 1000);
-            } else {
-                console.log('[HomeScreen] ❌ Live stream NOT active');
-                console.log('[HomeScreen] Reason: URL=' + !!streamData?.youtubeUrl + ', Active=' + isStreamActive);
+                setShowLivePopup(true);
             }
         } catch (error) {
-            console.log('[HomeScreen] ❌ Live stream check FAILED');
-            console.log('[HomeScreen] Error:', error);
-            console.log('[HomeScreen] Error response:', error.response?.data);
-            console.log('[HomeScreen] Error status:', error.response?.status);
+            // Silently fail - don't block UI
         }
     };
 
