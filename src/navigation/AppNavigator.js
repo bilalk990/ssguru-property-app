@@ -20,6 +20,7 @@ import FranchiseScreen from '../screens/corporate/FranchiseScreen';
 import AboutContactScreen from '../screens/corporate/AboutContactScreen';
 import PrivacyPolicyScreen from '../screens/corporate/PrivacyPolicyScreen';
 import EnquiryFormScreen from '../screens/home/EnquiryFormScreen';
+import LiveTourScreen from '../screens/home/LiveTourScreen';
 import PostRequirementScreen from '../screens/home/PostRequirementScreen';
 import AdminDashboardScreen from '../screens/profile/AdminDashboardScreen';
 import NotificationScreen from '../screens/profile/NotificationScreen';
@@ -104,6 +105,7 @@ const HomeStack = () => (
         <HomeStackNav.Screen name="Franchise" component={FranchiseScreen} />
         <HomeStackNav.Screen name="AboutContact" component={AboutContactScreen} />
         <HomeStackNav.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+        <HomeStackNav.Screen name="LiveTour" component={LiveTourScreen} />
         <HomeStackNav.Screen name="Agents" component={AgentsScreen} />
         <HomeStackNav.Screen name="PostRequirement" component={PostRequirementScreen} />
     </HomeStackNav.Navigator>
