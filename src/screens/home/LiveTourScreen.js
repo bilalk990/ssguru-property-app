@@ -30,17 +30,30 @@ const LiveTourScreen = ({ navigation }) => {
 
     const fetchStream = async () => {
         try {
+            console.log('[LiveTourScreen] Fetching stream...');
             const res = await getCurrentStream();
-            const streamData = res.data?.data || res.data;
+            console.log('[LiveTourScreen] Full response:', res);
+            console.log('[LiveTourScreen] Response data:', JSON.stringify(res.data, null, 2));
             
-            if (streamData?.youtubeUrl && streamData?.isActive) {
+            const streamData = res.data?.data || res.data?.stream || res.data;
+            console.log('[LiveTourScreen] Stream data:', streamData);
+            console.log('[LiveTourScreen] youtubeUrl:', streamData?.youtubeUrl);
+            console.log('[LiveTourScreen] isActive:', streamData?.isActive);
+            console.log('[LiveTourScreen] active:', streamData?.active);
+            
+            const isStreamActive = streamData?.isActive === true || streamData?.active === true;
+            
+            if (streamData?.youtubeUrl && isStreamActive) {
+                console.log('[LiveTourScreen] ✅ Stream is ACTIVE');
                 setStreamUrl(streamData.youtubeUrl);
                 setIsActive(true);
             } else {
+                console.log('[LiveTourScreen] ❌ Stream is INACTIVE');
                 setIsActive(false);
             }
         } catch (error) {
-            console.error('Fetch Stream Error:', error);
+            console.error('[LiveTourScreen] Fetch Stream Error:', error);
+            console.log('[LiveTourScreen] Error response:', error.response?.data);
             setIsActive(false);
         } finally {
             setLoading(false);
