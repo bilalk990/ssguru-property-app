@@ -6,17 +6,19 @@ import {
     FlatList,
     Platform,
     StatusBar,
+    Modal,
+    TouchableOpacity,
+    ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Colors from '../../constants/colors';
 import SearchBar from '../../components/SearchBar';
 import PropertyCard, { normalizeProperty } from '../../components/PropertyCard';
 import { PropertyCardSkeleton } from '../../components/SkeletonLoader';
 import { getProperties, getPropertiesByAgent } from '../../api/propertyApi';
 import { getDistricts, getAreas } from '../../api/districtApi';
-import { ScrollView, TouchableOpacity } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const BuyPropertyScreen = ({ navigation, route }) => {
     const { t } = useTranslation();
@@ -28,10 +30,17 @@ const BuyPropertyScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [activeAgentId, setActiveAgentId] = useState(initialAgentId);
+    
+    // Location filters
+    const [states, setStates] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [areas, setAreas] = useState([]);
+    const [selectedState, setSelectedState] = useState(null);
     const [selectedDistrict, setSelectedDistrict] = useState(null);
     const [selectedArea, setSelectedArea] = useState(null);
+    
+    // Filter modal
+    const [showFilterModal, setShowFilterModal] = useState(false);
 
     const fetchProperties = useCallback(async () => {
         setLoading(true);
@@ -43,8 +52,9 @@ const BuyPropertyScreen = ({ navigation, route }) => {
             } else {
                 const params = {
                     search: search || undefined,
-                    district: selectedDistrict?._id || selectedDistrict?.id || undefined,
-                    area: selectedArea?._id || selectedArea?.id || undefined
+                    state: selectedState?.name || undefined,
+                    district: selectedDistrict?.name || undefined,
+                    area: selectedArea?.name || undefined
                 };
                 const response = await getProperties(params);
                 listings = response.data?.data || response.data?.properties || response.data || [];
@@ -56,7 +66,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
         } finally {
             setLoading(false);
         }
-    }, [search, activeAgentId, selectedDistrict, selectedArea]);
+    }, [search, activeAgentId, selectedState, selectedDistrict, selectedArea]);
 
     useEffect(() => {
         fetchProperties();
@@ -65,6 +75,16 @@ const BuyPropertyScreen = ({ navigation, route }) => {
     useEffect(() => {
         const loadLocations = async () => {
             try {
+                // Load states (hardcoded for now - can be from API later)
+                const indianStates = [
+                    { id: 1, name: 'Madhya Pradesh' },
+                    { id: 2, name: 'Maharashtra' },
+                    { id: 3, name: 'Gujarat' },
+                    { id: 4, name: 'Rajasthan' },
+                    { id: 5, name: 'Uttar Pradesh' },
+                ];
+                setStates(indianStates);
+                
                 const [distRes, areaRes] = await Promise.all([getDistricts(), getAreas()]);
                 setDistricts(distRes.data?.data || distRes.data?.districts || distRes.data || []);
                 setAreas(areaRes.data?.data || areaRes.data?.areas || areaRes.data || []);
@@ -79,9 +99,22 @@ const BuyPropertyScreen = ({ navigation, route }) => {
         if (route.params?.agentId) setActiveAgentId(route.params.agentId);
     }, [route.params]);
 
+    const filteredDistricts = selectedState
+        ? districts.filter(d => d.state === selectedState.name || !d.state)
+        : districts;
+
     const filteredAreas = selectedDistrict
         ? areas.filter(a => (a.district?._id || a.district) === (selectedDistrict._id || selectedDistrict.id))
         : [];
+
+    const clearFilters = () => {
+        setSelectedState(null);
+        setSelectedDistrict(null);
+        setSelectedArea(null);
+        setShowFilterModal(false);
+    };
+
+    const activeFilterCount = [selectedState, selectedDistrict, selectedArea].filter(Boolean).length;
 
     return (
         <View style={styles.container}>
@@ -94,53 +127,59 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                         {agentName ? t('property.agentListings', { name: agentName }) : t('common.featured')}
                     </Text>
                 </View>
-                <SearchBar
-                    value={search}
-                    onChangeText={setSearch}
-                    style={styles.searchBar}
-                />
+                
+                <View style={styles.searchRow}>
+                    <SearchBar
+                        value={search}
+                        onChangeText={setSearch}
+                        style={styles.searchBar}
+                    />
+                    {!activeAgentId && (
+                        <TouchableOpacity 
+                            style={[styles.filterButton, activeFilterCount > 0 && styles.filterButtonActive]}
+                            onPress={() => setShowFilterModal(true)}
+                        >
+                            <Icon name="options" size={20} color={activeFilterCount > 0 ? Colors.textWhite : Colors.primary} />
+                            {activeFilterCount > 0 && (
+                                <View style={styles.filterBadge}>
+                                    <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                    )}
+                </View>
 
-                {/* City/Area Selector */}
-                {!activeAgentId && (
-                    <View style={styles.selectorContainer}>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-                            <TouchableOpacity
-                                style={[styles.chip, !selectedDistrict && styles.chipActive]}
-                                onPress={() => { setSelectedDistrict(null); setSelectedArea(null); }}
-                            >
-                                <Text style={[styles.chipText, !selectedDistrict && styles.chipTextActive]}>{t('common.viewAll')}</Text>
-                            </TouchableOpacity>
-                            {districts.map(dist => (
-                                <TouchableOpacity
-                                    key={dist._id || dist.id}
-                                    style={[styles.chip, selectedDistrict?._id === dist._id && styles.chipActive]}
-                                    onPress={() => { setSelectedDistrict(dist); setSelectedArea(null); }}
-                                >
-                                    <Text style={[styles.chipText, selectedDistrict?._id === dist._id && styles.chipTextActive]}>{dist.name}</Text>
+                {/* Active Filters Display */}
+                {!activeAgentId && activeFilterCount > 0 && (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.activeFiltersScroll}>
+                        {selectedState && (
+                            <View style={styles.activeFilterChip}>
+                                <Icon name="location" size={12} color={Colors.primary} />
+                                <Text style={styles.activeFilterText}>{selectedState.name}</Text>
+                                <TouchableOpacity onPress={() => { setSelectedState(null); setSelectedDistrict(null); setSelectedArea(null); }}>
+                                    <Icon name="close-circle" size={16} color={Colors.textSecondary} />
                                 </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-
-                        {selectedDistrict && filteredAreas.length > 0 && (
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[styles.chipScroll, { marginTop: 10 }]}>
-                                <TouchableOpacity
-                                    style={[styles.chip, !selectedArea && styles.chipActive]}
-                                    onPress={() => setSelectedArea(null)}
-                                >
-                                    <Text style={[styles.chipText, !selectedArea && styles.chipTextActive]}>{t('common.viewAll')}</Text>
-                                </TouchableOpacity>
-                                {filteredAreas.map(area => (
-                                    <TouchableOpacity
-                                        key={area._id || area.id}
-                                        style={[styles.chip, selectedArea?._id === area._id && styles.chipActive]}
-                                        onPress={() => setSelectedArea(area)}
-                                    >
-                                        <Text style={[styles.chipText, selectedArea?._id === area._id && styles.chipTextActive]}>{area.name}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
+                            </View>
                         )}
-                    </View>
+                        {selectedDistrict && (
+                            <View style={styles.activeFilterChip}>
+                                <Icon name="business" size={12} color={Colors.primary} />
+                                <Text style={styles.activeFilterText}>{selectedDistrict.name}</Text>
+                                <TouchableOpacity onPress={() => { setSelectedDistrict(null); setSelectedArea(null); }}>
+                                    <Icon name="close-circle" size={16} color={Colors.textSecondary} />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        {selectedArea && (
+                            <View style={styles.activeFilterChip}>
+                                <Icon name="pin" size={12} color={Colors.primary} />
+                                <Text style={styles.activeFilterText}>{selectedArea.name}</Text>
+                                <TouchableOpacity onPress={() => setSelectedArea(null)}>
+                                    <Icon name="close-circle" size={16} color={Colors.textSecondary} />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </ScrollView>
                 )}
             </View>
 
@@ -178,6 +217,100 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                     }
                 />
             )}
+
+            {/* Filter Modal */}
+            <Modal
+                visible={showFilterModal}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setShowFilterModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Filter Properties</Text>
+                            <TouchableOpacity onPress={() => setShowFilterModal(false)}>
+                                <Icon name="close" size={28} color={Colors.textPrimary} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView showsVerticalScrollIndicator={false} style={styles.modalScroll}>
+                            {/* State Filter */}
+                            <Text style={styles.filterLabel}>State</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterChipScroll}>
+                                <TouchableOpacity
+                                    style={[styles.filterChip, !selectedState && styles.filterChipActive]}
+                                    onPress={() => { setSelectedState(null); setSelectedDistrict(null); setSelectedArea(null); }}
+                                >
+                                    <Text style={[styles.filterChipText, !selectedState && styles.filterChipTextActive]}>All States</Text>
+                                </TouchableOpacity>
+                                {states.map(state => (
+                                    <TouchableOpacity
+                                        key={state.id}
+                                        style={[styles.filterChip, selectedState?.id === state.id && styles.filterChipActive]}
+                                        onPress={() => { setSelectedState(state); setSelectedDistrict(null); setSelectedArea(null); }}
+                                    >
+                                        <Text style={[styles.filterChipText, selectedState?.id === state.id && styles.filterChipTextActive]}>{state.name}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+
+                            {/* District Filter */}
+                            <Text style={styles.filterLabel}>District</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterChipScroll}>
+                                <TouchableOpacity
+                                    style={[styles.filterChip, !selectedDistrict && styles.filterChipActive]}
+                                    onPress={() => { setSelectedDistrict(null); setSelectedArea(null); }}
+                                >
+                                    <Text style={[styles.filterChipText, !selectedDistrict && styles.filterChipTextActive]}>All Districts</Text>
+                                </TouchableOpacity>
+                                {filteredDistricts.map(dist => (
+                                    <TouchableOpacity
+                                        key={dist._id || dist.id}
+                                        style={[styles.filterChip, selectedDistrict?._id === dist._id && styles.filterChipActive]}
+                                        onPress={() => { setSelectedDistrict(dist); setSelectedArea(null); }}
+                                    >
+                                        <Text style={[styles.filterChipText, selectedDistrict?._id === dist._id && styles.filterChipTextActive]}>{dist.name}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+
+                            {/* Area Filter */}
+                            {selectedDistrict && filteredAreas.length > 0 && (
+                                <>
+                                    <Text style={styles.filterLabel}>Area</Text>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterChipScroll}>
+                                        <TouchableOpacity
+                                            style={[styles.filterChip, !selectedArea && styles.filterChipActive]}
+                                            onPress={() => setSelectedArea(null)}
+                                        >
+                                            <Text style={[styles.filterChipText, !selectedArea && styles.filterChipTextActive]}>All Areas</Text>
+                                        </TouchableOpacity>
+                                        {filteredAreas.map(area => (
+                                            <TouchableOpacity
+                                                key={area._id || area.id}
+                                                style={[styles.filterChip, selectedArea?._id === area._id && styles.filterChipActive]}
+                                                onPress={() => setSelectedArea(area)}
+                                            >
+                                                <Text style={[styles.filterChipText, selectedArea?._id === area._id && styles.filterChipTextActive]}>{area.name}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+                                </>
+                            )}
+                        </ScrollView>
+
+                        <View style={styles.modalFooter}>
+                            <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
+                                <Text style={styles.clearButtonText}>Clear All</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.applyButton} onPress={() => setShowFilterModal(false)}>
+                                <Text style={styles.applyButtonText}>Apply Filters</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -199,39 +332,158 @@ const styles = StyleSheet.create({
     },
     screenHeaderTitle: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
     screenTitle: { fontSize: 26, fontWeight: '900', color: Colors.textPrimary, letterSpacing: -0.5 },
-    searchBar: { marginBottom: 14 },
-    selectorContainer: { marginTop: 6 },
-    chipScroll: { paddingBottom: 6 },
-    chip: {
-        paddingHorizontal: 18,
-        paddingVertical: 10,
-        borderRadius: 24,
-        backgroundColor: Colors.surfaceSecondary,
-        marginRight: 12,
+    searchRow: { flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 10 },
+    searchBar: { flex: 1 },
+    filterButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 16,
+        backgroundColor: Colors.primarySoft,
+        justifyContent: 'center',
+        alignItems: 'center',
         borderWidth: 1,
         borderColor: Colors.borderLight,
-        elevation: 2,
-        shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4,
+        position: 'relative',
     },
-    chipActive: {
+    filterButtonActive: {
         backgroundColor: Colors.primary,
         borderColor: Colors.primaryDark,
-        elevation: 4,
-        shadowColor: Colors.primaryDark, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8,
     },
-    chipText: {
-        fontSize: 14,
-        color: Colors.textSecondary,
-        fontWeight: '700',
+    filterBadge: {
+        position: 'absolute',
+        top: -4,
+        right: -4,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: Colors.error,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    chipTextActive: {
+    filterBadgeText: {
         color: Colors.textWhite,
+        fontSize: 11,
+        fontWeight: '900',
+    },
+    activeFiltersScroll: {
+        marginTop: 8,
+    },
+    activeFilterChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: Colors.primarySoft,
+        borderWidth: 1,
+        borderColor: Colors.primary,
+        marginRight: 8,
+    },
+    activeFilterText: {
+        fontSize: 13,
+        color: Colors.primary,
+        fontWeight: '700',
     },
     listContent: { padding: 20 },
     resultCount: { fontSize: 14, color: Colors.textSecondary, fontWeight: '600', marginBottom: 16 },
     emptyContainer: { alignItems: 'center', paddingVertical: 80 },
     emptyTitle: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, marginTop: 20, marginBottom: 8 },
     emptyText: { fontSize: 15, color: Colors.textSecondary, fontWeight: '500' },
+    
+    // Modal Styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: Colors.background,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingTop: 24,
+        paddingBottom: 40,
+        maxHeight: '80%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        marginBottom: 24,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: '900',
+        color: Colors.textPrimary,
+    },
+    modalScroll: {
+        paddingHorizontal: 24,
+    },
+    filterLabel: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: Colors.textPrimary,
+        marginTop: 20,
+        marginBottom: 12,
+    },
+    filterChipScroll: {
+        marginBottom: 10,
+    },
+    filterChip: {
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 24,
+        backgroundColor: Colors.surfaceSecondary,
+        marginRight: 12,
+        borderWidth: 1,
+        borderColor: Colors.borderLight,
+    },
+    filterChipActive: {
+        backgroundColor: Colors.primary,
+        borderColor: Colors.primaryDark,
+    },
+    filterChipText: {
+        fontSize: 14,
+        color: Colors.textSecondary,
+        fontWeight: '700',
+    },
+    filterChipTextActive: {
+        color: Colors.textWhite,
+    },
+    modalFooter: {
+        flexDirection: 'row',
+        gap: 12,
+        paddingHorizontal: 24,
+        marginTop: 30,
+    },
+    clearButton: {
+        flex: 1,
+        height: 56,
+        borderRadius: 16,
+        borderWidth: 2,
+        borderColor: Colors.border,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    clearButtonText: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: Colors.textSecondary,
+    },
+    applyButton: {
+        flex: 1,
+        height: 56,
+        borderRadius: 16,
+        backgroundColor: Colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    applyButtonText: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: Colors.textWhite,
+    },
 });
 
 export default BuyPropertyScreen;

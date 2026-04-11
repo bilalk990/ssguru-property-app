@@ -222,7 +222,7 @@ const HomeScreen = ({ navigation }) => {
                     <ActionCard title={t('home.sell')} desc={t('home.sellDesc')} icon="cash" color={Colors.accentSoft} onPress={() => navigation.navigate('Sell')} />
                     <ActionCard title={t('home.enquiry')} desc={t('home.enquiryDescShort')} icon="chatbubble-ellipses" color="#F1F5F9" onPress={() => navigation.navigate('Enquiry')} />
                     <ActionCard title={t('home.franchise')} desc={t('home.franchiseDesc')} icon="business" color="#ECFDF5" onPress={() => navigation.navigate('Franchise')} />
-                    <ActionCard title="Live Tour" desc="Watch property tours live" icon="videocam" color="#FEF3C7" onPress={() => navigation.navigate('LiveTour')} />
+                    <ActionCard title="Live Program" desc="Watch property tours live" icon="videocam" color="#FEF3C7" onPress={() => navigation.navigate('LiveTour')} />
                 </Animated.View>
 
                 {/* Content Section */}

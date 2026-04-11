@@ -1,11 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 import Colors from '../constants/colors';
+import { getNotifications } from '../api/notificationApi';
 
 // ... existing screens imports ...
 import HomeScreen from '../screens/home/HomeScreen';
@@ -43,7 +45,7 @@ const EnquiryStackNav = createNativeStackNavigator();
 const ProfileStackNav = createNativeStackNavigator();
 
 // Premium Tab icon component
-const TabIcon = ({ label, icon, focused }) => {
+const TabIcon = ({ label, icon, focused, badge }) => {
     const scaleAnim = useRef(new Animated.Value(focused ? 1 : 0.9)).current;
     const translateYAnim = useRef(new Animated.Value(focused ? -5 : 0)).current;
 
@@ -85,6 +87,11 @@ const TabIcon = ({ label, icon, focused }) => {
                     size={20}
                     color={focused ? Colors.textWhite : Colors.textLight}
                 />
+                {badge > 0 && (
+                    <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{badge > 99 ? '99+' : badge}</Text>
+                    </View>
+                )}
             </View>
             <Text style={[styles.tabLabel, focused && styles.tabLabelActive, { marginTop: 4, opacity: focused ? 1 : 0.5 }]}>
                 {label}
@@ -163,6 +170,26 @@ const Stack = createNativeStackNavigator();
 const AppNavigator = () => {
     const { t } = useTranslation();
     const insets = useSafeAreaInsets();
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Fetch unread notification count
+    const fetchUnreadCount = async () => {
+        try {
+            const response = await getNotifications();
+            const notifications = response.data?.data || response.data || [];
+            const unread = notifications.filter(n => !n.isRead).length;
+            setUnreadCount(unread);
+        } catch (error) {
+            console.log('[AppNavigator] Failed to fetch notifications:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchUnreadCount();
+        // Refresh every 30 seconds
+        const interval = setInterval(fetchUnreadCount, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <Tab.Navigator
@@ -174,12 +201,19 @@ const AppNavigator = () => {
                 tabBarIcon: ({ focused }) => {
                     let iconName;
                     let label;
+                    let badge = 0;
+                    
                     if (route.name === 'Home') { iconName = 'home'; label = t('common.home'); }
                     else if (route.name === 'Buy') { iconName = 'search'; label = t('common.searchTab'); }
                     else if (route.name === 'Sell') { iconName = 'add-circle'; label = t('common.sellTab'); }
                     else if (route.name === 'Enquiry') { iconName = 'chatbubble-ellipses'; label = t('home.enquiry'); }
-                    else if (route.name === 'Profile') { iconName = 'person'; label = t('common.profileTab'); }
-                    return <TabIcon label={label} icon={iconName} focused={focused} />;
+                    else if (route.name === 'Profile') { 
+                        iconName = 'person'; 
+                        label = t('common.profileTab');
+                        badge = unreadCount; // Show notification badge on Profile tab
+                    }
+                    
+                    return <TabIcon label={label} icon={iconName} focused={focused} badge={badge} />;
                 },
                 tabBarStyle: {
                     position: 'absolute',
@@ -237,6 +271,25 @@ const styles = StyleSheet.create({
     tabLabelActive: {
         fontWeight: '700',
         color: Colors.primary,
+    },
+    badge: {
+        position: 'absolute',
+        top: -4,
+        right: -4,
+        minWidth: 18,
+        height: 18,
+        borderRadius: 9,
+        backgroundColor: Colors.error,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 4,
+        borderWidth: 2,
+        borderColor: Colors.backgroundCard,
+    },
+    badgeText: {
+        color: Colors.textWhite,
+        fontSize: 10,
+        fontWeight: '900',
     },
 });
 

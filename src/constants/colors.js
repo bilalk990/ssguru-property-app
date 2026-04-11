@@ -1,11 +1,11 @@
 // SS Property Guru - Premium Color Theme
 const Colors = {
-  // Primary (Deep Elite Green)
-  primary: '#065F46',
-  primaryDark: '#022C22',
-  primaryLight: '#34D399',
-  primarySoft: '#ECFDF5',
-  primaryMuted: '#6EE7B7',
+  // Primary (Website Green - Teal/Emerald)
+  primary: '#16A085',
+  primaryDark: '#138D75',
+  primaryLight: '#48C9B0',
+  primarySoft: '#E8F8F5',
+  primaryMuted: '#76D7C4',
 
   // Accent (Luxury Gold/Amber)
   accent: '#D97706',
@@ -43,12 +43,12 @@ const Colors = {
   shadow: 'rgba(15, 23, 42, 0.04)',
   shadowMedium: 'rgba(15, 23, 42, 0.08)',
   shadowDark: 'rgba(15, 23, 42, 0.15)',
-  shadowPremium: 'rgba(6, 95, 70, 0.25)',
+  shadowPremium: 'rgba(22, 160, 133, 0.25)',
   overlay: 'rgba(15, 23, 42, 0.75)',
   glassEffect: 'rgba(255, 255, 255, 0.85)',
 
   // Gradient pairs
-  gradientPrimary: ['#065F46', '#022C22'],
+  gradientPrimary: ['#16A085', '#138D75'],
   gradientAccent: ['#F59E0B', '#B45309'],
   gradientDark: ['#0F172A', '#1E293B'],
   gradientGold: ['#FDE68A', '#D97706'],

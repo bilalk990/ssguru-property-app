@@ -74,7 +74,6 @@ const DashboardScreen = ({ navigation }) => {
                     end={{ x: 1, y: 1 }}>
                     <View style={styles.headerContent}>
                         <View>
-                            <Text style={styles.welcomeText}>{t('dashboard.welcomeBack')}</Text>
                             <Text style={styles.userName}>{user?.name || '...'}</Text>
                         </View>
                         <TouchableOpacity
@@ -97,13 +96,6 @@ const DashboardScreen = ({ navigation }) => {
                             </View>
                             <Text style={styles.statValue}>{properties.length}</Text>
                             <Text style={styles.statLabel}>{t('dashboard.myPortfolio')}</Text>
-                        </View>
-                        <View style={styles.statCard}>
-                            <View style={[styles.statIconBox, { backgroundColor: Colors.accentSoft }]}>
-                                <Icon name="bar-chart" size={24} color={Colors.accentLight} />
-                            </View>
-                            <Text style={styles.statValue}>{user?.enquiriesMade || 0}</Text>
-                            <Text style={styles.statLabel}>{t('agent.enquiries')}</Text>
                         </View>
                     </View>
 

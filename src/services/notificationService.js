@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, PermissionsAndroid, Alert } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import notifee, { AndroidImportance, AndroidStyle } from '@notifee/react-native';
 
 const NOTIFICATION_TOKEN_KEY = 'fcm_token';
 
@@ -20,6 +21,9 @@ class NotificationService {
         console.log('[NotificationService] Initializing...');
 
         try {
+            // Create notification channel for Android
+            await this.createNotificationChannel();
+
             // Request permissions
             const hasPermission = await this.requestPermission();
             if (!hasPermission) {
@@ -38,6 +42,31 @@ class NotificationService {
         } catch (error) {
             console.error('[NotificationService] Initialization error:', error);
             // Don't throw - just log and continue
+        }
+    }
+
+    /**
+     * Create Android notification channel
+     */
+    async createNotificationChannel() {
+        if (Platform.OS === 'android') {
+            await notifee.createChannel({
+                id: 'default',
+                name: 'Default Notifications',
+                importance: AndroidImportance.HIGH,
+                sound: 'default',
+                vibration: true,
+            });
+
+            await notifee.createChannel({
+                id: 'property',
+                name: 'Property Notifications',
+                importance: AndroidImportance.HIGH,
+                sound: 'default',
+                vibration: true,
+            });
+
+            console.log('[NotificationService] Notification channels created');
         }
     }
 
@@ -138,13 +167,56 @@ class NotificationService {
     /**
      * Show local notification (for foreground notifications)
      */
-    showLocalNotification(remoteMessage) {
-        const { notification } = remoteMessage;
-        if (notification) {
+    async showLocalNotification(remoteMessage) {
+        const { notification, data } = remoteMessage;
+        
+        try {
+            // Display notification using Notifee
+            await notifee.displayNotification({
+                title: notification?.title || '🏠 SS Property Guru',
+                body: notification?.body || 'New update available',
+                android: {
+                    channelId: data?.type === 'new_property' ? 'property' : 'default',
+                    importance: AndroidImportance.HIGH,
+                    pressAction: {
+                        id: 'default',
+                        launchActivity: 'default',
+                    },
+                    smallIcon: 'ic_launcher',
+                    color: '#16A085',
+                    sound: 'default',
+                    vibrationPattern: [300, 500],
+                    style: {
+                        type: AndroidStyle.BIGTEXT,
+                        text: notification?.body || '',
+                    },
+                },
+                ios: {
+                    sound: 'default',
+                    foregroundPresentationOptions: {
+                        alert: true,
+                        badge: true,
+                        sound: true,
+                    },
+                },
+                data: data || {},
+            });
+
+            console.log('[NotificationService] Local notification displayed');
+        } catch (error) {
+            console.error('[NotificationService] Display notification error:', error);
+            
+            // Fallback to Alert if Notifee fails
             Alert.alert(
-                notification.title || 'New Notification',
-                notification.body || '',
-                [{ text: 'OK' }]
+                notification?.title || 'New Notification',
+                notification?.body || '',
+                [
+                    { text: 'Dismiss', style: 'cancel' },
+                    { 
+                        text: 'View', 
+                        onPress: () => this.handleNotificationNavigation(remoteMessage)
+                    }
+                ]
             );
         }
     }
@@ -155,7 +227,23 @@ class NotificationService {
     handleNotificationNavigation(remoteMessage) {
         const { data } = remoteMessage;
         console.log('[NotificationService] Navigation data:', data);
-        // Navigation logic can be added here if needed
+        
+        // Store navigation data for later use
+        if (data?.type === 'new_property' && data?.propertyId) {
+            this.pendingNavigation = {
+                screen: 'Buy',
+                params: { propertyId: data.propertyId }
+            };
+        }
+    }
+
+    /**
+     * Get and clear pending navigation
+     */
+    getPendingNavigation() {
+        const nav = this.pendingNavigation;
+        this.pendingNavigation = null;
+        return nav;
     }
 
     /**
