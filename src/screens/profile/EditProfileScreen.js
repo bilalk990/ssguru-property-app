@@ -47,14 +47,14 @@ const EditProfileScreen = ({ navigation }) => {
                     const user = res.data?.data || res.data?.user || res.data;
                     if (user) {
                         setName(user.name || '');
-                        setPhone(user.phone || '');
+                        setPhone(user.contact || user.phone || ''); // Check both contact and phone
                         setEmail(user.email || '');
                         setUserRole(user.role || 'user');
                         setUserId(user.id || user._id);
                     }
                 } else if (parsedUser) {
                     setName(parsedUser.name || '');
-                    setPhone(parsedUser.phone || '');
+                    setPhone(parsedUser.contact || parsedUser.phone || ''); // Check both contact and phone
                     setEmail(parsedUser.email || '');
                     setUserRole(parsedUser.role || 'user');
                     setUserId(parsedUser.id || parsedUser._id);
@@ -86,7 +86,8 @@ const EditProfileScreen = ({ navigation }) => {
         try {
             const formData = new FormData();
             formData.append('name', name);
-            formData.append('phone', phone);
+            formData.append('contact', phone); // Backend expects 'contact' field
+            formData.append('phone', phone); // Also send as 'phone' for compatibility
 
             if (avatar) {
                 formData.append('avatar', {
@@ -96,13 +97,17 @@ const EditProfileScreen = ({ navigation }) => {
                 });
             }
 
+            let response;
             if (userRole === 'agent') {
-                await updateAgentProfile(formData);
+                response = await updateAgentProfile(formData);
             } else {
-                // For regular users, we update via userApi
-                // Note: userApi generally takes JSON or FormData depending on server config
-                // Since signup used FormData for avatar, we use it here too
-                await updateUser(userId, formData);
+                response = await updateUser(userId, formData);
+            }
+
+            // Update AsyncStorage with new data
+            const updatedUser = response.data?.data || response.data?.user || response.data;
+            if (updatedUser) {
+                await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
             }
 
             Alert.alert(t('common.success'), t('profile.profileUpdateSuccess'), [
