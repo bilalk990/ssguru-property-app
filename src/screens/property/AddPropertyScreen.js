@@ -136,10 +136,34 @@ const AddPropertyScreen = ({ navigation, route }) => {
         }
 
         if (editMode) {
-            // No payment for editing for now, or you can add if needed
+            // No payment for editing
             return handleSubmit();
         }
 
+        // Show payment options with skip for testing
+        Alert.alert(
+            'Add Property',
+            'Choose payment option:',
+            [
+                {
+                    text: 'Skip Payment (Test)',
+                    onPress: () => handleSubmit(),
+                    style: 'default'
+                },
+                {
+                    text: 'Pay ₹20',
+                    onPress: () => initiateRazorpayPayment()
+                },
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                    onPress: () => setLoading(false)
+                }
+            ]
+        );
+    };
+
+    const initiateRazorpayPayment = async () => {
         setLoading(true);
         try {
             // 1. Create order on backend (Amount ₹20)
@@ -175,7 +199,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
                         // 3. Submit property with paymentId
                         handleSubmit(data.razorpay_payment_id);
                     } else {
-                        Alert.alert(t('common.error'), t('common.error'));
+                        Alert.alert(t('common.error'), 'Payment verification failed');
                         setLoading(false);
                     }
                 } catch (err) {
@@ -184,13 +208,13 @@ const AddPropertyScreen = ({ navigation, route }) => {
                 }
             }).catch((error) => {
                 console.log('Razorpay Error:', error);
-                Alert.alert('Payment Cancelled', error.description || 'User cancelled the payment');
+                Alert.alert('Payment Failed', error.description || 'Payment was cancelled or failed. You can skip payment for testing.');
                 setLoading(false);
             });
 
         } catch (error) {
             console.error('Payment Initialization Error:', error);
-            Alert.alert(t('common.error'), 'Failed to initialize payment');
+            Alert.alert(t('common.error'), 'Failed to initialize payment. You can skip payment for testing.');
             setLoading(false);
         }
     };
