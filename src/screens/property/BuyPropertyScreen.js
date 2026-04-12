@@ -276,27 +276,35 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                             </ScrollView>
 
                             {/* Area Filter */}
-                            {selectedDistrict && filteredAreas.length > 0 && (
-                                <>
-                                    <Text style={styles.filterLabel}>Area</Text>
-                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterChipScroll}>
+                            <Text style={styles.filterLabel}>Area</Text>
+                            {!selectedDistrict ? (
+                                <View style={styles.disabledFilterSection}>
+                                    <Icon name="information-circle-outline" size={20} color={Colors.textLight} />
+                                    <Text style={styles.disabledFilterText}>Please select a district first to see areas</Text>
+                                </View>
+                            ) : filteredAreas.length > 0 ? (
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterChipScroll}>
+                                    <TouchableOpacity
+                                        style={[styles.filterChip, !selectedArea && styles.filterChipActive]}
+                                        onPress={() => setSelectedArea(null)}
+                                    >
+                                        <Text style={[styles.filterChipText, !selectedArea && styles.filterChipTextActive]}>All Areas</Text>
+                                    </TouchableOpacity>
+                                    {filteredAreas.map(area => (
                                         <TouchableOpacity
-                                            style={[styles.filterChip, !selectedArea && styles.filterChipActive]}
-                                            onPress={() => setSelectedArea(null)}
+                                            key={area._id || area.id}
+                                            style={[styles.filterChip, selectedArea?._id === area._id && styles.filterChipActive]}
+                                            onPress={() => setSelectedArea(area)}
                                         >
-                                            <Text style={[styles.filterChipText, !selectedArea && styles.filterChipTextActive]}>All Areas</Text>
+                                            <Text style={[styles.filterChipText, selectedArea?._id === area._id && styles.filterChipTextActive]}>{area.name}</Text>
                                         </TouchableOpacity>
-                                        {filteredAreas.map(area => (
-                                            <TouchableOpacity
-                                                key={area._id || area.id}
-                                                style={[styles.filterChip, selectedArea?._id === area._id && styles.filterChipActive]}
-                                                onPress={() => setSelectedArea(area)}
-                                            >
-                                                <Text style={[styles.filterChipText, selectedArea?._id === area._id && styles.filterChipTextActive]}>{area.name}</Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </ScrollView>
-                                </>
+                                    ))}
+                                </ScrollView>
+                            ) : (
+                                <View style={styles.disabledFilterSection}>
+                                    <Icon name="alert-circle-outline" size={20} color={Colors.textLight} />
+                                    <Text style={styles.disabledFilterText}>No areas available for selected district</Text>
+                                </View>
                             )}
                         </ScrollView>
 
@@ -450,6 +458,21 @@ const styles = StyleSheet.create({
     },
     filterChipTextActive: {
         color: Colors.textWhite,
+    },
+    disabledFilterSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        padding: 16,
+        backgroundColor: Colors.surfaceSecondary,
+        borderRadius: 16,
+        marginBottom: 10,
+    },
+    disabledFilterText: {
+        flex: 1,
+        fontSize: 13,
+        color: Colors.textSecondary,
+        fontWeight: '600',
     },
     modalFooter: {
         flexDirection: 'row',
