@@ -220,12 +220,19 @@ const AddPropertyScreen = ({ navigation, route }) => {
     };
 
     const handleSubmit = async (paymentId = null) => {
+        console.log('[AddProperty] Starting submission...');
+        console.log('[AddProperty] Form data:', form);
+        console.log('[AddProperty] Images count:', images.length);
+        console.log('[AddProperty] PaymentId:', paymentId);
+        
         // Validation
         if (!form.title || !form.price || !form.city || !form.area || !form.description) {
+            console.log('[AddProperty] Validation failed - missing fields');
             Alert.alert(t('auth.missingFields'), t('auth.missingFieldsDesc'));
             return;
         }
         if (images.length === 0) {
+            console.log('[AddProperty] Validation failed - no images');
             Alert.alert(t('common.notice'), t('property.imagesLabel'));
             return;
         }
@@ -245,6 +252,9 @@ const AddPropertyScreen = ({ navigation, route }) => {
 
             if (paymentId) {
                 formData.append('paymentId', paymentId);
+                console.log('[AddProperty] Payment ID added:', paymentId);
+            } else {
+                console.log('[AddProperty] No payment ID - free listing');
             }
 
             // Append images
@@ -256,6 +266,7 @@ const AddPropertyScreen = ({ navigation, route }) => {
                     name: fileName,
                 });
             });
+            console.log('[AddProperty] Images appended:', images.length);
 
             // Append video if exists
             if (video) {
@@ -264,12 +275,17 @@ const AddPropertyScreen = ({ navigation, route }) => {
                     type: 'video/mp4',
                     name: `property_video_${Date.now()}.mp4`,
                 });
+                console.log('[AddProperty] Video appended');
             }
 
+            console.log('[AddProperty] Sending request to backend...');
+            
             if (editMode) {
                 await updateProperty(propertyData.id || propertyData._id, formData);
+                console.log('[AddProperty] Property updated successfully');
             } else {
-                await addProperty(formData);
+                const response = await addProperty(formData);
+                console.log('[AddProperty] Property added successfully:', response.data);
             }
 
             Alert.alert(
@@ -284,9 +300,18 @@ const AddPropertyScreen = ({ navigation, route }) => {
             );
         } catch (error) {
             console.error('Add Property Error:', error);
+            console.error('Error response:', error?.response);
+            console.error('Error data:', error?.response?.data);
+            console.error('Error message:', error?.message);
+            
+            const errorMessage = error?.response?.data?.message 
+                || error?.response?.data?.error 
+                || error?.message 
+                || 'Failed to add property. Please try again.';
+            
             Alert.alert(
                 t('common.error'),
-                error?.response?.data?.message || t('common.error')
+                errorMessage
             );
         } finally {
             setLoading(false);
