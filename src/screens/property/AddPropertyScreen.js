@@ -23,6 +23,7 @@ import { addProperty, updateProperty } from '../../api/propertyApi';
 import { getDistricts, getAreas } from '../../api/districtApi';
 import { propertyTypes } from '../../constants/appConstants';
 import authStore from '../../store/authStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AddPropertyScreen = ({ navigation, route }) => {
     const { t } = useTranslation();
@@ -239,7 +240,26 @@ const AddPropertyScreen = ({ navigation, route }) => {
 
         setLoading(true);
         try {
+            // Get user ID from AsyncStorage
+            const userDataStr = await AsyncStorage.getItem('userData');
+            const userData = userDataStr ? JSON.parse(userDataStr) : null;
+            const userId = userData?.id || userData?._id;
+            
+            console.log('[AddProperty] User ID:', userId);
+            
+            if (!userId) {
+                console.log('[AddProperty] No user ID found - redirecting to login');
+                Alert.alert(t('common.error'), 'Please login again');
+                navigation.navigate('Login');
+                setLoading(false);
+                return;
+            }
+
             const formData = new FormData();
+
+            // Append agent ID first
+            formData.append('agent', userId);
+            console.log('[AddProperty] Agent ID added:', userId);
 
             // Append basic info
             Object.keys(form).forEach(key => {
@@ -280,13 +300,17 @@ const AddPropertyScreen = ({ navigation, route }) => {
 
             console.log('[AddProperty] Sending request to backend...');
             
+            let response;
             if (editMode) {
-                await updateProperty(propertyData.id || propertyData._id, formData);
-                console.log('[AddProperty] Property updated successfully');
+                response = await updateProperty(propertyData.id || propertyData._id, formData);
+                console.log('[AddProperty] Property updated successfully:', response.data);
             } else {
-                const response = await addProperty(formData);
+                response = await addProperty(formData);
                 console.log('[AddProperty] Property added successfully:', response.data);
             }
+
+            // Stop loading before showing alert
+            setLoading(false);
 
             Alert.alert(
                 t('common.success'),
@@ -294,15 +318,20 @@ const AddPropertyScreen = ({ navigation, route }) => {
                 [
                     {
                         text: 'OK',
-                        onPress: () => navigation.goBack(),
+                        onPress: () => {
+                            console.log('[AddProperty] Navigating back after success');
+                            navigation.goBack();
+                        },
                     },
                 ],
             );
         } catch (error) {
-            console.error('Add Property Error:', error);
-            console.error('Error response:', error?.response);
-            console.error('Error data:', error?.response?.data);
-            console.error('Error message:', error?.message);
+            console.error('[AddProperty] Error:', error);
+            console.error('[AddProperty] Error response:', error?.response);
+            console.error('[AddProperty] Error data:', error?.response?.data);
+            console.error('[AddProperty] Error message:', error?.message);
+            
+            setLoading(false);
             
             const errorMessage = error?.response?.data?.message 
                 || error?.response?.data?.error 
@@ -313,8 +342,6 @@ const AddPropertyScreen = ({ navigation, route }) => {
                 t('common.error'),
                 errorMessage
             );
-        } finally {
-            setLoading(false);
         }
     };
 
