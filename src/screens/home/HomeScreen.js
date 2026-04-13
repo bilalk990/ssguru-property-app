@@ -154,7 +154,22 @@ const HomeScreen = ({ navigation }) => {
     });
 
     const featured = filteredProperties.filter(p => p.featured || p.isFeatured).map(p => normalizeProperty(p, t));
-    const recent = filteredProperties.slice(0, 5).map(p => normalizeProperty(p, t));
+    
+    // Category-wise latest properties
+    const plots = filteredProperties
+        .filter(p => p.category === 'Plot')
+        .slice(0, 4)
+        .map(p => normalizeProperty(p, t));
+    
+    const agricultural = filteredProperties
+        .filter(p => p.category === 'Agricultural Land')
+        .slice(0, 4)
+        .map(p => normalizeProperty(p, t));
+    
+    const houses = filteredProperties
+        .filter(p => p.category === 'House' || p.category === 'Residential')
+        .slice(0, 4)
+        .map(p => normalizeProperty(p, t));
 
     return (
         <View style={styles.container}>
@@ -266,21 +281,78 @@ const HomeScreen = ({ navigation }) => {
                             <View style={styles.section}>
                                 <View style={styles.sectionHeader}>
                                     <View style={styles.sectionTitleRow}>
-                                        <Icon name="time" size={20} color={Colors.primary} />
-                                        <Text style={styles.sectionTitle}>{t('home.recentListings')}</Text>
+                                        <Icon name="grid" size={20} color={Colors.primary} />
+                                        <Text style={styles.sectionTitle}>Plots</Text>
                                     </View>
-                                    <TouchableOpacity onPress={() => navigation.navigate('Buy')}>
+                                    <TouchableOpacity onPress={() => {
+                                        setSearch('Plot');
+                                        navigation.navigate('Buy');
+                                    }}>
                                         <Text style={styles.viewAllText}>{t('common.viewAll')}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={{ paddingHorizontal: 20 }}>
-                                    {recent.length === 0 ? (
+                                    {plots.length === 0 ? (
                                         <View style={styles.emptyContainer}>
                                             <Icon name="documents-outline" size={48} color={Colors.textLight} />
-                                            <Text style={styles.emptyText}>{t('home.noPremiumFound')}</Text>
+                                            <Text style={styles.emptyText}>No plots available</Text>
                                         </View>
                                     ) : (
-                                        recent.map((property, idx) => (
+                                        plots.map((property, idx) => (
+                                            <PropertyCard key={String(property._id || property.id || idx)} property={property} onPress={() => navigation.navigate('PropertyDetail', { property })} />
+                                        ))
+                                    )}
+                                </View>
+                            </View>
+
+                            <View style={styles.section}>
+                                <View style={styles.sectionHeader}>
+                                    <View style={styles.sectionTitleRow}>
+                                        <Icon name="leaf" size={20} color="#10B981" />
+                                        <Text style={styles.sectionTitle}>Agricultural Land</Text>
+                                    </View>
+                                    <TouchableOpacity onPress={() => {
+                                        setSearch('Agricultural Land');
+                                        navigation.navigate('Buy');
+                                    }}>
+                                        <Text style={styles.viewAllText}>{t('common.viewAll')}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={{ paddingHorizontal: 20 }}>
+                                    {agricultural.length === 0 ? (
+                                        <View style={styles.emptyContainer}>
+                                            <Icon name="documents-outline" size={48} color={Colors.textLight} />
+                                            <Text style={styles.emptyText}>No agricultural land available</Text>
+                                        </View>
+                                    ) : (
+                                        agricultural.map((property, idx) => (
+                                            <PropertyCard key={String(property._id || property.id || idx)} property={property} onPress={() => navigation.navigate('PropertyDetail', { property })} />
+                                        ))
+                                    )}
+                                </View>
+                            </View>
+
+                            <View style={styles.section}>
+                                <View style={styles.sectionHeader}>
+                                    <View style={styles.sectionTitleRow}>
+                                        <Icon name="home" size={20} color="#F59E0B" />
+                                        <Text style={styles.sectionTitle}>Houses</Text>
+                                    </View>
+                                    <TouchableOpacity onPress={() => {
+                                        setSearch('House');
+                                        navigation.navigate('Buy');
+                                    }}>
+                                        <Text style={styles.viewAllText}>{t('common.viewAll')}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={{ paddingHorizontal: 20 }}>
+                                    {houses.length === 0 ? (
+                                        <View style={styles.emptyContainer}>
+                                            <Icon name="documents-outline" size={48} color={Colors.textLight} />
+                                            <Text style={styles.emptyText}>No houses available</Text>
+                                        </View>
+                                    ) : (
+                                        houses.map((property, idx) => (
                                             <PropertyCard key={String(property._id || property.id || idx)} property={property} onPress={() => navigation.navigate('PropertyDetail', { property })} />
                                         ))
                                     )}
@@ -404,6 +476,7 @@ const styles = StyleSheet.create({
     enquirySubmitBtn: { marginTop: 10, borderRadius: 16, overflow: 'hidden', elevation: 6 },
     enquiryBtnGradient: { paddingVertical: 18, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 },
     enquirySubmitText: { color: Colors.textWhite, fontSize: 17, fontWeight: '800' },
+    emptyContainer: { alignItems: 'center', paddingVertical: 40, backgroundColor: Colors.surfaceSecondary, borderRadius: 20 },
     emptyText: { color: Colors.textSecondary, fontSize: 15, marginTop: 12, fontWeight: '500' },
     // Category Filter Styles
     categoryScroll: {
