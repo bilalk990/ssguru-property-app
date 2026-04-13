@@ -67,8 +67,8 @@ export const normalizeProperty = (item, t) => {
         _id: item._id || item.id || String(Math.random()),
         title: item.title || translate('property.notFound'),
         type: item.type || item.category || item.sellingType || translate('common.property'),
-        city: item.city || (typeof item.district === 'object' ? item.district?.name : '') || (typeof item.district === 'string' && item.district.length < 30 ? item.district : '') || '',
-        area: item.area?.name || item.area || '',
+        city: item.city || item.district || (typeof item.district === 'object' ? item.district?.name : '') || '',
+        area: item.area || (typeof item.area === 'object' ? item.area?.name : '') || '',
         price: item.price
             ? (typeof item.price === 'string' && (item.price.includes('PKR') || item.price.includes('₹'))
                 ? item.price.replace('PKR', '₹')
