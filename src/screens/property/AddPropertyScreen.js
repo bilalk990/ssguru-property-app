@@ -141,35 +141,19 @@ const AddPropertyScreen = ({ navigation, route }) => {
             return handleSubmit();
         }
 
-        // Show payment options with skip for testing
-        Alert.alert(
-            'Add Property',
-            'Choose payment option:',
-            [
-                {
-                    text: 'Skip Payment (Test)',
-                    onPress: () => handleSubmit(),
-                    style: 'default'
-                },
-                {
-                    text: 'Pay ₹20',
-                    onPress: () => initiateRazorpayPayment()
-                },
-                {
-                    text: 'Cancel',
-                    style: 'cancel',
-                    onPress: () => setLoading(false)
-                }
-            ]
-        );
+        // Mandatory payment - no skip option
+        setLoading(true);
+        initiateRazorpayPayment();
     };
 
     const initiateRazorpayPayment = async () => {
-        setLoading(true);
         try {
             // 1. Create order on backend (Amount ₹20)
             const orderRes = await createPaymentOrder(20);
             const order = orderRes.data.data;
+
+            const userData = await AsyncStorage.getItem('userData');
+            const user = userData ? JSON.parse(userData) : {};
 
             const options = {
                 description: 'Property Listing Fee',
@@ -180,9 +164,9 @@ const AddPropertyScreen = ({ navigation, route }) => {
                 name: 'SS Property Guru',
                 order_id: order.id,
                 prefill: {
-                    email: authStore.user?.email || '',
-                    contact: authStore.user?.contact || '',
-                    name: authStore.user?.name || ''
+                    email: user?.email || '',
+                    contact: user?.contact || user?.phone || '',
+                    name: user?.name || ''
                 },
                 theme: { color: Colors.primary }
             };
@@ -198,25 +182,26 @@ const AddPropertyScreen = ({ navigation, route }) => {
 
                     if (verifyRes.data.success) {
                         // 3. Submit property with paymentId
-                        handleSubmit(data.razorpay_payment_id);
+                        await handleSubmit(data.razorpay_payment_id);
                     } else {
-                        Alert.alert(t('common.error'), 'Payment verification failed');
                         setLoading(false);
+                        Alert.alert(t('common.error'), 'Payment verification failed. Please try again.');
                     }
                 } catch (err) {
-                    Alert.alert(t('common.error'), 'Payment verification failed');
+                    console.error('Payment verification error:', err);
                     setLoading(false);
+                    Alert.alert(t('common.error'), 'Payment verification failed. Please try again.');
                 }
             }).catch((error) => {
                 console.log('Razorpay Error:', error);
-                Alert.alert('Payment Failed', error.description || 'Payment was cancelled or failed. You can skip payment for testing.');
                 setLoading(false);
+                Alert.alert('Payment Required', 'Payment is required to list property. Please complete the payment to continue.');
             });
 
         } catch (error) {
             console.error('Payment Initialization Error:', error);
-            Alert.alert(t('common.error'), 'Failed to initialize payment. You can skip payment for testing.');
             setLoading(false);
+            Alert.alert(t('common.error'), 'Failed to initialize payment. Please check your internet connection and try again.');
         }
     };
 
@@ -312,19 +297,27 @@ const AddPropertyScreen = ({ navigation, route }) => {
             // Stop loading before showing alert
             setLoading(false);
 
-            Alert.alert(
-                t('common.success'),
-                editMode ? t('property.updateSuccess') : t('property.addSuccess'),
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => {
-                            console.log('[AddProperty] Navigating back after success');
-                            navigation.goBack();
+            // Show success alert and navigate
+            setTimeout(() => {
+                Alert.alert(
+                    t('common.success'),
+                    editMode ? t('property.updateSuccess') : t('property.addSuccess'),
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => {
+                                console.log('[AddProperty] Navigating back after success');
+                                // Use replace to avoid back navigation issues
+                                navigation.reset({
+                                    index: 0,
+                                    routes: [{ name: 'Sell', params: { screen: 'MyProperties' } }],
+                                });
+                            },
                         },
-                    },
-                ],
-            );
+                    ],
+                    { cancelable: false }
+                );
+            }, 100);
         } catch (error) {
             console.error('[AddProperty] Error:', error);
             console.error('[AddProperty] Error response:', error?.response);
