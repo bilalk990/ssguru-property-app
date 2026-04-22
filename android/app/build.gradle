@@ -82,8 +82,8 @@ android {
         applicationId "com.project.sspropertyguru"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 20
-        versionName "1.1.1"
+        versionCode 25
+        versionName "1.1.2"
         
         // Allow cleartext traffic for development (HTTP connections)
         manifestPlaceholders = [usesCleartextTraffic: "true"]
