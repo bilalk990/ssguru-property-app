@@ -124,7 +124,7 @@ APK will be at: `android/app/build/outputs/apk/release/app-release.apk`
 
 ## Current App Info:
 
-- Package Name: `com.sspropertyguru`
+- Package Name: `com.project.sspropertyguru`
 - App Name: SS Property Guru
 - Build location: `android/app/build/outputs/`
 

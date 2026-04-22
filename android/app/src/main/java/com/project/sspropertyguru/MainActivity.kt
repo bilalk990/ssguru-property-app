@@ -1,4 +1,4 @@
-package com.sspropertyguru
+package com.project.sspropertyguru
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
