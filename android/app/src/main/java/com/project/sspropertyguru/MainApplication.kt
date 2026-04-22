@@ -1,4 +1,4 @@
-package com.sspropertyguru
+package com.project.sspropertyguru
 
 import android.app.Application
 import com.facebook.react.PackageList
