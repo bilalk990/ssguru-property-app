@@ -31,8 +31,8 @@ export const getAgentMe = async () => {
 };
 
 // PATCH /api/v1/agents/update-profile
-export const updateAgentProfile = async (formData) => {
-    return apiClient.patch('/agents/update-profile', formData);
+export const updateAgentProfile = async (formData, headers = {}) => {
+    return apiClient.patch('/agents/update-profile', formData, { headers });
 };
 
 // POST /api/v1/agents/:franchiseId/agents (Add agent to specific franchise)

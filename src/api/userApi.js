@@ -16,8 +16,8 @@ export const getUserById = async (id) => {
 };
 
 // PUT /api/v1/users/:id
-export const updateUser = async (id, data) => {
-    return apiClient.put(`/users/${id}`, data);
+export const updateUser = async (id, data, headers = {}) => {
+    return apiClient.put(`/users/${id}`, data, { headers });
 };
 
 // DELETE /api/v1/users/:id

@@ -98,10 +98,11 @@ const EditProfileScreen = ({ navigation }) => {
             }
 
             let response;
+            const headers = { 'Content-Type': 'multipart/form-data' };
             if (userRole === 'agent') {
-                response = await updateAgentProfile(formData);
+                response = await updateAgentProfile(formData, headers);
             } else {
-                response = await updateUser(userId, formData);
+                response = await updateUser(userId, formData, headers);
             }
 
             // Update AsyncStorage with new data
@@ -193,7 +194,7 @@ const EditProfileScreen = ({ navigation }) => {
                     </View>
 
                     <CustomButton
-                        title={t('profile.updateProfile')}
+                        title={t('dashboard.updateProfile')}
                         onPress={handleSave}
                         loading={loading}
                         size="large"
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
     },
     backBtn: { padding: 8 },
     headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-    scrollContent: { padding: 24, paddingBottom: 60 },
+    scrollContent: { padding: 24, paddingBottom: 150 },
     avatarSection: { alignItems: 'center', marginBottom: 32 },
     avatarWrapper: {
         width: 120,

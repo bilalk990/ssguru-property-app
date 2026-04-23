@@ -200,7 +200,9 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                     <View style={styles.locationWrapper}>
                         <Icon name="location-outline" size={16} color={Colors.primary} />
                         <Text style={styles.locationText}>
-                            {property.area}, {property.city}
+                            {[property.area, property.city]
+                                .filter(val => val && val.length > 0 && !/^[a-f\d]{24}$/i.test(val))
+                                .join(', ') || t('common.locationNA')}
                         </Text>
                     </View>
 
@@ -218,7 +220,9 @@ const PropertyDetailScreen = ({ route, navigation }) => {
                             <View style={styles.infoIconBox}>
                                 <Icon name="location-outline" size={20} color={Colors.primary} />
                             </View>
-                            <Text style={styles.infoValue} numberOfLines={1}>{property.city || '-'}</Text>
+                            <Text style={styles.infoValue} numberOfLines={1}>
+                                {(!property.city || /^[a-f\d]{24}$/i.test(property.city)) ? '-' : property.city}
+                            </Text>
                             <Text style={styles.infoLabel}>{t('property.cityLabel')}</Text>
                         </View>
                         <View style={styles.infoDivider} />
@@ -610,7 +614,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 10,
         borderRadius: 12,
-        width: '48%', // Two column
+        width: '100%', // Take full width to avoid overflow
+        minHeight: 50,
     },
     featureText: {
         fontSize: 13,
