@@ -172,10 +172,13 @@ const ProfileScreen = ({ navigation }) => {
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}>
                     <View style={styles.profileSection}>
-                        <Image
-                            source={{ uri: userData.avatar || 'https://i.pravatar.cc/150' }}
-                            style={styles.avatar}
-                        />
+                        {userData.avatar ? (
+                            <Image source={{ uri: userData.avatar }} style={styles.avatar} />
+                        ) : (
+                            <View style={[styles.avatar, { backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' }]}>
+                                <Icon name="person" size={50} color="#FFFFFF" />
+                            </View>
+                        )}
                         <Text style={styles.userName}>{userData.name || t('profile.guestUser')}</Text>
                         <Text style={styles.userPhone}>
                             {userData.contact || userData.phone ||

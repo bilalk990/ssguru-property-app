@@ -117,7 +117,9 @@ const PropertyCard = ({ property: rawProperty, onPress, style, horizontal = fals
                         <View style={styles.locationRow}>
                             <Icon name="location-outline" size={12} color={Colors.textSecondary} style={{ marginRight: 4 }} />
                             <Text style={styles.locationText} numberOfLines={1}>
-                                {[property.area, property.city].filter(Boolean).join(', ') || t('common.locationNA')}
+                                {[property.area, property.city]
+                                    .filter(val => val && val.length > 0 && !/^[a-f\d]{24}$/i.test(val))
+                                    .join(', ') || t('common.locationNA')}
                             </Text>
                         </View>
                         <View style={styles.horizontalFooter}>
@@ -154,7 +156,9 @@ const PropertyCard = ({ property: rawProperty, onPress, style, horizontal = fals
                     <View style={styles.locationRow}>
                         <Icon name="location-outline" size={14} color={Colors.textSecondary} style={{ marginRight: 4 }} />
                         <Text style={styles.locationText} numberOfLines={1}>
-                            {[property.area, property.city].filter(Boolean).join(', ') || t('common.locationNA')}
+                            {[property.area, property.city]
+                                .filter(val => val && val.length > 0 && !/^[a-f\d]{24}$/i.test(val))
+                                .join(', ') || t('common.locationNA')}
                         </Text>
                     </View>
                     <View style={styles.infoRow}>

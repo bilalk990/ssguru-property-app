@@ -147,16 +147,15 @@ const EditProfileScreen = ({ navigation }) => {
                         {avatar ? (
                             <Image source={{ uri: avatar.uri }} style={styles.avatarImage} />
                         ) : (
-                            <Image
-                                source={{ uri: 'https://i.pravatar.cc/150' }}
-                                style={styles.avatarImage}
-                            />
+                            <View style={[styles.avatarImage, { backgroundColor: '#E0E0E0', justifyContent: 'center', alignItems: 'center' }]}>
+                                <Icon name="person" size={60} color="#FFFFFF" />
+                            </View>
                         )}
                         <View style={styles.cameraIcon}>
                             <Icon name="camera" size={20} color={Colors.textWhite} />
                         </View>
                     </TouchableOpacity>
-                    <Text style={styles.avatarHint}>{t('profile.changeAvatar')}</Text>
+                    <Text style={styles.avatarHint}>{t('dashboard.changeAvatar')}</Text>
                 </View>
 
                 <View style={styles.form}>
@@ -183,7 +182,7 @@ const EditProfileScreen = ({ navigation }) => {
                         />
                     </View>
 
-                    <Text style={styles.label}>{t('profile.protectedEmail')}</Text>
+                    <Text style={styles.label}>{t('dashboard.protectedEmail')}</Text>
                     <View style={[styles.inputWrapper, styles.disabledInput]}>
                         <Icon name="mail-outline" size={20} color={Colors.textLight} style={styles.inputIcon} />
                         <TextInput
@@ -220,7 +219,7 @@ const styles = StyleSheet.create({
     },
     backBtn: { padding: 8 },
     headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-    scrollContent: { padding: 24 },
+    scrollContent: { padding: 24, paddingBottom: 60 },
     avatarSection: { alignItems: 'center', marginBottom: 32 },
     avatarWrapper: {
         width: 120,
