@@ -76,6 +76,8 @@ const BuyPropertyScreen = ({ navigation, route }) => {
     }, [fetchProperties]);
 
     useEffect(() => {
+        const loadLocations = async () => {
+            try {
                 const [distRes, areaRes] = await Promise.all([getDistricts(), getAreas()]);
                 setDistricts(distRes.data?.data || distRes.data?.districts || distRes.data || []);
                 setAreas(areaRes.data?.data || areaRes.data?.areas || areaRes.data || []);
