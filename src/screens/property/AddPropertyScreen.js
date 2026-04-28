@@ -301,7 +301,9 @@ const AddPropertyScreen = ({ navigation, route }) => {
             setTimeout(() => {
                 Alert.alert(
                     t('common.success'),
-                    editMode ? t('property.updateSuccess') : t('property.addSuccess'),
+                    editMode 
+                        ? t('property.updateSuccess', { title: form.title }) 
+                        : t('property.addSuccess', { title: form.title, category: form.category }),
                     [
                         {
                             text: 'OK',

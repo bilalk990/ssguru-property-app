@@ -31,11 +31,13 @@ const BuyPropertyScreen = ({ navigation, route }) => {
     const [search, setSearch] = useState('');
     const [activeAgentId, setActiveAgentId] = useState(initialAgentId);
     
+    // Category & Selling Status filters
+    const [selectedType, setSelectedType] = useState(null);
+    const [selectedStatus, setSelectedStatus] = useState(null);
+    
     // Location filters
-    const [states, setStates] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [areas, setAreas] = useState([]);
-    const [selectedState, setSelectedState] = useState(null);
     const [selectedDistrict, setSelectedDistrict] = useState(null);
     const [selectedArea, setSelectedArea] = useState(null);
     
@@ -52,7 +54,8 @@ const BuyPropertyScreen = ({ navigation, route }) => {
             } else {
                 const params = {
                     search: search || undefined,
-                    state: selectedState?.name || undefined,
+                    category: selectedType || undefined,
+                    sellingType: selectedStatus || undefined,
                     district: selectedDistrict?.name || undefined,
                     area: selectedArea?.name || undefined
                 };
@@ -66,25 +69,13 @@ const BuyPropertyScreen = ({ navigation, route }) => {
         } finally {
             setLoading(false);
         }
-    }, [search, activeAgentId, selectedState, selectedDistrict, selectedArea]);
+    }, [search, activeAgentId, selectedType, selectedStatus, selectedDistrict, selectedArea]);
 
     useEffect(() => {
         fetchProperties();
     }, [fetchProperties]);
 
     useEffect(() => {
-        const loadLocations = async () => {
-            try {
-                // Load states (hardcoded for now - can be from API later)
-                const indianStates = [
-                    { id: 1, name: 'Madhya Pradesh' },
-                    { id: 2, name: 'Maharashtra' },
-                    { id: 3, name: 'Gujarat' },
-                    { id: 4, name: 'Rajasthan' },
-                    { id: 5, name: 'Uttar Pradesh' },
-                ];
-                setStates(indianStates);
-                
                 const [distRes, areaRes] = await Promise.all([getDistricts(), getAreas()]);
                 setDistricts(distRes.data?.data || distRes.data?.districts || distRes.data || []);
                 setAreas(areaRes.data?.data || areaRes.data?.areas || areaRes.data || []);
@@ -99,22 +90,15 @@ const BuyPropertyScreen = ({ navigation, route }) => {
         if (route.params?.agentId) setActiveAgentId(route.params.agentId);
     }, [route.params]);
 
-    const filteredDistricts = selectedState
-        ? districts.filter(d => d.state === selectedState.name || !d.state)
-        : districts;
-
-    const filteredAreas = selectedDistrict
-        ? areas.filter(a => (a.district?._id || a.district) === (selectedDistrict._id || selectedDistrict.id))
-        : [];
-
     const clearFilters = () => {
-        setSelectedState(null);
+        setSelectedType(null);
+        setSelectedStatus(null);
         setSelectedDistrict(null);
         setSelectedArea(null);
         setShowFilterModal(false);
     };
 
-    const activeFilterCount = [selectedState, selectedDistrict, selectedArea].filter(Boolean).length;
+    const activeFilterCount = [selectedType, selectedStatus, selectedDistrict, selectedArea].filter(Boolean).length;
 
     return (
         <View style={styles.container}>
@@ -152,18 +136,27 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                 {/* Active Filters Display */}
                 {!activeAgentId && activeFilterCount > 0 && (
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.activeFiltersScroll}>
-                        {selectedState && (
+                        {selectedType && (
                             <View style={styles.activeFilterChip}>
-                                <Icon name="location" size={12} color={Colors.primary} />
-                                <Text style={styles.activeFilterText}>{selectedState.name}</Text>
-                                <TouchableOpacity onPress={() => { setSelectedState(null); setSelectedDistrict(null); setSelectedArea(null); }}>
+                                <Icon name="business" size={12} color={Colors.primary} />
+                                <Text style={styles.activeFilterText}>{selectedType}</Text>
+                                <TouchableOpacity onPress={() => setSelectedType(null)}>
+                                    <Icon name="close-circle" size={16} color={Colors.textSecondary} />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        {selectedStatus && (
+                            <View style={styles.activeFilterChip}>
+                                <Icon name="pricetag" size={12} color={Colors.primary} />
+                                <Text style={styles.activeFilterText}>{selectedStatus}</Text>
+                                <TouchableOpacity onPress={() => setSelectedStatus(null)}>
                                     <Icon name="close-circle" size={16} color={Colors.textSecondary} />
                                 </TouchableOpacity>
                             </View>
                         )}
                         {selectedDistrict && (
                             <View style={styles.activeFilterChip}>
-                                <Icon name="business" size={12} color={Colors.primary} />
+                                <Icon name="location" size={12} color={Colors.primary} />
                                 <Text style={styles.activeFilterText}>{selectedDistrict.name}</Text>
                                 <TouchableOpacity onPress={() => { setSelectedDistrict(null); setSelectedArea(null); }}>
                                     <Icon name="close-circle" size={16} color={Colors.textSecondary} />
@@ -235,22 +228,42 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                         </View>
 
                         <ScrollView showsVerticalScrollIndicator={false} style={styles.modalScroll}>
-                            {/* State Filter */}
-                            <Text style={styles.filterLabel}>State</Text>
+                            {/* Property Type Filter */}
+                            <Text style={styles.filterLabel}>Property Type</Text>
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterChipScroll}>
                                 <TouchableOpacity
-                                    style={[styles.filterChip, !selectedState && styles.filterChipActive]}
-                                    onPress={() => { setSelectedState(null); setSelectedDistrict(null); setSelectedArea(null); }}
+                                    style={[styles.filterChip, !selectedType && styles.filterChipActive]}
+                                    onPress={() => setSelectedType(null)}
                                 >
-                                    <Text style={[styles.filterChipText, !selectedState && styles.filterChipTextActive]}>All States</Text>
+                                    <Text style={[styles.filterChipText, !selectedType && styles.filterChipTextActive]}>All Types</Text>
                                 </TouchableOpacity>
-                                {states.map(state => (
+                                {['Plot', 'Residential', 'Industrial', 'Agricultural Land', 'Farm House', 'Warehouse'].map(type => (
                                     <TouchableOpacity
-                                        key={state.id}
-                                        style={[styles.filterChip, selectedState?.id === state.id && styles.filterChipActive]}
-                                        onPress={() => { setSelectedState(state); setSelectedDistrict(null); setSelectedArea(null); }}
+                                        key={type}
+                                        style={[styles.filterChip, selectedType === type && styles.filterChipActive]}
+                                        onPress={() => setSelectedType(type)}
                                     >
-                                        <Text style={[styles.filterChipText, selectedState?.id === state.id && styles.filterChipTextActive]}>{state.name}</Text>
+                                        <Text style={[styles.filterChipText, selectedType === type && styles.filterChipTextActive]}>{type}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+
+                            {/* Status Filter */}
+                            <Text style={styles.filterLabel}>Status</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterChipScroll}>
+                                <TouchableOpacity
+                                    style={[styles.filterChip, !selectedStatus && styles.filterChipActive]}
+                                    onPress={() => setSelectedStatus(null)}
+                                >
+                                    <Text style={[styles.filterChipText, !selectedStatus && styles.filterChipTextActive]}>All Status</Text>
+                                </TouchableOpacity>
+                                {['Sale', 'Rent', 'Lease'].map(status => (
+                                    <TouchableOpacity
+                                        key={status}
+                                        style={[styles.filterChip, selectedStatus === status && styles.filterChipActive]}
+                                        onPress={() => setSelectedStatus(status)}
+                                    >
+                                        <Text style={[styles.filterChipText, selectedStatus === status && styles.filterChipTextActive]}>{status}</Text>
                                     </TouchableOpacity>
                                 ))}
                             </ScrollView>
@@ -264,7 +277,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                                 >
                                     <Text style={[styles.filterChipText, !selectedDistrict && styles.filterChipTextActive]}>All Districts</Text>
                                 </TouchableOpacity>
-                                {filteredDistricts.map(dist => (
+                                {districts.map(dist => (
                                     <TouchableOpacity
                                         key={dist._id || dist.id}
                                         style={[styles.filterChip, selectedDistrict?._id === dist._id && styles.filterChipActive]}
@@ -277,12 +290,7 @@ const BuyPropertyScreen = ({ navigation, route }) => {
 
                             {/* Area Filter */}
                             <Text style={styles.filterLabel}>Area</Text>
-                            {!selectedDistrict ? (
-                                <View style={styles.disabledFilterSection}>
-                                    <Icon name="information-circle-outline" size={20} color={Colors.textLight} />
-                                    <Text style={styles.disabledFilterText}>Please select a district first to see areas</Text>
-                                </View>
-                            ) : filteredAreas.length > 0 ? (
+                            {areas.filter(a => !selectedDistrict || (a.district?._id || a.district) === (selectedDistrict._id || selectedDistrict.id)).length > 0 ? (
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterChipScroll}>
                                     <TouchableOpacity
                                         style={[styles.filterChip, !selectedArea && styles.filterChipActive]}
@@ -290,20 +298,22 @@ const BuyPropertyScreen = ({ navigation, route }) => {
                                     >
                                         <Text style={[styles.filterChipText, !selectedArea && styles.filterChipTextActive]}>All Areas</Text>
                                     </TouchableOpacity>
-                                    {filteredAreas.map(area => (
-                                        <TouchableOpacity
-                                            key={area._id || area.id}
-                                            style={[styles.filterChip, selectedArea?._id === area._id && styles.filterChipActive]}
-                                            onPress={() => setSelectedArea(area)}
-                                        >
-                                            <Text style={[styles.filterChipText, selectedArea?._id === area._id && styles.filterChipTextActive]}>{area.name}</Text>
-                                        </TouchableOpacity>
-                                    ))}
+                                    {areas
+                                        .filter(a => !selectedDistrict || (a.district?._id || a.district) === (selectedDistrict._id || selectedDistrict.id))
+                                        .map(area => (
+                                            <TouchableOpacity
+                                                key={area._id || area.id}
+                                                style={[styles.filterChip, selectedArea?._id === area._id && styles.filterChipActive]}
+                                                onPress={() => setSelectedArea(area)}
+                                            >
+                                                <Text style={[styles.filterChipText, selectedArea?._id === area._id && styles.filterChipTextActive]}>{area.name}</Text>
+                                            </TouchableOpacity>
+                                        ))}
                                 </ScrollView>
                             ) : (
                                 <View style={styles.disabledFilterSection}>
                                     <Icon name="alert-circle-outline" size={20} color={Colors.textLight} />
-                                    <Text style={styles.disabledFilterText}>No areas available for selected district</Text>
+                                    <Text style={styles.disabledFilterText}>No areas available</Text>
                                 </View>
                             )}
                         </ScrollView>

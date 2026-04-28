@@ -60,9 +60,21 @@ const HomeScreen = ({ navigation }) => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const slideAnim = useRef(new Animated.Value(40)).current;
 
+    // Ref for Auto-Scroll
+    const scrollViewRef = useRef(null);
+    const resultsRef = useRef(null);
+
     // Animate sections independently
     const actionsFade = useRef(new Animated.Value(0)).current;
     const contentFade = useRef(new Animated.Value(0)).current;
+
+    const scrollResults = () => {
+        if (scrollViewRef.current) {
+            // Scroll to properties section (approx 450 - 500 offset or dynamic)
+            // We'll scroll past the header and quick actions
+            scrollViewRef.current.scrollTo({ y: 460, animated: true });
+        }
+    };
 
     const fetchHomeData = useCallback(async (isRefreshing = false) => {
         if (isRefreshing) setRefreshing(true);
@@ -176,6 +188,7 @@ const HomeScreen = ({ navigation }) => {
             <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
             <Animated.ScrollView
+                ref={scrollViewRef}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
                 refreshControl={
@@ -204,7 +217,10 @@ const HomeScreen = ({ navigation }) => {
                     <View style={styles.searchContainer}>
                         <SearchBar
                             value={search}
-                            onChangeText={setSearch}
+                            onChangeText={(v) => {
+                                setSearch(v);
+                                if (v.length > 2) scrollResults();
+                            }}
                             onFilterPress={() => navigation.navigate('Buy')}
                             placeholder={t('common.search')}
                         />
@@ -222,6 +238,7 @@ const HomeScreen = ({ navigation }) => {
                                 style={[styles.categoryChip, search === cat && styles.categoryChipActive]}
                                 onPress={() => {
                                     setSearch(cat === 'All Types' ? '' : cat);
+                                    scrollResults();
                                 }}>
                                 <Text style={[styles.categoryChipText, search === cat && styles.categoryChipTextActive]}>
                                     {cat === 'All Types' ? t('common.all') : cat}
@@ -238,6 +255,7 @@ const HomeScreen = ({ navigation }) => {
                     <ActionCard title={t('home.enquiry')} desc={t('home.enquiryDescShort')} icon="chatbubble-ellipses" color="#F1F5F9" onPress={() => navigation.navigate('Enquiry')} />
                     <ActionCard title={t('home.franchise')} desc={t('home.franchiseDesc')} icon="business" color="#ECFDF5" onPress={() => navigation.navigate('Franchise')} />
                     <ActionCard title="Live Program" desc="Watch property tours live" icon="videocam" color="#FEF3C7" onPress={() => navigation.navigate('LiveTour')} />
+                    <ActionCard title="Gallery" desc="View property photos" icon="images" color="#EDE9FE" onPress={() => navigation.navigate('Gallery')} />
                 </Animated.View>
 
                 {/* Content Section */}

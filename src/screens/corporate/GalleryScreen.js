@@ -1,19 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
-    FlatList,
-    Image,
-    TouchableOpacity,
-    StatusBar,
-    Dimensions,
-    ActivityIndicator
+    View, Text, StyleSheet, FlatList, Image,
+    TouchableOpacity, StatusBar, Dimensions, ActivityIndicator
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Colors from '../../constants/colors';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { getProperties } from '../../api/propertyApi';
+import { getGallery } from '../../api/galleryApi';
 
 const { width } = Dimensions.get('window');
 const columnWidth = (width - 50) / 2;
@@ -26,18 +19,12 @@ const GalleryScreen = ({ navigation }) => {
     useEffect(() => {
         const fetchGallery = async () => {
             try {
-                const res = await getProperties({ featured: true });
-                const props = res.data?.data || res.data?.properties || res.data || [];
-                // Extract images from properties
-                const galleryItems = props.map(p => ({
-                    id: p.id || p._id,
-                    image: p.images?.[0]?.url || p.images?.[0] || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1000',
-                    title: p.title,
-                    property: p,
-                }));
-                setImages(galleryItems);
+                const res = await getGallery();
+                const items = res.data?.data || res.data?.message || [];
+                setImages(Array.isArray(items) ? items : []);
             } catch (e) {
                 console.error('Gallery Fetch Error:', e);
+                setImages([]);
             } finally {
                 setLoading(false);
             }
@@ -46,41 +33,45 @@ const GalleryScreen = ({ navigation }) => {
     }, []);
 
     const renderItem = ({ item }) => (
-        <TouchableOpacity
-            style={styles.galleryItem}
-            onPress={() => navigation.navigate('PropertyDetail', { property: item.property })}
-        >
-            <Image source={{ uri: item.image }} style={styles.image} />
-            <Text style={styles.imageTitle} numberOfLines={1}>{item.title}</Text>
-        </TouchableOpacity>
+        <View style={styles.galleryItem}>
+            <Image
+                source={{ uri: item.image }}
+                style={styles.image}
+                defaultSource={{ uri: 'https://via.placeholder.com/300x200' }}
+            />
+            <Text style={styles.imageTitle} numberOfLines={2}>{item.title}</Text>
+        </View>
     );
 
     return (
         <View style={styles.container}>
             <StatusBar backgroundColor={Colors.background} barStyle="dark-content" />
+
+            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Icon name="arrow-back" size={24} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{t('corporate.premiumGallery')}</Text>
+                <Text style={styles.headerTitle}>Property Gallery</Text>
                 <View style={{ width: 44 }} />
             </View>
 
             {loading ? (
-                <View style={{ flex: 1, justifyContent: 'center' }}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" color={Colors.primary} />
                 </View>
             ) : (
                 <FlatList
                     data={images}
                     renderItem={renderItem}
-                    keyExtractor={(item, idx) => String(item.id || item._id || idx)}
+                    keyExtractor={(item, idx) => String(item._id || idx)}
                     numColumns={2}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={
-                        <View style={{ alignItems: 'center', marginTop: 50 }}>
-                            <Text style={{ color: Colors.textSecondary }}>{t('corporate.noGallery')}</Text>
+                        <View style={styles.emptyContainer}>
+                            <Icon name="images-outline" size={60} color={Colors.textLight} />
+                            <Text style={styles.emptyText}>No gallery images yet</Text>
                         </View>
                     }
                 />
@@ -100,22 +91,43 @@ const styles = StyleSheet.create({
         paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: Colors.border,
+        backgroundColor: Colors.background,
     },
     backButton: { padding: 8 },
     headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-    listContent: { padding: 20 },
+    listContent: { padding: 12 },
     galleryItem: {
         width: columnWidth,
-        marginBottom: 20,
-        marginHorizontal: 5,
-        backgroundColor: Colors.background,
-        borderRadius: 15,
+        margin: 6,
+        backgroundColor: Colors.backgroundCard,
+        borderRadius: 16,
         overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: Colors.border,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
     },
-    image: { width: '100%', height: 180, resizeMode: 'cover' },
-    imageTitle: { padding: 10, fontSize: 13, fontWeight: '600', color: Colors.textPrimary, textAlign: 'center' },
+    image: { width: '100%', height: 160, resizeMode: 'cover' },
+    imageTitle: {
+        padding: 10,
+        fontSize: 13,
+        fontWeight: '600',
+        color: Colors.textPrimary,
+        textAlign: 'center',
+    },
+    emptyContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 80,
+    },
+    emptyText: {
+        color: Colors.textSecondary,
+        fontSize: 16,
+        marginTop: 16,
+        fontWeight: '500',
+    },
 });
 
 export default GalleryScreen;

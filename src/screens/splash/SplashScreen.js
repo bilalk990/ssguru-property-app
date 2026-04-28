@@ -40,12 +40,12 @@ const SplashScreen = ({ navigation }) => {
                         screen: 'Home'
                     });
                 } else {
-                    // User NOT logged in → Go to Login page
-                    navigation.replace('Login');
+                    // User NOT logged in → Go to Signup page
+                    navigation.replace('Signup');
                 }
             } catch (e) {
-                // Error → Go to Login page
-                navigation.replace('Login');
+                // Error → Go to Signup page
+                navigation.replace('Signup');
             }
         }, 3000);
 
